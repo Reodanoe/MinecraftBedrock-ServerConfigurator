@@ -1,7 +1,10 @@
-## Minecraft Bedrock Edition - Multiple servers configurator
+# Minecraft Bedrock Edition - Multiple servers configurator
 
-# What is this?
-This program allows you to manage several MineCraft Bedrock servers on a single computer.
+## What is this?
+This program allows you to run several Minecraft Bedrock servers on a single computer.
 
-# Disclaimer
+## License
+[MIT License](LICENSE)
+
+## Disclaimer
 Not affiliated in any way to Mojang or Minecraft.
