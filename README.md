@@ -7,4 +7,4 @@ This program allows you to run several Minecraft Bedrock servers on a single com
 [MIT License](LICENSE.md)
 
 ## Disclaimer
-Not affiliated in any way to Mojang or Minecraft.
+Not affiliated in any way with Mojang or Minecraft.
