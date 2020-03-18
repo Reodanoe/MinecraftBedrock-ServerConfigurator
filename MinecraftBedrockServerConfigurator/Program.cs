@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace MinecraftBedrockServerConfigurator
 {
@@ -116,10 +117,10 @@ namespace MinecraftBedrockServerConfigurator
                     switch (input)
                     {
                         case "restart":
-                            config.AllServers.ForEach(y => y.RestartServer());
+                            config.AllServers.Values.ToList().ForEach(y => y.RestartServer());
                             break;
                         default:
-                            config.AllServers.ForEach(y => y.RunACommand(input));
+                            config.AllServers.Values.ToList().ForEach(y => y.RunACommand(input));
                             break;
                     }
                 }
