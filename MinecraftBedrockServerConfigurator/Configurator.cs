@@ -129,7 +129,7 @@ namespace MinecraftBedrockServerConfigurator
         /// <param name="command"></param>
         public void RunCommandOnSpecifiedServer(string serverName, string command)
         {
-            if (AllServers.TryGetValue(ServerName, out Server server))
+            if (AllServers.TryGetValue(serverName, out Server server))
             {
                 server.RunACommand(command);
             }
@@ -166,9 +166,10 @@ namespace MinecraftBedrockServerConfigurator
         /// <returns></returns>
         public string[] AllServerDirectories()
         {
-            return Directory.GetDirectories(ServersRootPath)
-                            .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
-                            .Where(y => y.Contains("_")).ToArray();
+            return Directory
+                .GetDirectories(ServersRootPath)
+                .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
+                .Where(y => y.Contains("_")).ToArray();
         }
 
         /// <summary>
@@ -182,10 +183,8 @@ namespace MinecraftBedrockServerConfigurator
 
             var properties = new Dictionary<string, string>();
 
-            for (int i = 0; i < lines.Length; i++)
+            foreach (var currentLine in lines)
             {
-                var currentLine = lines[i];
-
                 if (currentLine.StartsWith("#") || currentLine.Length < 3)
                 {
                     continue;
@@ -207,28 +206,24 @@ namespace MinecraftBedrockServerConfigurator
             return properties;
         }
 
+        private Regex urlRegex;
+
         /// <summary>
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
         private string GetUrl(WebClient client)
         {
-            string pattern;
+            if(urlRegex == null)
+            {
+                var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" : "linux";
+                var pattern = $"https://minecraft.azureedge.net/bin-{os}/bedrock-server-[0-9.]*.zip";
+
+                urlRegex = new Regex(pattern);
+            }
+
             string text = client.DownloadString("https://www.minecraft.net/en-us/download/server/bedrock/");
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                pattern = "https://minecraft.azureedge.net/bin-win/bedrock-server-[0-9.]*.zip";
-            }
-            else
-            {
-                pattern = "https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9.]*.zip";
-            }
-
-            var reg = new Regex(pattern);
-            var match = reg.Match(text);
-
-            return match.Value;
+            return urlRegex.Match(text).Value;
         }
 
         /// <summary>
@@ -262,6 +257,9 @@ namespace MinecraftBedrockServerConfigurator
                          x.ServerProperties["server-portv6"] == y.ServerProperties["server-portv6"]) &&
                          x.Name != y.Name)))
                 .ToList();            
+
+            // use groupby
+            // var newServersWithSamePorts = AllServers.GroupBy()
 
             // removes first server (0) from servers with same ports
             serversWithSamePorts.RemoveAll(x => x.Number == 0);
