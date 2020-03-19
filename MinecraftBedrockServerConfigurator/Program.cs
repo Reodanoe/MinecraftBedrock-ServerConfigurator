@@ -84,7 +84,7 @@ namespace MinecraftBedrockServerConfigurator
             // Start servers
             while (true)
             {
-                Console.Write("Start servers? [Y/N]: ");
+                Console.Write("Start all loaded servers? [Y/N]: ");
                 var start = Console.ReadLine().ToUpper();
 
                 if (start == "Y")
@@ -117,10 +117,10 @@ namespace MinecraftBedrockServerConfigurator
                     switch (input)
                     {
                         case "restart":
-                            config.AllServers.Values.ToList().ForEach(y => y.RestartServer());
+                            config.RestartAllServers();
                             break;
                         default:
-                            config.AllServers.Values.ToList().ForEach(y => y.RunACommand(input));
+                            config.AllServersAction(y => y.RunACommand(input));
                             break;
                     }
                 }

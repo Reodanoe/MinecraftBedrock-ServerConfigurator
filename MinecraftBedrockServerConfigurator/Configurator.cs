@@ -30,7 +30,12 @@ namespace MinecraftBedrockServerConfigurator
         /// Holds all servers(except template one) that are in ServersRootPath directory
         /// string is the name of the server
         /// </summary>
-        public Dictionary<string, Server> AllServers { get; private set; } = new Dictionary<string, Server>();
+        public Dictionary<string, Server> AllServers { get; } = new Dictionary<string, Server>();
+
+        /// <summary>
+        /// Gets all servers from AllSevers dictionary
+        /// </summary>
+        public List<Server> AllServersList => AllServers.Values.ToList();
 
         /// <summary>
         /// 
@@ -140,24 +145,36 @@ namespace MinecraftBedrockServerConfigurator
         }
 
         /// <summary>
-        /// Starts all servers, throws an exception if there are no servers initialized in AllServers
+        /// Starts all servers
         /// </summary>
         public void StartAllServers()
         {
-            if (!AllServers.Keys.Any())
-            {
-                throw new Exception("No servers are loaded. Did you forget to call LoadServers?");
-            }
-
-            AllServers.Values.ToList().ForEach(x => x.StartServer());
+            AllServersAction(x => x.StartServer());
         }
 
         /// <summary>
-        /// Stop all servers in AllServers
+        /// Stops all servers
         /// </summary>
         public void StopAllServers()
         {
-            AllServers.Values.ToList().ForEach(x => x.StopServer());
+            AllServersAction(x => x.StopServer());
+        }
+
+        /// <summary>
+        /// Restarts all servers
+        /// </summary>
+        public void RestartAllServers()
+        {
+            AllServersAction(x => x.RestartServer());
+        }
+
+        /// <summary>
+        /// Invokes an action on all loaded servers
+        /// </summary>
+        /// <param name="action"></param>
+        public void AllServersAction(Action<Server> action)
+        {
+            AllServersList.ForEach(action);
         }
 
         /// <summary>
@@ -256,10 +273,7 @@ namespace MinecraftBedrockServerConfigurator
                     y => ((x.ServerProperties["server-port"] == y.ServerProperties["server-port"] ||
                          x.ServerProperties["server-portv6"] == y.ServerProperties["server-portv6"]) &&
                          x.Name != y.Name)))
-                .ToList();            
-
-            // use groupby
-            // var newServersWithSamePorts = AllServers.GroupBy()
+                .ToList();
 
             // removes first server (0) from servers with same ports
             serversWithSamePorts.RemoveAll(x => x.Number == 0);

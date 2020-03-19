@@ -93,6 +93,18 @@ namespace MinecraftBedrockServerConfigurator
         }
 
         /// <summary>
+        /// Calls StopServer then StartServer
+        /// </summary>
+        public void RestartServer()
+        {
+            if (Running)
+            {
+                StopServer();
+                StartServer();
+            }
+        }
+
+        /// <summary>
         /// When ServerInstance writes new line of message this method gets called which works with it
         /// </summary>
         /// <param name="message"></param>
@@ -103,15 +115,6 @@ namespace MinecraftBedrockServerConfigurator
             // [2020-03-13 11:57:28 INFO] Player connected: playerName, xuid: number
 
             Console.WriteLine($"{Name} - {message}");
-        }
-
-        /// <summary>
-        /// Calls StopServer then StartServer
-        /// </summary>
-        public void RestartServer()
-        {
-            StopServer();
-            StartServer();
         }
 
         /// <summary>
