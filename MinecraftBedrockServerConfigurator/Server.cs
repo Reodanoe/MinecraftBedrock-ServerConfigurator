@@ -93,7 +93,7 @@ namespace MinecraftBedrockServerConfigurator
         }
 
         /// <summary>
-        /// Calls StopServer then StartServer
+        /// If server is running, calls StopServer then StartServer
         /// </summary>
         public void RestartServer()
         {
