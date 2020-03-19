@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace MinecraftBedrockServerConfigurator
+namespace BedrockServerConfigurator
 {
-    static class Utilities
+    public static class Utilities
     {
         /// <summary>
         /// Runs a command on the running machine.

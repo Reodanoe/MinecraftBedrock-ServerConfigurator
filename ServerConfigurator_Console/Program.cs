@@ -1,18 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using BedrockServerConfigurator;
 
-namespace MinecraftBedrockServerConfigurator
+namespace ServerConfigurator
 {
     class Program
     {
-        //
         // TODO
-        //
         // choose on which server you want the command to run
-        // use args in main method to configure the app
-        // implement backups in configurator
-        //
 
         private static Configurator config;
 

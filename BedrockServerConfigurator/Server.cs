@@ -5,9 +5,9 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace MinecraftBedrockServerConfigurator
+namespace BedrockServerConfigurator
 {
-    class Server
+    public class Server
     {
         public Process ServerInstance { get; }
         public string Name { get; }

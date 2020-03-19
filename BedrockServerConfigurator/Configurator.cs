@@ -7,10 +7,13 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace MinecraftBedrockServerConfigurator
+namespace BedrockServerConfigurator
 {
-    class Configurator
+    public class Configurator
     {
+        // TODO
+        // implement world backups
+
         /// <summary>
         /// Folder where all servers reside
         /// </summary>
