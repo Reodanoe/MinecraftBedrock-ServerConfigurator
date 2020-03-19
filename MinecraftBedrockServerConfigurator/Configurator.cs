@@ -27,9 +27,15 @@ namespace MinecraftBedrockServerConfigurator
         public string OriginalServerFolderPath => Path.Combine(ServersRootPath, ServerName);
 
         /// <summary>
-        /// Holds all servers (except template one) that are in ServersRootPath directory
+        /// Holds all servers(except template one) that are in ServersRootPath directory
+        /// string is the name of the server
         /// </summary>
-        public List<Server> AllServers { get; private set; } = new List<Server>();
+        public Dictionary<string, Server> AllServers { get; } = new Dictionary<string, Server>();
+
+        /// <summary>
+        /// Gets all servers from AllSevers dictionary
+        /// </summary>
+        public List<Server> AllServersList => AllServers.Values.ToList();
 
         /// <summary>
         /// 
@@ -69,7 +75,7 @@ namespace MinecraftBedrockServerConfigurator
             client.DownloadFile(GetUrl(client), zipFilePath);
 
             Console.WriteLine("Unzipping...");
-            ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
+            ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath); // will crash here if template server already exists
 
             Console.WriteLine("Deleting zip file...");
             File.Delete(zipFilePath);
@@ -115,7 +121,7 @@ namespace MinecraftBedrockServerConfigurator
 
                 var properties = GenerateProperties(File.ReadAllText(Path.Combine(serverFolder, "server.properties")));
 
-                AllServers.Add(new Server(instance, name, serverFolder, properties));
+                AllServers.Add(name, new Server(instance, name, serverFolder, properties));
             }
 
             FixServerProperties();
@@ -128,9 +134,9 @@ namespace MinecraftBedrockServerConfigurator
         /// <param name="command"></param>
         public void RunCommandOnSpecifiedServer(string serverName, string command)
         {
-            if(AllServers.Any(x => x.Name == serverName))
+            if (AllServers.TryGetValue(serverName, out Server server))
             {
-                AllServers.First(x => x.Name == serverName).RunACommand(command);
+                server.RunACommand(command);
             }
             else
             {
@@ -139,24 +145,36 @@ namespace MinecraftBedrockServerConfigurator
         }
 
         /// <summary>
-        /// Starts all servers, throws an exception if there are no servers initialized in AllServers
+        /// Starts all servers
         /// </summary>
         public void StartAllServers()
         {
-            if (!AllServers.Any())
-            {
-                throw new Exception("No servers are loaded. Did you forget to call LoadServers?");
-            }
-
-            AllServers.ForEach(x => x.StartServer());
+            AllServersAction(x => x.StartServer());
         }
 
         /// <summary>
-        /// Stop all servers in AllServers
+        /// Stops all servers
         /// </summary>
         public void StopAllServers()
         {
-            AllServers.ForEach(x => x.StopServer());
+            AllServersAction(x => x.StopServer());
+        }
+
+        /// <summary>
+        /// Restarts all servers
+        /// </summary>
+        public void RestartAllServers()
+        {
+            AllServersAction(x => x.RestartServer());
+        }
+
+        /// <summary>
+        /// Invokes an action on all loaded servers
+        /// </summary>
+        /// <param name="action"></param>
+        public void AllServersAction(Action<Server> action)
+        {
+            AllServersList.ForEach(action);
         }
 
         /// <summary>
@@ -165,9 +183,10 @@ namespace MinecraftBedrockServerConfigurator
         /// <returns></returns>
         public string[] AllServerDirectories()
         {
-            return Directory.GetDirectories(ServersRootPath)
-                            .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
-                            .Where(y => y.Contains("_")).ToArray();
+            return Directory
+                .GetDirectories(ServersRootPath)
+                .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
+                .Where(y => y.Contains("_")).ToArray();
         }
 
         /// <summary>
@@ -181,10 +200,8 @@ namespace MinecraftBedrockServerConfigurator
 
             var properties = new Dictionary<string, string>();
 
-            for (int i = 0; i < lines.Length; i++)
+            foreach (var currentLine in lines)
             {
-                var currentLine = lines[i];
-
                 if (currentLine.StartsWith("#") || currentLine.Length < 3)
                 {
                     continue;
@@ -206,28 +223,24 @@ namespace MinecraftBedrockServerConfigurator
             return properties;
         }
 
+        private Regex urlRegex;
+
         /// <summary>
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
         private string GetUrl(WebClient client)
         {
-            string pattern;
+            if(urlRegex == null)
+            {
+                var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" : "linux";
+                var pattern = $"https://minecraft.azureedge.net/bin-{os}/bedrock-server-[0-9.]*.zip";
+
+                urlRegex = new Regex(pattern);
+            }
+
             string text = client.DownloadString("https://www.minecraft.net/en-us/download/server/bedrock/");
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                pattern = "https://minecraft.azureedge.net/bin-win/bedrock-server-[0-9.]*.zip";
-            }
-            else
-            {
-                pattern = "https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9.]*.zip";
-            }
-
-            var reg = new Regex(pattern);
-            var match = reg.Match(text);
-
-            return match.Value;
+            return urlRegex.Match(text).Value;
         }
 
         /// <summary>
@@ -254,9 +267,9 @@ namespace MinecraftBedrockServerConfigurator
         private void FixServerProperties()
         {
             // gets all servers that have the same ports
-            var serversWithSamePorts = AllServers
+            var serversWithSamePorts = AllServers.Values
                 .Where(x =>
-                AllServers.Any(
+                AllServers.Values.Any(
                     y => ((x.ServerProperties["server-port"] == y.ServerProperties["server-port"] ||
                          x.ServerProperties["server-portv6"] == y.ServerProperties["server-portv6"]) &&
                          x.Name != y.Name)))
@@ -266,7 +279,7 @@ namespace MinecraftBedrockServerConfigurator
             serversWithSamePorts.RemoveAll(x => x.Number == 0);
 
             // gets all servers except those who have same ports
-            var alrightServers = AllServers.Except(serversWithSamePorts).ToList();
+            var alrightServers = AllServers.Values.Except(serversWithSamePorts).ToList();
 
             // adds to list with alright servers new server that have changed ports
             foreach (var server in serversWithSamePorts)
@@ -278,7 +291,7 @@ namespace MinecraftBedrockServerConfigurator
             }
 
             // final changes and updating properties
-            foreach (var server in AllServers)
+            foreach (var server in AllServers.Values)
             {
                 server.ServerProperties["max-threads"] = "2";
                 server.ServerProperties["view-distance"] = "24";
