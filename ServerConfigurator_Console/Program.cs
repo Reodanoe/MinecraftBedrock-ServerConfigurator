@@ -14,8 +14,15 @@ namespace ServerConfigurator
 
         static void Main(string[] args)
         {
-            BeginConfig();
-            Menu();
+            try
+            {
+                BeginConfig();
+                Menu();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();

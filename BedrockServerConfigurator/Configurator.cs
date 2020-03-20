@@ -70,6 +70,11 @@ namespace BedrockServerConfigurator
         /// </summary>
         public void DownloadBedrockServer()
         {
+            if(Directory.GetFiles(OriginalServerFolderPath).Any())
+            {
+                throw new Exception($"Template server already exists, delete folder \"{ServerName}\" in \"{ServersRootPath}\".");
+            }
+
             string zipFilePath = Path.Combine(OriginalServerFolderPath, ServerName + ".zip");
 
             using var client = new WebClient();
@@ -78,7 +83,7 @@ namespace BedrockServerConfigurator
             client.DownloadFile(GetUrl(client), zipFilePath);
 
             Console.WriteLine("Unzipping...");
-            ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath); // will crash here if template server already exists
+            ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
 
             Console.WriteLine("Deleting zip file...");
             File.Delete(zipFilePath);

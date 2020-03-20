@@ -33,7 +33,7 @@ namespace BedrockServerConfigurator
         /// <param name="name">Name of server directory</param>
         /// <param name="fullPath">Path to server directory</param>
         /// <param name="serverProperties">Properties loaded from server.properties file</param>
-        public Server(Process serverInstance, string name, string fullPath, Dictionary<string, string> serverProperties)
+        internal Server(Process serverInstance, string name, string fullPath, Dictionary<string, string> serverProperties)
         {
             ServerInstance = serverInstance;
             Name = name;
