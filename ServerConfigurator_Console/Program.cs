@@ -14,11 +14,10 @@ namespace ServerConfigurator
 
         static void Main(string[] args)
         {
-            BeginConfig();
-            Menu();
             try
             {
-
+                BeginConfig();
+                Menu();
             }
             catch (Exception e)
             {
