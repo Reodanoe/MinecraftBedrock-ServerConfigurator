@@ -27,6 +27,11 @@ namespace BedrockServerConfigurator
         public int ID => int.Parse(Name.Split("_")[^1]);
 
         /// <summary>
+        /// Logs all messages from Server
+        /// </summary>
+        public event EventHandler<string> Log;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="serverInstance">Process that links to bedrock_server file</param>
@@ -68,7 +73,7 @@ namespace BedrockServerConfigurator
                     }
                 });
 
-                Console.WriteLine("Started " + Name);
+                CallLog("Started " + Name);
             }
         }
 
@@ -83,11 +88,11 @@ namespace BedrockServerConfigurator
                 Running = false;
                 ServerInstance.WaitForExit();
 
-                Console.WriteLine("Stopped " + Name);
+                CallLog("Stopped " + Name);
             }
             else
             {
-                Console.WriteLine($"Stopping {Name} didn't happen because it wasn't running. " +
+                CallLog($"Stopping {Name} didn't happen because it wasn't running. " +
                                    "(You will see this message when you are exiting the program.)");
             }
         }
@@ -114,7 +119,7 @@ namespace BedrockServerConfigurator
             //      keeping track of joined players in this class
             // [2020-03-13 11:57:28 INFO] Player connected: playerName, xuid: number
 
-            Console.WriteLine($"{Name} - {message}");
+            CallLog($"{Name} - {message}");
         }
 
         /// <summary>
@@ -129,7 +134,7 @@ namespace BedrockServerConfigurator
             }
             else
             {
-                Console.WriteLine($"Can't run command \"{command}\" because server \"{Name}\" isn't running.");
+                CallLog($"Can't run command \"{command}\" because server \"{Name}\" isn't running.");
             }
         }
 
@@ -140,6 +145,11 @@ namespace BedrockServerConfigurator
         public override string ToString()
         {
             return $"{ID} - {Name} - {ServerProperties["server-name"]} - {ServerProperties["server-port"]}";
+        }
+
+        private void CallLog(string message)
+        {
+            Log?.Invoke(null, message);
         }
     }
 }

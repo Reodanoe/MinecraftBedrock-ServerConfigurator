@@ -13,6 +13,7 @@ namespace BedrockServerConfigurator
     {
         // TODO
         // implement world backups
+        // maybe rewrite FixServerProperties into Linq
 
         /// <summary>
         /// Folder where all servers reside
@@ -46,6 +47,11 @@ namespace BedrockServerConfigurator
         private Regex urlRegex;
 
         /// <summary>
+        /// Logs all messages from Configurator
+        /// </summary>
+        public event EventHandler<string> Log;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="serversRootPath">Path to a folder where all servers will reside. If it doesn't exist it will create it.</param>
@@ -53,11 +59,6 @@ namespace BedrockServerConfigurator
         public Configurator(string serversRootPath, string serverName)
         {
             AppDomain.CurrentDomain.ProcessExit += (a, b) => StopAllServers();
-            Console.CancelKeyPress += (a, b) =>
-            {
-                StopAllServers();
-                Environment.Exit(0);
-            };
 
             ServersRootPath = serversRootPath;
             ServerName = serverName;
@@ -84,16 +85,16 @@ namespace BedrockServerConfigurator
 
             using var client = new WebClient();
 
-            Console.WriteLine("Download started...");
+            CallLog("Download started...");
             client.DownloadFile(GetUrl(client), zipFilePath);
 
-            Console.WriteLine("Unzipping...");
+            CallLog("Unzipping...");
             ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
 
-            Console.WriteLine("Deleting zip file...");
+            CallLog("Deleting zip file...");
             File.Delete(zipFilePath);
 
-            Console.WriteLine("Download finished");
+            CallLog("Download finished");
         }
 
         /// <summary>
@@ -101,12 +102,12 @@ namespace BedrockServerConfigurator
         /// </summary>
         public void NewServer()
         {
-            Console.WriteLine("Creating new server");
+            CallLog("Creating new server");
 
             var newServerPath = Path.Combine(ServersRootPath, ServerName + NewServerID());
 
-            Console.WriteLine("Original = " + OriginalServerFolderPath);
-            Console.WriteLine("New = " + newServerPath);
+            CallLog("Original = " + OriginalServerFolderPath);
+            CallLog("New = " + newServerPath);
 
             var copyFolder = Utilities.RunACommand(
                              windows: $"xcopy /E /I \"{OriginalServerFolderPath}\" \"{newServerPath}\"",
@@ -116,7 +117,7 @@ namespace BedrockServerConfigurator
 
             _ = copyFolder.StandardOutput.ReadToEnd();
 
-            Console.WriteLine("Folder copied");
+            CallLog("Folder copied");
         }
 
         /// <summary>
@@ -135,10 +136,11 @@ namespace BedrockServerConfigurator
                 var properties = GenerateProperties(File.ReadAllText(Path.Combine(serverFolder, "server.properties")));
 
                 var server = new Server(instance, name, serverFolder, properties);
+                server.Log += (a, b) => CallLog(b);
 
                 AllServers.Add(server.ID, server);
 
-                Console.WriteLine($"Loaded {name}");
+                CallLog($"Loaded {name}");
             }
 
             FixServerProperties();
@@ -157,7 +159,7 @@ namespace BedrockServerConfigurator
             }
             else
             {
-                Console.WriteLine($"Couldn't run command \"{command}\" because server with the ID \"{serverID}\" doesn't exist.");
+                CallLog($"Couldn't run command \"{command}\" because server with the ID \"{serverID}\" doesn't exist.");
             }
         }
 
@@ -294,6 +296,11 @@ namespace BedrockServerConfigurator
 
                 server.UpdateProperties();
             }
+        }
+
+        private void CallLog(string message)
+        {
+            Log?.Invoke(null, message);
         }
     }
 }

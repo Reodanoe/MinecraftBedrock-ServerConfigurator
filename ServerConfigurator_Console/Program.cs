@@ -14,6 +14,12 @@ namespace ServerConfigurator
 
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += (a, b) =>
+            {
+                config.StopAllServers();
+                Environment.Exit(0);
+            };
+
             try
             {
                 BeginConfig();
@@ -35,6 +41,13 @@ namespace ServerConfigurator
             config = new Configurator(
                 Path.Combine(defaultPath, "bedrockServers"),
                 "bedServer");
+
+            config.Log += Log;
+        }
+
+        private static void Log(object sender, string message)
+        {
+            Console.WriteLine(message);
         }
 
         private static void Menu()
