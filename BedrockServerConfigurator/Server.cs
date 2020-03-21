@@ -22,9 +22,9 @@ namespace BedrockServerConfigurator
         public string Properties => string.Join(Environment.NewLine, ServerProperties.Select(x => $"{x.Key}={x.Value}"));
 
         /// <summary>
-        /// Server number this server has (located at the end of a folder)
+        /// ID of a server (number at the end of the name of folder where server is located)
         /// </summary>
-        public int Number => int.Parse(Name.Split("_")[^1]);
+        public int ID => int.Parse(Name.Split("_")[^1]);
 
         /// <summary>
         /// 
@@ -43,8 +43,8 @@ namespace BedrockServerConfigurator
 
         /// <summary>
         /// Overwrites server.properties with current version of ServerProperties
-        /// If server is running it's recommended to call RestartServer
-        /// Call this everytime ServerProperties are updated so it will be saved
+        /// If server is running it's recommended to call RestartServer.
+        /// Call this everytime ServerProperties are updated so it will be saved.
         /// </summary>
         public void UpdateProperties()
         {
@@ -134,12 +134,12 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// Number - Name - ServerProperties["server-name"] - ServerProperties["server-port"]
+        /// ID - Name - ["server-name"] - ["server-port"]
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{Number} - {Name} - {ServerProperties["server-name"]} - {ServerProperties["server-port"]}";
+            return $"{ID} - {Name} - {ServerProperties["server-name"]} - {ServerProperties["server-port"]}";
         }
     }
 }

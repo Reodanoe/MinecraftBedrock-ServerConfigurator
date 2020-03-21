@@ -30,15 +30,20 @@ namespace BedrockServerConfigurator
         public string OriginalServerFolderPath => Path.Combine(ServersRootPath, ServerName);
 
         /// <summary>
-        /// Holds all servers(except template one) that are in ServersRootPath directory
+        /// Holds all servers (except template one) that are in ServersRootPath directory
         /// string is the name of the server
         /// </summary>
-        public Dictionary<string, Server> AllServers { get; } = new Dictionary<string, Server>();
+        public Dictionary<int, Server> AllServers { get; } = new Dictionary<int, Server>();
 
         /// <summary>
         /// Gets all servers from AllSevers dictionary
         /// </summary>
         public List<Server> AllServersList => AllServers.Values.ToList();
+
+        /// <summary>
+        /// Saves the regex for getting a download url for minecraft bedrock server
+        /// </summary>
+        private Regex urlRegex;
 
         /// <summary>
         /// 
@@ -70,7 +75,7 @@ namespace BedrockServerConfigurator
         /// </summary>
         public void DownloadBedrockServer()
         {
-            if(Directory.GetFiles(OriginalServerFolderPath).Any())
+            if (Directory.GetFiles(OriginalServerFolderPath).Any())
             {
                 throw new Exception($"Template server already exists, delete folder \"{ServerName}\" in \"{ServersRootPath}\".");
             }
@@ -98,7 +103,7 @@ namespace BedrockServerConfigurator
         {
             Console.WriteLine("Creating new server");
 
-            var newServerPath = Path.Combine(ServersRootPath, ServerName + NewServerNumber());
+            var newServerPath = Path.Combine(ServersRootPath, ServerName + NewServerID());
 
             Console.WriteLine("Original = " + OriginalServerFolderPath);
             Console.WriteLine("New = " + newServerPath);
@@ -129,7 +134,11 @@ namespace BedrockServerConfigurator
 
                 var properties = GenerateProperties(File.ReadAllText(Path.Combine(serverFolder, "server.properties")));
 
-                AllServers.Add(name, new Server(instance, name, serverFolder, properties));
+                var server = new Server(instance, name, serverFolder, properties);
+
+                AllServers.Add(server.ID, server);
+
+                Console.WriteLine($"Loaded {name}");
             }
 
             FixServerProperties();
@@ -138,17 +147,17 @@ namespace BedrockServerConfigurator
         /// <summary>
         /// Runs a command on specified server
         /// </summary>
-        /// <param name="serverName"></param>
+        /// <param name="serverID"></param>
         /// <param name="command"></param>
-        public void RunCommandOnSpecifiedServer(string serverName, string command)
+        public void RunCommandOnSpecifiedServer(int serverID, string command)
         {
-            if (AllServers.TryGetValue(serverName, out Server server))
+            if (AllServers.TryGetValue(serverID, out Server server))
             {
                 server.RunACommand(command);
             }
             else
             {
-                Console.WriteLine($"Couldn't run command \"{command}\" because server \"{serverName}\" doesn't exist.");
+                Console.WriteLine($"Couldn't run command \"{command}\" because server with the ID \"{serverID}\" doesn't exist.");
             }
         }
 
@@ -198,40 +207,19 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// File server.properties but converted to dictionary
+        /// File server.properties but cleaned and converted to dictionary
         /// </summary>
         /// <param name="propertiesString"></param>
         /// <returns></returns>
-        public static Dictionary<string, string> GenerateProperties(string propertiesString)
+        private Dictionary<string, string> GenerateProperties(string propertiesString)
         {
-            var lines = propertiesString.Split("\n");
-
-            var properties = new Dictionary<string, string>();
-
-            foreach (var currentLine in lines)
-            {
-                if (currentLine.StartsWith("#") || currentLine.Length < 3)
-                {
-                    continue;
-                }
-
-                var propertyValue = currentLine.Split("=");
-
-                string property = propertyValue[0];
-                string value = "";
-
-                if (propertyValue.Length > 1)
-                {
-                    value = propertyValue[1];
-                }
-
-                properties.Add(property, value.Trim());
-            }
-
-            return properties;
+            return propertiesString
+                   .Split("\n")
+                   .Select(a => a.Trim())
+                   .Where(b => !b.StartsWith("#") && b.Length > 0)
+                   .Select(c => c.Split("="))
+                   .ToDictionary(d => d[0], d => d[1]);
         }
-
-        private Regex urlRegex;
 
         /// <summary>
         /// Gets url to download minecraft server
@@ -239,7 +227,7 @@ namespace BedrockServerConfigurator
         /// <returns></returns>
         private string GetUrl(WebClient client)
         {
-            if(urlRegex == null)
+            if (urlRegex == null)
             {
                 var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" : "linux";
                 var pattern = $"https://minecraft.azureedge.net/bin-{os}/bedrock-server-[0-9.]*.zip";
@@ -252,10 +240,10 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// Returns new highest number from all created servers
+        /// Returns new highest ID from all created servers
         /// </summary>
         /// <returns></returns>
-        private string NewServerNumber()
+        private string NewServerID()
         {
             var nums = AllServerDirectories().Select(name => int.Parse(name.Split("_")[^1]));
 
@@ -265,7 +253,7 @@ namespace BedrockServerConfigurator
             }
             else
             {
-                return "_0";
+                return "_1";
             }
         }
 
@@ -283,11 +271,11 @@ namespace BedrockServerConfigurator
                          x.Name != y.Name)))
                 .ToList();
 
-            // removes first server (0) from servers with same ports
-            serversWithSamePorts.RemoveAll(x => x.Number == 0);
+            // removes first server (ID 1) from servers with same ports
+            serversWithSamePorts.RemoveAll(x => x.ID == 1);
 
             // gets all servers except those who have same ports
-            var alrightServers = AllServers.Values.Except(serversWithSamePorts).ToList();
+            var alrightServers = AllServersList.Except(serversWithSamePorts);
 
             // adds to list with alright servers new server that have changed ports
             foreach (var server in serversWithSamePorts)
@@ -295,11 +283,11 @@ namespace BedrockServerConfigurator
                 server.ServerProperties["server-port"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-port"]) + 2}";
                 server.ServerProperties["server-portv6"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-portv6"]) + 2}";
 
-                alrightServers.Add(server);
+                alrightServers.Append(server);
             }
 
             // final changes and updating properties
-            foreach (var server in AllServers.Values)
+            foreach (var server in AllServersList)
             {
                 server.ServerProperties["max-threads"] = "2";
                 server.ServerProperties["view-distance"] = "24";

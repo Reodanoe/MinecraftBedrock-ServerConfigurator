@@ -14,10 +14,11 @@ namespace ServerConfigurator
 
         static void Main(string[] args)
         {
+            BeginConfig();
+            Menu();
             try
             {
-                BeginConfig();
-                Menu();
+
             }
             catch (Exception e)
             {
@@ -31,7 +32,7 @@ namespace ServerConfigurator
         private static void BeginConfig()
         {
             string defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            
+
             config = new Configurator(
                 Path.Combine(defaultPath, "bedrockServers"),
                 "bedServer");
@@ -106,7 +107,7 @@ namespace ServerConfigurator
             {
                 string quitKeyword = "quit";
 
-                Console.WriteLine($"To quit the program type \"{quitKeyword}\". Or for now type a command.");
+                Console.WriteLine($"To quit the program type \"{quitKeyword}\". Or run a command on a server using \"[server ID] - [command]\".");
 
                 var input = Console.ReadLine();
 
@@ -123,7 +124,25 @@ namespace ServerConfigurator
                             config.RestartAllServers();
                             break;
                         default:
-                            config.AllServersAction(y => y.RunACommand(input));
+                            var serverCommand = input.Split("-");
+
+                            if (serverCommand.Length == 2)
+                            {
+                                var server = serverCommand[0].Trim();
+
+                                if (int.TryParse(server, out int serverNumber))
+                                {
+                                    config.RunCommandOnSpecifiedServer(serverNumber, serverCommand[1].Trim());
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"{server} is not a number");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid input.");
+                            }
                             break;
                     }
                 }
