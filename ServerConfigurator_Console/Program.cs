@@ -8,7 +8,7 @@ namespace ServerConfigurator
     class Program
     {
         // TODO
-        // choose on which server you want the command to run
+        //
 
         private static Configurator config;
 
