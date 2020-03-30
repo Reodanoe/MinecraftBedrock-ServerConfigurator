@@ -47,9 +47,9 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// Overwrites server.properties with current version of ServerProperties
+        /// Overwrites server.properties with current version of ServerProperties.
         /// If server is running it's recommended to call RestartServer.
-        /// Call this everytime ServerProperties are updated so it will be saved.
+        /// Call this everytime ServerProperties are updated so they will be saved.
         /// </summary>
         public void UpdateProperties()
         {

@@ -125,6 +125,12 @@ namespace BedrockServerConfigurator
         /// </summary>
         public void LoadServers()
         {
+            // if new server gets created while this is running
+            // it will have to get loaded too which would break this
+            // it should check which server isnt loaded
+            // by looking at the folder name and checking if it isnt in AllServers
+            // and the new server has t get properties fixed too
+
             foreach (var name in AllServerDirectories())
             {
                 var serverFolder = Path.Combine(ServersRootPath, name);
