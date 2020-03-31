@@ -121,17 +121,11 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// Instantiates and adds all servers to AllServers
+        /// Instantiates and adds all unloaded servers to AllServers
         /// </summary>
         public void LoadServers()
         {
-            // if new server gets created while this is running
-            // it will have to get loaded too which would break this
-            // it should check which server isnt loaded
-            // by looking at the folder name and checking if it isnt in AllServers
-            // and the new server has t get properties fixed too
-
-            foreach (var name in AllServerDirectories())
+            foreach (var name in AllServerDirectories().Except(AllServers.Select(x => x.Value.Name)))
             {
                 var serverFolder = Path.Combine(ServersRootPath, name);
 
@@ -209,9 +203,10 @@ namespace BedrockServerConfigurator
         public string[] AllServerDirectories()
         {
             return Directory
-                .GetDirectories(ServersRootPath)
-                .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
-                .Where(y => y.Contains("_")).ToArray();
+                   .GetDirectories(ServersRootPath)
+                   .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
+                   .Where(y => y.Contains("_"))
+                   .ToArray();
         }
 
         /// <summary>
@@ -255,14 +250,7 @@ namespace BedrockServerConfigurator
         {
             var nums = AllServerDirectories().Select(name => int.Parse(name.Split("_")[^1]));
 
-            if (nums.Any())
-            {
-                return $"_{nums.Max() + 1}";
-            }
-            else
-            {
-                return "_1";
-            }
+            return nums.Any() ? $"_{nums.Max() + 1}" : "_1";
         }
 
         /// <summary>

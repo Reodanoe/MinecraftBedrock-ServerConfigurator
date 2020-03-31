@@ -135,6 +135,18 @@ namespace ServerConfigurator
                         case "restart":
                             config.RestartAllServers();
                             break;
+                        case "new":
+                            config.NewServer();
+                            break;
+                        case "load":
+                            config.LoadServers();
+                            break;
+                        case "list":
+                            config.AllServersAction(x => Console.WriteLine(x.ToString()));
+                            break;
+                        case "start":
+                            config.StartAllServers();
+                            break;
                         default:
                             var serverCommand = input.Split("-");
 
