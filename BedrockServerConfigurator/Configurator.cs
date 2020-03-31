@@ -271,7 +271,7 @@ namespace BedrockServerConfigurator
             serversWithSamePorts.RemoveAll(x => x.ID == 1);
 
             // gets all servers except those who have same ports
-            var alrightServers = AllServersList.Except(serversWithSamePorts);
+            var alrightServers = AllServers.Values.Except(serversWithSamePorts).ToList();
 
             // adds to list with alright servers new server that have changed ports
             foreach (var server in serversWithSamePorts)
@@ -279,14 +279,15 @@ namespace BedrockServerConfigurator
                 server.ServerProperties["server-port"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-port"]) + 2}";
                 server.ServerProperties["server-portv6"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-portv6"]) + 2}";
 
-                alrightServers.Append(server);
+                alrightServers.Add(server);
             }
 
             // final changes and updating properties
             foreach (var server in AllServersList)
             {
                 server.ServerProperties["max-threads"] = "2";
-                server.ServerProperties["view-distance"] = "24";
+                server.ServerProperties["view-distance"] = "32";
+                server.ServerProperties["allow-cheats"] = "true";
 
                 server.UpdateProperties();
             }
