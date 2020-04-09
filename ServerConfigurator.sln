@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerConfigurator_Console", "ServerConfigurator_Console\ServerConfigurator_Console.csproj", "{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BedrockServerConfigurator", "BedrockServerConfigurator\BedrockServerConfigurator.csproj", "{C86DD237-3D1B-4A06-BE48-20E7220947FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator", "BedrockServerConfigurator\BedrockServerConfigurator.csproj", "{C86DD237-3D1B-4A06-BE48-20E7220947FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerConfigurator_WebUI", "ServerConfigurator_WebUI\ServerConfigurator_WebUI.csproj", "{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
