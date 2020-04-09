@@ -1,8 +1,6 @@
 ﻿@using BedrockServerConfigurator
 
-
 <h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties["server-port"]</h4>
-
 
 <div class="btn-group">
     <button @onclick="@MinecraftServer.StartServer"
@@ -18,32 +16,64 @@
     </button>
 </div>
 
-<div class="card-body">
-    @foreach (var message in messages.TakeLast(5))
+<input @bind="@command"
+       @onkeypress="(x) => {
+                        if(KeyPressed(x))
+                        {
+                            command = null;
+                        }
+                    }"
+       @oninput="Input"
+       class="form-control"/>
+
+<div class="card-body pre-scrollable h-25 card-text">
+    @foreach (var message in messages)
     {
-        <p class="card-text">@message</p>
+        <p>@message</p>
     }
 </div>
 
 @code {
+    // refreshing page gets rid of messages
+
     [Parameter]
     public Server MinecraftServer { get; set; }
-    List<string> messages;
+
+    List<string> messages = new List<string>();
+
     bool alreadySet = false;
 
-    // refreshing page gets rid of messages
+    string command;
 
     protected override void OnParametersSet()
     {
         if (!alreadySet)
         {
-            messages = new List<string>();
             MinecraftServer.Log += (a, b) =>
             {
-                messages.Add(b);
+                messages = messages.Prepend(b).ToList();
+
                 this.InvokeAsync(this.StateHasChanged);
             };
         }
+
         alreadySet = true;
+    }
+
+    void Input(ChangeEventArgs changeEventArgs)
+    {
+        command = (string)changeEventArgs.Value;
+    }
+
+    bool KeyPressed(KeyboardEventArgs keyboard)
+    {
+        if (keyboard.Key == "Enter")
+        {
+            MinecraftServer.RunACommand(command);
+
+            return true;
+        }
+
+        return false;
     }
 }

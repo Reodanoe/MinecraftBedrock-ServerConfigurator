@@ -52,6 +52,11 @@ namespace BedrockServerConfigurator
         public event EventHandler<string> Log;
 
         /// <summary>
+        /// Returns true if folder with template server (downloaded server) has any files
+        /// </summary>
+        public bool TemplateServerExists => Directory.GetFiles(OriginalServerFolderPath).Any();
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="serversRootPath">Path to a folder where all servers will reside. If it doesn't exist it will create it.</param>
@@ -69,14 +74,14 @@ namespace BedrockServerConfigurator
             {
                 throw new Exception("Dont use _ in serverName");
             }
-        }
+        }        
 
         /// <summary>
         /// Downloads server that will be used as a template for creating new servers
         /// </summary>
         public void DownloadBedrockServer()
         {
-            if (Directory.GetFiles(OriginalServerFolderPath).Any())
+            if (TemplateServerExists)
             {
                 throw new Exception($"Template server already exists, delete folder \"{ServerName}\" in \"{ServersRootPath}\".");
             }

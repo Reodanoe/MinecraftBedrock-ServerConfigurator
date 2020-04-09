@@ -43,7 +43,7 @@ namespace BedrockServerConfigurator
             ServerInstance = serverInstance;
             Name = name;
             FullPath = fullPath;
-            ServerProperties = serverProperties;
+            ServerProperties = serverProperties;            
         }
 
         /// <summary>
