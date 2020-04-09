@@ -8,4 +8,8 @@
     <ProjectReference Include="..\BedrockServerConfigurator\BedrockServerConfigurator.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>

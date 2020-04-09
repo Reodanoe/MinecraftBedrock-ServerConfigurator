@@ -1,0 +1,49 @@
+﻿@using BedrockServerConfigurator
+
+
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties["server-port"]</h4>
+
+
+<div class="btn-group">
+    <button @onclick="@MinecraftServer.StartServer"
+            disabled="@(MinecraftServer.Running)"
+            class="btn @(MinecraftServer.Running ? "" : "btn-primary")">
+        Start server
+    </button>
+
+    <button @onclick="@MinecraftServer.StopServer"
+            disabled="@(!MinecraftServer.Running)"
+            class="btn @(!MinecraftServer.Running ? "" : "btn-primary")">
+        Stop server
+    </button>
+</div>
+
+<div class="card-body">
+    @foreach (var message in messages.TakeLast(5))
+    {
+        <p class="card-text">@message</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+    List<string> messages;
+    bool alreadySet = false;
+
+    // refreshing page gets rid of messages
+
+    protected override void OnParametersSet()
+    {
+        if (!alreadySet)
+        {
+            messages = new List<string>();
+            MinecraftServer.Log += (a, b) =>
+            {
+                messages.Add(b);
+                this.InvokeAsync(this.StateHasChanged);
+            };
+        }
+        alreadySet = true;
+    }
+}
