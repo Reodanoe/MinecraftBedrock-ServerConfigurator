@@ -1,0 +1,90 @@
+﻿@page "/"
+
+<h2>Configuration Controller</h2>
+
+@using BedrockServerConfigurator
+@inject Configurator config
+
+<div class="text-center">
+    <button @onclick="LoadServers"
+            class="btn btn-success"
+            disabled="@(!config.AllServerDirectories().Any())">
+        Load all servers
+    </button>
+
+    <button @onclick="Kill"
+            class="btn btn-danger">
+        Kill all servers
+    </button>
+
+    <button @onclick="New"
+            class="btn btn-outline-secondary"
+            disabled="@(!config.TemplateServerExists || creatingNewServer)">
+        New server
+    </button>
+
+    <button @onclick="Download"
+            class="btn @(config.TemplateServerExists || newDownloadStarted ? "btn-outline-secondary" : "btn-success")"
+            disabled="@(config.TemplateServerExists || newDownloadStarted)">
+        Download template server
+    </button>
+</div>
+
+<div class="row">
+    <h3 class="col-md-12">Available servers</h3>
+    @foreach (var server in config.AllServerDirectories())
+    {
+        <div class="col-md-2">
+            @server
+        </div>
+    }
+</div>
+
+<div class="row">
+    <h3 class="col-md-12">Loaded servers</h3>
+    @foreach (var server in config.AllServers)
+    {
+        <div class="col-md-4 card">
+            <ServerController MinecraftServer="server.Value"/>
+        </div>
+    }
+</div>
+
+@code {
+    bool newDownloadStarted = false;
+    bool creatingNewServer = false;
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private void LoadServers()
+    {
+        config.LoadServers();
+    }
+
+    private void Kill()
+    {
+        Utilities.RunACommand("taskkill /f /fi \"imagename eq bedrock_server.exe\"", "killall bedrock_server").Start();
+    }
+
+    async void Download()
+    {
+        newDownloadStarted = true;
+
+        await Task.Run(config.DownloadBedrockServer);
+
+        this.StateHasChanged();
+    }
+
+    async void New()
+    {
+        creatingNewServer = true;
+
+        await Task.Run(config.NewServer);
+
+        creatingNewServer = false;
+        this.StateHasChanged();
+    }
+}

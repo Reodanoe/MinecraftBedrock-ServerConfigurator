@@ -1,0 +1,81 @@
+﻿@using BedrockServerConfigurator
+
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties["server-port"]</h4>
+
+<div class="btn-group">
+    <button @onclick="@MinecraftServer.StartServer"
+            disabled="@(MinecraftServer.Running)"
+            class="btn @(MinecraftServer.Running ? "" : "btn-primary")">
+        Start server
+    </button>
+
+    <button @onclick="@MinecraftServer.StopServer"
+            disabled="@(!MinecraftServer.Running)"
+            class="btn @(!MinecraftServer.Running ? "" : "btn-primary")">
+        Stop server
+    </button>
+</div>
+
+<input @bind="@command"
+       @onkeypress="(enter) => {
+                        if(KeyPressed(enter))
+                        {
+                            command = null;
+                        }
+                    }"
+       @oninput="Input"
+       type="text"
+       placeholder="Enter a command"
+       class="form-control"/>
+
+<div class="card-body pre-scrollable h-25 card-text">
+    @foreach (var message in messages)
+    {
+        <p>@message</p>
+    }
+</div>
+
+@code {
+    // refreshing page gets rid of messages
+
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+
+    List<string> messages = new List<string>();
+
+    bool alreadySet = false;
+
+    string command;
+
+    protected override void OnParametersSet()
+    {
+        if (!alreadySet)
+        {
+            MinecraftServer.Log += (a, b) =>
+            {
+                messages = messages.Prepend(b).ToList();
+
+                this.InvokeAsync(this.StateHasChanged);
+            };
+        }
+
+        alreadySet = true;
+    }
+
+    void Input(ChangeEventArgs changeEventArgs)
+    {
+        command = (string)changeEventArgs.Value;
+    }
+
+    bool KeyPressed(KeyboardEventArgs keyboard)
+    {
+        if (keyboard.Key == "Enter")
+        {
+            MinecraftServer.RunACommand(command);
+
+            return true;
+        }
+
+        return false;
+    }
+}
