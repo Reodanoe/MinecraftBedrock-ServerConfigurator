@@ -54,7 +54,7 @@ namespace BedrockServerConfigurator
         /// <summary>
         /// Returns true if folder with template server (downloaded server) has any files
         /// </summary>
-        public bool TemplateServerExists => Directory.GetFiles(OriginalServerFolderPath).Any();
+        public bool TemplateServerExists => Directory.Exists(OriginalServerFolderPath);
 
         /// <summary>
         /// 
@@ -68,7 +68,7 @@ namespace BedrockServerConfigurator
             ServersRootPath = serversRootPath;
             ServerName = serverName;
 
-            Directory.CreateDirectory(OriginalServerFolderPath);
+            Directory.CreateDirectory(serversRootPath);            
 
             if (serverName.Contains("_"))
             {
@@ -85,6 +85,8 @@ namespace BedrockServerConfigurator
             {
                 throw new Exception($"Template server already exists, delete folder \"{ServerName}\" in \"{ServersRootPath}\".");
             }
+
+            Directory.CreateDirectory(OriginalServerFolderPath);
 
             string zipFilePath = Path.Combine(OriginalServerFolderPath, ServerName + ".zip");
 

@@ -18,13 +18,14 @@
     </button>
 
     <button @onclick="New"
-            class="btn btn-outline-secondary">
+            class="btn btn-outline-secondary"
+            disabled="@(!config.TemplateServerExists || creatingNewServer)">
         New server
     </button>
 
     <button @onclick="Download"
-            class="btn @(@config.TemplateServerExists ? "btn-outline-secondary" : "btn-success")"
-            disabled="@config.TemplateServerExists">
+            class="btn @(config.TemplateServerExists || newDownloadStarted ? "btn-outline-secondary" : "btn-success")"
+            disabled="@(config.TemplateServerExists || newDownloadStarted)">
         Download template server
     </button>
 </div>
@@ -52,6 +53,15 @@
 @code {
     // notify when server downloaded/created
 
+    bool newDownloadStarted = false;
+    bool creatingNewServer = false;
+
+
+    protected override void OnInitialized()
+    {
+
+    }
+
     private void LoadServers()
     {
         config.LoadServers();
@@ -62,15 +72,20 @@
         Utilities.RunACommand("taskkill /f /fi \"imagename eq bedrock_server.exe\"", "killall bedrock_server").Start();
     }
 
-    private void New()
+    async void Download()
     {
-        config.NewServer();
+        newDownloadStarted = true;
 
-        // show that new server created
+        await Task.Run(config.DownloadBedrockServer);
     }
 
-    private void Download()
+    async void New()
     {
-        config.DownloadBedrockServer();
+        creatingNewServer = true;
+
+        await Task.Run(config.NewServer);
+
+        creatingNewServer = false;
+        this.StateHasChanged();
     }
 }
