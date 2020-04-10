@@ -51,6 +51,12 @@
 </div>
 
 @code {
+    // features
+    // add how much memory and cpu servers use
+    // change properties on ui
+    // add properties file already
+    // make server use it
+
     bool newDownloadStarted = false;
     bool creatingNewServer = false;
 
@@ -61,10 +67,14 @@
 
     private void Kill()
     {
+        config.StopAllServers();
+
+        this.StateHasChanged();
+
         Utilities.RunACommand("taskkill /f /fi \"imagename eq bedrock_server.exe\"", "killall bedrock_server").Start();
     }
 
-    async void Download()
+    private async void Download()
     {
         newDownloadStarted = true;
 
@@ -73,7 +83,7 @@
         this.StateHasChanged();
     }
 
-    async void New()
+    private async void New()
     {
         creatingNewServer = true;
 
