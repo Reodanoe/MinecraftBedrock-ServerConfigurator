@@ -54,11 +54,6 @@
     bool newDownloadStarted = false;
     bool creatingNewServer = false;
 
-    protected override void OnInitialized()
-    {
-
-    }
-
     private void LoadServers()
     {
         config.LoadServers();
@@ -85,6 +80,7 @@
         await Task.Run(config.NewServer);
 
         creatingNewServer = false;
+
         this.StateHasChanged();
     }
 }
