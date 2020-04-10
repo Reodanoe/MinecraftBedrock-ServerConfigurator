@@ -56,7 +56,7 @@ namespace ServerConfigurator_WebUI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

@@ -17,13 +17,15 @@
 </div>
 
 <input @bind="@command"
-       @onkeypress="(x) => {
-                        if(KeyPressed(x))
+       @onkeypress="(enter) => {
+                        if(KeyPressed(enter))
                         {
                             command = null;
                         }
                     }"
        @oninput="Input"
+       type="text"
+       placeholder="Enter a command"
        class="form-control"/>
 
 <div class="card-body pre-scrollable h-25 card-text">

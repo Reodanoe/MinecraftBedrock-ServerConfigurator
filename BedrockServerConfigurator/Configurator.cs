@@ -11,10 +11,6 @@ namespace BedrockServerConfigurator
 {
     public class Configurator
     {
-        // TODO
-        // implement world backups
-        // maybe rewrite FixServerProperties into Linq
-
         /// <summary>
         /// Folder where all servers reside
         /// </summary>
