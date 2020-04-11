@@ -5,7 +5,7 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BedrockServerConfigurator
+namespace BedrockServerConfigurator.Library
 {
     public class Server
     {

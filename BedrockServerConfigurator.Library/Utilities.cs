@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace BedrockServerConfigurator
+namespace BedrockServerConfigurator.Library
 {
     public static class Utilities
     {
