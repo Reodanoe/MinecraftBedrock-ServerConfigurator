@@ -1,6 +1,6 @@
 ﻿@using BedrockServerConfigurator.Library
 
-<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort</h4>
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort = Version @MinecraftServer.Version</h4>
 
 <div class="btn-group">
     <button @onclick="@MinecraftServer.StartServer"

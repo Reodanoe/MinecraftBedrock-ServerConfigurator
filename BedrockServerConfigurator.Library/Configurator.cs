@@ -89,13 +89,16 @@ namespace BedrockServerConfigurator.Library
             using var client = new WebClient();
 
             CallLog("Download started...");
-            client.DownloadFile(GetUrl(client), zipFilePath);
+            (string url, string version) = GetUrlAndVersion(client);
+            client.DownloadFile(url, zipFilePath);
 
             CallLog("Unzipping...");
             ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
 
             CallLog("Deleting zip file...");
             File.Delete(zipFilePath);
+
+            File.WriteAllText(Path.Combine(OriginalServerFolderPath, "version.txt"), version);
 
             CallLog("Download finished");
         }
@@ -146,7 +149,7 @@ namespace BedrockServerConfigurator.Library
                 CallLog($"Loaded {name}");
             }
 
-            FixServerProperties();
+            FixServerPorts();
         }
 
         /// <summary>
@@ -216,7 +219,7 @@ namespace BedrockServerConfigurator.Library
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
-        private string GetUrl(WebClient client)
+        private (string url, string version) GetUrlAndVersion(WebClient client)
         {
             if (urlRegex == null)
             {
@@ -227,7 +230,11 @@ namespace BedrockServerConfigurator.Library
             }
 
             string text = client.DownloadString("https://www.minecraft.net/en-us/download/server/bedrock/");
-            return urlRegex.Match(text).Value;
+
+            var url = urlRegex.Match(text).Value;
+            var version = url.Split("-").OrderByDescending(x => x.Count(y => y == '.')).First()[..^4];
+
+            return (url, version);
         }
 
         /// <summary>
@@ -242,9 +249,9 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Mainly fixes ports of new servers
+        /// Updates ports to servers so each server has own port
         /// </summary>
-        private void FixServerProperties()
+        private void FixServerPorts()
         {
             // gets all servers that have the same ports
             var serversWithSamePorts = AllServers.Values
@@ -268,14 +275,6 @@ namespace BedrockServerConfigurator.Library
                 server.ServerProperties.ServerPortv6 = alrightServers.Last().ServerProperties.ServerPortv6 + 2;
 
                 alrightServers.Add(server);
-            }
-
-            // final changes and updating properties
-            foreach (var server in AllServersList)
-            {
-                server.ServerProperties.MaxThreads = 2;
-                server.ServerProperties.ViewDistance = 32;
-                server.ServerProperties.AllowCheats = true;
 
                 server.UpdateProperties();
             }

@@ -22,6 +22,11 @@ namespace BedrockServerConfigurator.Library
         public int ID => int.Parse(Name.Split("_")[^1]);
 
         /// <summary>
+        /// Gets version of minecraft server
+        /// </summary>
+        public string Version => File.ReadAllLines(Path.Combine(FullPath, "version.txt"))[0];
+
+        /// <summary>
         /// Logs all messages from Server
         /// </summary>
         public event EventHandler<string> Log;
