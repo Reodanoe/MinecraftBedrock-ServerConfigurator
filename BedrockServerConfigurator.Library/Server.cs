@@ -5,15 +5,16 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BedrockServerConfigurator
+namespace BedrockServerConfigurator.Library
 {
     public class Server
     {
         public Process ServerInstance { get; }
         public string Name { get; }
         public string FullPath { get; }
-        public bool Running { get; private set; } = false;
         public Properties ServerProperties { get; }
+
+        public bool Running { get; private set; } = false;        
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)

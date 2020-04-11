@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using BedrockServerConfigurator;
+using BedrockServerConfigurator.Library;
 
-namespace ServerConfigurator
+namespace BedrockServerConfigurator.ConsoleApp
 {
     class Program
     {

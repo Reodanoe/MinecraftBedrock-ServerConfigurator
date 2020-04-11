@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace BedrockServerConfigurator
+namespace BedrockServerConfigurator.Library
 {
     public class Configurator
     {
