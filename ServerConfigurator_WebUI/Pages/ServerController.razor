@@ -1,6 +1,6 @@
 ﻿@using BedrockServerConfigurator
 
-<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties["server-port"]</h4>
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort</h4>
 
 <div class="btn-group">
     <button @onclick="@MinecraftServer.StartServer"
@@ -37,6 +37,7 @@
 
 @code {
     // refreshing page gets rid of messages
+    // when typing a command and new messages are coming in it gets buggy
 
     [Parameter]
     public Server MinecraftServer { get; set; }

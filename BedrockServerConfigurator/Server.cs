@@ -12,14 +12,8 @@ namespace BedrockServerConfigurator
         public Process ServerInstance { get; }
         public string Name { get; }
         public string FullPath { get; }
-        public Dictionary<string, string> ServerProperties { get; }
-
         public bool Running { get; private set; } = false;
-
-        /// <summary>
-        /// Converts ServerProperties into a readable string
-        /// </summary>
-        public string Properties => string.Join(Environment.NewLine, ServerProperties.Select(x => $"{x.Key}={x.Value}"));
+        public Properties ServerProperties { get; }
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)
@@ -38,12 +32,12 @@ namespace BedrockServerConfigurator
         /// <param name="name">Name of server directory</param>
         /// <param name="fullPath">Path to server directory</param>
         /// <param name="serverProperties">Properties loaded from server.properties file</param>
-        internal Server(Process serverInstance, string name, string fullPath, Dictionary<string, string> serverProperties)
+        internal Server(Process serverInstance, string name, string fullPath, Properties serverProperties)
         {
             ServerInstance = serverInstance;
             Name = name;
             FullPath = fullPath;
-            ServerProperties = serverProperties;            
+            ServerProperties = serverProperties;
         }
 
         /// <summary>
@@ -53,7 +47,7 @@ namespace BedrockServerConfigurator
         /// </summary>
         public void UpdateProperties()
         {
-            File.WriteAllText(Path.Combine(FullPath, "server.properties"), Properties);
+            File.WriteAllText(Path.Combine(FullPath, "server.properties"), ServerProperties.ToString());
         }
 
         /// <summary>
@@ -144,7 +138,7 @@ namespace BedrockServerConfigurator
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{ID} - {Name} - {ServerProperties["server-name"]} - {ServerProperties["server-port"]}";
+            return $"{ID} - {Name} - {ServerProperties.ServerName} - {ServerProperties.ServerPort}";
         }
 
         private void CallLog(string message)

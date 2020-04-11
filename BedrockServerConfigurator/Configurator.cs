@@ -64,13 +64,13 @@ namespace BedrockServerConfigurator
             ServersRootPath = serversRootPath;
             ServerName = serverName;
 
-            Directory.CreateDirectory(serversRootPath);            
+            Directory.CreateDirectory(serversRootPath);
 
             if (serverName.Contains("_"))
             {
                 throw new Exception("Dont use _ in serverName");
             }
-        }        
+        }
 
         /// <summary>
         /// Downloads server that will be used as a template for creating new servers
@@ -136,9 +136,9 @@ namespace BedrockServerConfigurator
                                windows: $"cd {serverFolder} && bedrock_server.exe",
                                ubuntu: $"cd {serverFolder} && chmod +x bedrock_server && ./bedrock_server");
 
-                var properties = GenerateProperties(File.ReadAllText(Path.Combine(serverFolder, "server.properties")));
+                var properties = File.ReadAllText(Path.Combine(serverFolder, "server.properties"));
 
-                var server = new Server(instance, name, serverFolder, properties);
+                var server = new Server(instance, name, serverFolder, new Properties(properties));
                 server.Log += (a, b) => CallLog(b);
 
                 AllServers.Add(server.ID, server);
@@ -213,21 +213,6 @@ namespace BedrockServerConfigurator
         }
 
         /// <summary>
-        /// File server.properties but cleaned and converted to dictionary
-        /// </summary>
-        /// <param name="propertiesString"></param>
-        /// <returns></returns>
-        private Dictionary<string, string> GenerateProperties(string propertiesString)
-        {
-            return propertiesString
-                   .Split("\n")
-                   .Select(a => a.Trim())
-                   .Where(b => !b.StartsWith("#") && b.Length > 0)
-                   .Select(c => c.Split("="))
-                   .ToDictionary(d => d[0], d => d[1]);
-        }
-
-        /// <summary>
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
@@ -265,8 +250,8 @@ namespace BedrockServerConfigurator
             var serversWithSamePorts = AllServers.Values
                 .Where(x =>
                 AllServers.Values.Any(
-                    y => ((x.ServerProperties["server-port"] == y.ServerProperties["server-port"] ||
-                         x.ServerProperties["server-portv6"] == y.ServerProperties["server-portv6"]) &&
+                    y => ((x.ServerProperties.ServerPort == y.ServerProperties.ServerPort ||
+                         x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) &&
                          x.Name != y.Name)))
                 .ToList();
 
@@ -279,8 +264,8 @@ namespace BedrockServerConfigurator
             // adds to list with alright servers new server that have changed ports
             foreach (var server in serversWithSamePorts)
             {
-                server.ServerProperties["server-port"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-port"]) + 2}";
-                server.ServerProperties["server-portv6"] = $"{int.Parse(alrightServers.Last().ServerProperties["server-portv6"]) + 2}";
+                server.ServerProperties.ServerPort = alrightServers.Last().ServerProperties.ServerPort + 2;
+                server.ServerProperties.ServerPortv6 = alrightServers.Last().ServerProperties.ServerPortv6 + 2;
 
                 alrightServers.Add(server);
             }
@@ -288,9 +273,9 @@ namespace BedrockServerConfigurator
             // final changes and updating properties
             foreach (var server in AllServersList)
             {
-                server.ServerProperties["max-threads"] = "2";
-                server.ServerProperties["view-distance"] = "32";
-                server.ServerProperties["allow-cheats"] = "true";
+                server.ServerProperties.MaxThreads = 2;
+                server.ServerProperties.ViewDistance = 32;
+                server.ServerProperties.AllowCheats = true;
 
                 server.UpdateProperties();
             }
