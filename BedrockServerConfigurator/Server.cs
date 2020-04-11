@@ -12,8 +12,9 @@ namespace BedrockServerConfigurator
         public Process ServerInstance { get; }
         public string Name { get; }
         public string FullPath { get; }
-        public bool Running { get; private set; } = false;
         public Properties ServerProperties { get; }
+
+        public bool Running { get; private set; } = false;        
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)
