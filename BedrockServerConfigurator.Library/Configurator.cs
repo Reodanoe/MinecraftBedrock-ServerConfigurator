@@ -98,6 +98,7 @@ namespace BedrockServerConfigurator.Library
             CallLog("Deleting zip file...");
             File.Delete(zipFilePath);
 
+            CallLog("Adding version file...");
             File.WriteAllText(Path.Combine(OriginalServerFolderPath, "version.txt"), version);
 
             CallLog("Download finished");

@@ -1,0 +1,34 @@
+﻿@using BedrockServerConfigurator.Library
+
+
+<div class="row">
+    <label for="cheats">Allow cheats</label>
+    <input type="checkbox" @bind="@MinecraftServer.ServerProperties.AllowCheats" id="cheats" class="form-check" />
+</div>
+
+<div class="row">
+    <label for="threads">Max threads</label>
+    <input type="number" @bind="@MinecraftServer.ServerProperties.MaxThreads" id="threads" class="form-control" />
+</div>
+
+<div class="row">
+    <label for="distance">View distance</label>
+    <input type="number" @bind="@MinecraftServer.ServerProperties.ViewDistance" id="distance" class="form-control" />
+</div>
+
+<div class="row">
+    <button @onclick="SaveProperties"
+            class="btn btn-primary">
+        Save properties
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+
+    void SaveProperties()
+    {
+        MinecraftServer.UpdateProperties();
+    }
+}
