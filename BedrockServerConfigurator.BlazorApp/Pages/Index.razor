@@ -19,14 +19,14 @@
 
     <button @onclick="New"
             class="btn btn-outline-secondary"
-            disabled="@(!config.TemplateServerExists || creatingNewServer)">
-        New server
+            disabled="@(!config.TemplateServerExists || creatingNewServer || IsDowloading)">
+        @(NewServerButtonText())
     </button>
 
     <button @onclick="Download"
-            class="btn @(config.TemplateServerExists || newDownloadStarted ? "btn-outline-secondary" : "btn-success")"
+            class="btn @((config.TemplateServerExists || newDownloadStarted) && !serverDownloaded ? "btn-outline-secondary" : "btn-success")"
             disabled="@(config.TemplateServerExists || newDownloadStarted)">
-        Download template server
+        @(DownloadButtonText())
     </button>
 </div>
 
@@ -53,10 +53,26 @@
 @code {
     // features
     // add how much memory and cpu servers use
-    // what if getting a propty value from properties class returns the value saved in the file
+    // what if getting a property value from properties class returns the value saved in the file
 
     bool newDownloadStarted = false;
+    bool serverDownloaded = false;
+
+    bool IsDowloading => newDownloadStarted && !serverDownloaded;
+
     bool creatingNewServer = false;
+
+    int percentDownloaded = 0;
+
+    protected override void OnInitialized()
+    {
+        config.TemplateServerDownloadChanged += (_, args) =>
+        {
+            percentDownloaded = args.ProgressPercentage;
+
+            this.InvokeAsync(this.StateHasChanged);
+        };
+    }
 
     private void LoadServers()
     {
@@ -76,7 +92,9 @@
     {
         newDownloadStarted = true;
 
-        await Task.Run(config.DownloadBedrockServer);
+        await config.DownloadBedrockServer();
+
+        serverDownloaded = true;
 
         this.StateHasChanged();
     }
@@ -90,5 +108,57 @@
         creatingNewServer = false;
 
         this.StateHasChanged();
+    }
+
+    private string DownloadProgress()
+    {
+        if(percentDownloaded < 100)
+        {
+            return $"{percentDownloaded}% downloaded";
+        }
+        else if (!serverDownloaded)
+        {
+            return "Unzipping...";
+        }
+        else
+        {
+            return "Download finished!";
+        }
+    }
+
+    private string DownloadButtonText()
+    {
+        if (newDownloadStarted)
+        {
+            return DownloadProgress();
+        }
+        else if (!newDownloadStarted && config.TemplateServerExists)
+        {
+            return "Template server is already downloaded";
+        }
+        else
+        {
+            return "Download template server";
+        }
+    }
+
+    private string NewServerButtonText()
+    {
+        if (creatingNewServer)
+        {
+            return "Creating new server...";
+        }
+        else if (!config.TemplateServerExists)
+        {
+            return "Download template server first";
+        }
+        else if (IsDowloading)
+        {
+            return "Please wait...";
+        }
+        else
+        {
+            return "New server";
+        }
     }
 }

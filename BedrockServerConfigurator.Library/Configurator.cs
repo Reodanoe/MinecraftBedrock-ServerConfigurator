@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -53,6 +54,11 @@ namespace BedrockServerConfigurator.Library
         public bool TemplateServerExists => Directory.Exists(OriginalServerFolderPath);
 
         /// <summary>
+        /// When downloading template server this event will give information about the download, e.g. percentage
+        /// </summary>
+        public event DownloadProgressChangedEventHandler TemplateServerDownloadChanged;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="serversRootPath">Path to a folder where all servers will reside. If it doesn't exist it will create it.</param>
@@ -75,7 +81,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Downloads server that will be used as a template for creating new servers
         /// </summary>
-        public void DownloadBedrockServer()
+        public async Task DownloadBedrockServer()
         {
             if (TemplateServerExists)
             {
@@ -88,9 +94,13 @@ namespace BedrockServerConfigurator.Library
 
             using var client = new WebClient();
 
-            CallLog("Download started...");
+            CallLog("Getting url address...");
             (string url, string version) = GetUrlAndVersion(client);
-            client.DownloadFile(url, zipFilePath);
+
+            client.DownloadProgressChanged += (_, downloadProgressChanged) => TemplateServerDownloadChanged?.Invoke(this, downloadProgressChanged);
+
+            CallLog("Download started...");
+            await client.DownloadFileTaskAsync(new Uri(url), zipFilePath);
 
             CallLog("Unzipping...");
             ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
