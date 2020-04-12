@@ -110,10 +110,6 @@ namespace BedrockServerConfigurator.Library
         /// <param name="message"></param>
         private void NewMessageFromServer(string message)
         {
-            // I could implement here more features
-            //      keeping track of joined players in this class
-            // [2020-03-13 11:57:28 INFO] Player connected: playerName, xuid: number
-
             CallLog(message);
         }
 

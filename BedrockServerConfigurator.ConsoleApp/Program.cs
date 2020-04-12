@@ -7,9 +7,6 @@ namespace BedrockServerConfigurator.ConsoleApp
 {
     class Program
     {
-        // TODO
-        //
-
         private static Configurator config;
 
         static void Main(string[] args)

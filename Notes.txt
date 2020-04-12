@@ -12,3 +12,6 @@ ServerController
 	Add features
 		when typing a command and new messages are coming in it gets buggy
 		arrow up should put last ran command into input
+
+Server
+	ServerInstance output could be used for keeping track for joined players for example
