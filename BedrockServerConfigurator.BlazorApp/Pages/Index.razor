@@ -1,9 +1,7 @@
 ﻿@page "/"
+@inject Configurator config
 
 <h2>Configuration Controller</h2>
-
-@using BedrockServerConfigurator.Library
-@inject Configurator config
 
 <div class="text-center">
     <button @onclick="LoadServers"
@@ -45,7 +43,7 @@
     @foreach (var server in config.AllServers)
     {
         <div class="col-md-4 card">
-            <ServerController MinecraftServer="server.Value"/>
+            <ServerController MinecraftServer="server.Value" />
         </div>
     }
 </div>
@@ -53,7 +51,8 @@
 @code {
     // features
     // add how much memory and cpu servers use
-    // what if getting a property value from properties class returns the value saved in the file
+    // in PropertiesChanger, when you update the input, make it save into the file automatically
+    // arrow up should put last ran command into input
 
     bool newDownloadStarted = false;
     bool serverDownloaded = false;
@@ -112,7 +111,7 @@
 
     private string DownloadProgress()
     {
-        if(percentDownloaded < 100)
+        if (percentDownloaded < 100)
         {
             return $"{percentDownloaded}% downloaded";
         }

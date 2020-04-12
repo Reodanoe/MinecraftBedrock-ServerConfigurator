@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -33,15 +32,15 @@ namespace BedrockServerConfigurator.Library
         public double PlayerMovementDurationThresholdInMs { get; set; }
         public bool CorrectPlayerMovement { get; set; }
 
-        private readonly string propertiesFile;
+        private readonly string propertiesFilePath;
 
         /// <summary>
         /// Pass in the content of server.properties
         /// </summary>
         /// <param name="propertiesFile"></param>
-        public Properties(string propertiesFile, bool autoSetProperties = true)
+        public Properties(string propertiesFilePath, bool autoSetProperties = true)
         {
-            this.propertiesFile = propertiesFile;
+            this.propertiesFilePath = propertiesFilePath;
 
             if (autoSetProperties) SetProperties();
         }
@@ -52,7 +51,7 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         public List<(string propertyName, string propertyValue)> PropertyAndValueFromFile()
         {
-            return propertiesFile
+            return File.ReadAllText(propertiesFilePath)
                 .Split("\n")
                 .Select(a => a.Trim())
                 .Where(b => !b.StartsWith("#") && b.Length > 0)
@@ -97,25 +96,23 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>
-        public static string PropertyToFileProperty(MemberInfo classProperty)
+        public static string PropertyToFileProperty(string classProperty)
         {
-            string propertyName = classProperty.Name;
-
             string result = "";
 
-            for (int i = 0; i < propertyName.Length; i++)
+            for (int i = 0; i < classProperty.Length; i++)
             {
                 if (i == 0)
                 {
-                    result += char.ToLower(propertyName[i]);
+                    result += char.ToLower(classProperty[i]);
                 }
-                else if (char.IsUpper(propertyName[i]))
+                else if (char.IsUpper(classProperty[i]))
                 {
-                    result += $"-{char.ToLower(propertyName[i])}";
+                    result += $"-{char.ToLower(classProperty[i])}";
                 }
                 else
                 {
-                    result += propertyName[i];
+                    result += classProperty[i];
                 }
             }
 
@@ -179,6 +176,16 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
+        /// Gets value from file based on class property
+        /// </summary>
+        /// <param name="classProperty"></param>
+        /// <returns></returns>
+        public string FilePropertyValue(string classProperty)
+        {
+            return PropertyAndValueFromFile().First(x => x.propertyName == PropertyToFileProperty(classProperty)).propertyValue;
+        }
+
+        /// <summary>
         /// Returns all propertis in a server.properties format
         /// </summary>
         /// <returns></returns>
@@ -187,7 +194,7 @@ namespace BedrockServerConfigurator.Library
             return string.Join("\n",
                 this.GetType()
                 .GetProperties()
-                .Select(x => $"{PropertyToFileProperty(x)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+                .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
         }
     }
 }
