@@ -88,7 +88,7 @@ namespace BedrockServerConfigurator.Library
                 Running = false;
                 ServerInstance.WaitForExit();
 
-                CallLog("Server stoppped");
+                CallLog("Server stopped");
             }
         }
 
