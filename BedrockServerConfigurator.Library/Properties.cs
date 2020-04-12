@@ -52,13 +52,13 @@ namespace BedrockServerConfigurator.Library
         public List<(string propertyName, string propertyValue)> PropertyAndValueFromFile()
         {
             return File.ReadAllText(propertiesFilePath)
-                .Split("\n")
-                .Select(a => a.Trim())
-                .Where(b => !b.StartsWith("#") && b.Length > 0)
-                .Select(c => c.Split("="))
-                .Select(d => Tuple.Create(d[0], d[1])
-                                  .ToValueTuple())
-                .ToList();
+                       .Split("\n")
+                       .Select(a => a.Trim())
+                       .Where(b => !b.StartsWith("#") && b.Length > 0)
+                       .Select(c => c.Split("="))
+                       .Select(d => Tuple.Create(d[0], d[1])
+                                         .ToValueTuple())
+                       .ToList();
         }
 
         /// <summary>

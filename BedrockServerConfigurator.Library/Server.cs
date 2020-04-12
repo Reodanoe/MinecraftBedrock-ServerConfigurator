@@ -73,7 +73,7 @@ namespace BedrockServerConfigurator.Library
                     }
                 });
 
-                CallLog("Started " + Name);
+                CallLog("Server started");
             }
         }
 
@@ -88,12 +88,7 @@ namespace BedrockServerConfigurator.Library
                 Running = false;
                 ServerInstance.WaitForExit();
 
-                CallLog("Stopped " + Name);
-            }
-            else
-            {
-                CallLog($"Stopping {Name} didn't happen because it wasn't running. " +
-                                   "(You will see this message when you are exiting the program.)");
+                CallLog("Server stoppped");
             }
         }
 
@@ -119,7 +114,7 @@ namespace BedrockServerConfigurator.Library
             //      keeping track of joined players in this class
             // [2020-03-13 11:57:28 INFO] Player connected: playerName, xuid: number
 
-            CallLog($"{Name} - {message}");
+            CallLog(message);
         }
 
         /// <summary>
@@ -134,7 +129,7 @@ namespace BedrockServerConfigurator.Library
             }
             else
             {
-                CallLog($"Can't run command \"{command}\" because server \"{Name}\" isn't running.");
+                CallLog($"Can't run command \"{command}\" because ServerInstance isn't running.");
             }
         }
 
