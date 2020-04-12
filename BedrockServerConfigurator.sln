@@ -9,6 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.BlazorApp", "BedrockServerConfigurator.BlazorApp\BedrockServerConfigurator.BlazorApp.csproj", "{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9BFD874D-3DB5-4F3D-9CE6-D30C0F2D0A24}"
+	ProjectSection(SolutionItems) = preProject
+		Notes.txt = Notes.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

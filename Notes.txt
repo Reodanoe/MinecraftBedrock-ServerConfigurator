@@ -1,0 +1,14 @@
+﻿Add general features
+	add how much memory and cpu servers use
+	
+PropertiesChanger
+	Add features
+		? when you update the input, make it save into the file automatically
+
+ServerController
+	Bugs
+		refreshing page gets rid of messages
+
+	Add features
+		when typing a command and new messages are coming in it gets buggy
+		arrow up should put last ran command into input

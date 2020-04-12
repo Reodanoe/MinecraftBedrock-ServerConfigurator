@@ -22,7 +22,7 @@
 @if (showProperties)
 {
     <div class="card-body">
-        <PropertiesChanger MinecraftServer="MinecraftServer" />
+        <PropertiesChanger MinecraftServer="MinecraftServer"></PropertiesChanger>
     </div>
 }
 else
@@ -48,9 +48,6 @@ else
 }
 
 @code {
-    // refreshing page gets rid of messages
-    // when typing a command and new messages are coming in it gets buggy
-
     [Parameter]
     public Server MinecraftServer { get; set; }
 

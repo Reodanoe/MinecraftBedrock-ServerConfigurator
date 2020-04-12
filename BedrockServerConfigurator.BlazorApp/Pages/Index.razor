@@ -43,17 +43,12 @@
     @foreach (var server in config.AllServers)
     {
         <div class="col-md-4 card">
-            <ServerController MinecraftServer="server.Value" />
+            <ServerController MinecraftServer="server.Value"></ServerController>
         </div>
     }
 </div>
 
 @code {
-    // features
-    // add how much memory and cpu servers use
-    // in PropertiesChanger, when you update the input, make it save into the file automatically
-    // arrow up should put last ran command into input
-
     private bool newDownloadStarted = false;
     private bool serverDownloaded = false;
 
