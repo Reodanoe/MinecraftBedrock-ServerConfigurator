@@ -24,7 +24,7 @@
     [Parameter]
     public Server MinecraftServer { get; set; }
 
-    void SaveProperties()
+    private void SaveProperties()
     {
         MinecraftServer.UpdateProperties();
     }

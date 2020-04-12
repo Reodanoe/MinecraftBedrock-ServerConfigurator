@@ -54,12 +54,12 @@ else
     [Parameter]
     public Server MinecraftServer { get; set; }
 
-    List<string> messages = new List<string>();
+    private List<string> messages = new List<string>();
 
-    bool alreadySet = false;
-    bool showProperties = false;
+    private bool alreadySet = false;
+    private bool showProperties = false;
 
-    string command;
+    private string command;
 
     protected override void OnParametersSet()
     {
@@ -76,12 +76,12 @@ else
         alreadySet = true;
     }
 
-    void Input(ChangeEventArgs changeEventArgs)
+    private void Input(ChangeEventArgs changeEventArgs)
     {
         command = (string)changeEventArgs.Value;
     }
 
-    bool KeyPressed(KeyboardEventArgs keyboard)
+    private bool KeyPressed(KeyboardEventArgs keyboard)
     {
         if (keyboard.Key == "Enter")
         {

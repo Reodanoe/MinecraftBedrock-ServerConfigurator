@@ -54,14 +54,14 @@
     // in PropertiesChanger, when you update the input, make it save into the file automatically
     // arrow up should put last ran command into input
 
-    bool newDownloadStarted = false;
-    bool serverDownloaded = false;
+    private bool newDownloadStarted = false;
+    private bool serverDownloaded = false;
 
-    bool IsDowloading => newDownloadStarted && !serverDownloaded;
+    private bool IsDowloading => newDownloadStarted && !serverDownloaded;
 
-    bool creatingNewServer = false;
+    private bool creatingNewServer = false;
 
-    int percentDownloaded = 0;
+    private int percentDownloaded = 0;
 
     protected override void OnInitialized()
     {
