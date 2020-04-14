@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BedrockServerConfigurator.BlazorApp.Data;
 using BedrockServerConfigurator.Library;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -35,7 +36,9 @@ namespace BedrockServerConfigurator.BlazorApp
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
             services.AddSingleton(configurator);
+            services.AddSingleton(new ConfiguratorData());
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

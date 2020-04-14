@@ -1,4 +1,6 @@
-﻿<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort = Version @MinecraftServer.Version</h4>
+﻿@inject ConfiguratorData ConfiguratorData
+
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort = Version @MinecraftServer.Version</h4>
 
 <div class="btn-group">
     <button @onclick="@MinecraftServer.StartServer"
@@ -13,13 +15,13 @@
         Stop server
     </button>
 
-    <button @onclick="@(() => showProperties = !showProperties)"
+    <button @onclick="@(() => CurrentServer.ShowProperties = !CurrentServer.ShowProperties)"
             class="btn btn-secondary">
-        @(showProperties ? "Back" : "Show properties")
+        @(CurrentServer.ShowProperties ? "Back" : "Show properties")
     </button>
 </div>
 
-@if (showProperties)
+@if (CurrentServer.ShowProperties)
 {
     <div class="card-body">
         <PropertiesChanger MinecraftServer="MinecraftServer"></PropertiesChanger>
@@ -27,11 +29,11 @@
 }
 else
 {
-    <input @bind="@command"
+    <input @bind="@CurrentServer.CurrentCommand"
            @onkeypress="(enter) => {
                         if(KeyPressed(enter))
                         {
-                            command = null;
+                            CurrentServer.CurrentCommand = null;
                         }
                     }"
            @oninput="Input"
@@ -40,7 +42,7 @@ else
            class="form-control" />
 
     <div class="card-body pre-scrollable h-25 card-text">
-        @foreach (var message in messages)
+        @foreach (var message in CurrentServer.Messages)
         {
             <p>@message</p>
         }
@@ -51,38 +53,40 @@ else
     [Parameter]
     public Server MinecraftServer { get; set; }
 
-    private List<string> messages = new List<string>();
-
-    private bool alreadySet = false;
-    private bool showProperties = false;
-
-    private string command;
+    private ServerData CurrentServer => ConfiguratorData.AllServerData[MinecraftServer.ID];
 
     protected override void OnParametersSet()
     {
-        if (!alreadySet)
+        if (!ConfiguratorData.AllServerData.ContainsKey(MinecraftServer.ID))
         {
-            MinecraftServer.Log += (a, b) =>
-            {
-                messages = messages.Prepend(b).ToList();
-
-                this.InvokeAsync(this.StateHasChanged);
-            };
+            ConfiguratorData.AllServerData.Add(MinecraftServer.ID, new ServerData());
         }
 
-        alreadySet = true;
+        CurrentServer.Messages.CollectionChanged += (a, b) => this.InvokeAsync(StateHasChanged);
+
+        if (!CurrentServer.LoggingNewMessages)
+        {
+            MinecraftServer.Log += (a, msg) =>
+            {
+                CurrentServer.Messages.Insert(0, msg);
+            };
+
+            CurrentServer.LoggingNewMessages = true;
+        }
     }
 
     private void Input(ChangeEventArgs changeEventArgs)
     {
-        command = (string)changeEventArgs.Value;
+        CurrentServer.CurrentCommand = (string)changeEventArgs.Value;
     }
 
     private bool KeyPressed(KeyboardEventArgs keyboard)
     {
         if (keyboard.Key == "Enter")
         {
-            MinecraftServer.RunACommand(command);
+            MinecraftServer.RunACommand(CurrentServer.CurrentCommand);
+
+            CurrentServer.Commands.Add(CurrentServer.CurrentCommand);
 
             return true;
         }
