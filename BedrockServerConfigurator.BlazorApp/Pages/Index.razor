@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject Configurator config
+@inject ConfiguratorData data
 
 <h2>Configuration Controller</h2>
 
@@ -17,13 +18,13 @@
 
     <button @onclick="New"
             class="btn btn-outline-secondary"
-            disabled="@(!config.TemplateServerExists || creatingNewServer || IsDowloading)">
+            disabled="@(!config.TemplateServerExists || data.CreatingNewServer || data.IsDowloading)">
         @(NewServerButtonText())
     </button>
 
     <button @onclick="Download"
-            class="btn @((config.TemplateServerExists || newDownloadStarted) && !serverDownloaded ? "btn-outline-secondary" : "btn-success")"
-            disabled="@(config.TemplateServerExists || newDownloadStarted)">
+            class="btn @((config.TemplateServerExists || data.NewDownloadStarted) && !data.ServerDownloaded ? "btn-outline-secondary" : "btn-success")"
+            disabled="@(config.TemplateServerExists || data.NewDownloadStarted)">
         @(DownloadButtonText())
     </button>
 </div>
@@ -49,22 +50,13 @@
 </div>
 
 @code {
-    private bool newDownloadStarted = false;
-    private bool serverDownloaded = false;
-
-    private bool IsDowloading => newDownloadStarted && !serverDownloaded;
-
-    private bool creatingNewServer = false;
-
-    private int percentDownloaded = 0;
-
     protected override void OnInitialized()
     {
+        data.PropertyChanged += (a, b) => this.InvokeAsync(StateHasChanged);
+
         config.TemplateServerDownloadChanged += (_, args) =>
         {
-            percentDownloaded = args.ProgressPercentage;
-
-            this.InvokeAsync(this.StateHasChanged);
+            data.PercentDownloaded = args.ProgressPercentage;
         };
     }
 
@@ -77,40 +69,34 @@
     {
         config.StopAllServers();
 
-        this.StateHasChanged();
-
         Utilities.RunACommand("taskkill /f /fi \"imagename eq bedrock_server.exe\"", "killall bedrock_server").Start();
     }
 
     private async void Download()
     {
-        newDownloadStarted = true;
+        data.NewDownloadStarted = true;
 
         await config.DownloadBedrockServer();
 
-        serverDownloaded = true;
-
-        this.StateHasChanged();
+        data.ServerDownloaded = true;
     }
 
     private async void New()
     {
-        creatingNewServer = true;
+        data.CreatingNewServer = true;
 
         await Task.Run(config.NewServer);
 
-        creatingNewServer = false;
-
-        this.StateHasChanged();
+        data.CreatingNewServer = false;
     }
 
     private string DownloadProgress()
     {
-        if (percentDownloaded < 100)
+        if (data.PercentDownloaded < 100)
         {
-            return $"{percentDownloaded}% downloaded";
+            return $"{data.PercentDownloaded}% downloaded";
         }
-        else if (!serverDownloaded)
+        else if (!data.ServerDownloaded)
         {
             return "Unzipping...";
         }
@@ -122,11 +108,11 @@
 
     private string DownloadButtonText()
     {
-        if (newDownloadStarted)
+        if (data.NewDownloadStarted)
         {
             return DownloadProgress();
         }
-        else if (!newDownloadStarted && config.TemplateServerExists)
+        else if (!data.NewDownloadStarted && config.TemplateServerExists)
         {
             return "Template server is already downloaded";
         }
@@ -138,7 +124,7 @@
 
     private string NewServerButtonText()
     {
-        if (creatingNewServer)
+        if (data.CreatingNewServer)
         {
             return "Creating new server...";
         }
@@ -146,7 +132,7 @@
         {
             return "Download template server first";
         }
-        else if (IsDowloading)
+        else if (data.IsDowloading)
         {
             return "Please wait...";
         }
