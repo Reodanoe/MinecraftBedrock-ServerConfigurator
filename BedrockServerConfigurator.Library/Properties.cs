@@ -14,8 +14,8 @@ namespace BedrockServerConfigurator.Library
         public double MaxPlayers { get; set; }
         public bool OnlineMode { get; set; }
         public bool WhiteList { get; set; }
-        public double ServerPort { get; set; }
-        public double ServerPortv6 { get; set; }
+        public double ServerPort { get; internal set; }
+        public double ServerPortv6 { get; internal set; }
         public double ViewDistance { get; set; }
         public double TickDistance { get; set; }
         public double PlayerIdleTimeout { get; set; }
