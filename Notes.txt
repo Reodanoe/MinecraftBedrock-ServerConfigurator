@@ -6,10 +6,6 @@ PropertiesChanger
 		? when you update the input, make it save into the file automatically
 
 ServerController
-	Bugs
-		refreshing page gets rid of messages
-		when typing a command and new messages are coming in it gets buggy
-
 	Add features
 		arrow up should put last ran command into input
 

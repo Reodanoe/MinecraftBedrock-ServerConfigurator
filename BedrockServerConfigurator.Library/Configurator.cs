@@ -241,7 +241,7 @@ namespace BedrockServerConfigurator.Library
             string text = client.DownloadString("https://www.minecraft.net/en-us/download/server/bedrock/");
 
             var url = urlRegex.Match(text).Value;
-            var version = url.Split("-").OrderByDescending(x => x.Count(y => y == '.')).First()[..^4];
+            var version = url.Split("-").Last()[..^4];
 
             return (url, version);
         }
