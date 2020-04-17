@@ -186,7 +186,7 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Returns all propertis in a server.properties format
+        /// Returns all properties in a server.properties format
         /// </summary>
         /// <returns></returns>
         public override string ToString()

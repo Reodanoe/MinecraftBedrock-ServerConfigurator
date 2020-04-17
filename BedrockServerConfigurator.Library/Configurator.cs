@@ -95,7 +95,8 @@ namespace BedrockServerConfigurator.Library
             using var client = new WebClient();
 
             CallLog("Getting url address...");
-            (string url, string version) = GetUrlAndVersion(client);
+            string url = GetUrlAndVersion(client);
+            string version = url.Split("-").Last()[..^4];
 
             client.DownloadProgressChanged += (_, downloadProgressChanged) => TemplateServerDownloadChanged?.Invoke(this, downloadProgressChanged);
 
@@ -228,7 +229,7 @@ namespace BedrockServerConfigurator.Library
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
-        private (string url, string version) GetUrlAndVersion(WebClient client)
+        private string GetUrlAndVersion(WebClient client)
         {
             if (urlRegex == null)
             {
@@ -240,10 +241,7 @@ namespace BedrockServerConfigurator.Library
 
             string text = client.DownloadString("https://www.minecraft.net/en-us/download/server/bedrock/");
 
-            var url = urlRegex.Match(text).Value;
-            var version = url.Split("-").Last()[..^4];
-
-            return (url, version);
+            return urlRegex.Match(text).Value;
         }
 
         /// <summary>

@@ -18,7 +18,7 @@
 
     <button @onclick="New"
             class="btn btn-outline-secondary"
-            disabled="@(!config.TemplateServerExists || data.CreatingNewServer || data.IsDowloading)">
+            disabled="@(!config.TemplateServerExists || data.CreatingNewServer || data.IsDownloading)">
         @(NewServerButtonText())
     </button>
 
@@ -132,7 +132,7 @@
         {
             return "Download template server first";
         }
-        else if (data.IsDowloading)
+        else if (data.IsDownloading)
         {
             return "Please wait...";
         }

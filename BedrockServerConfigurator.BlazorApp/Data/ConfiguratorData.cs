@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace BedrockServerConfigurator.BlazorApp.Data
 {
@@ -57,7 +54,7 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// <summary>
         /// If template server is currently downloading
         /// </summary>
-        public bool IsDowloading => NewDownloadStarted && !ServerDownloaded;
+        public bool IsDownloading => NewDownloadStarted && !ServerDownloaded;
 
         private bool creatingNewServer;
 
