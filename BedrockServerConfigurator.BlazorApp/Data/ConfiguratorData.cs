@@ -16,8 +16,8 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         public int PercentDownloaded
         {
             get { return percentDownloaded; }
-            set 
-            { 
+            set
+            {
                 percentDownloaded = value;
                 CallPropertyChanged();
             }
@@ -31,7 +31,8 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         public bool NewDownloadStarted
         {
             get { return newDownloadStarted; }
-            set {
+            set
+            {
                 newDownloadStarted = value;
                 CallPropertyChanged();
             }
@@ -45,7 +46,8 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         public bool ServerDownloaded
         {
             get { return serverDownloaded; }
-            set {
+            set
+            {
                 serverDownloaded = value;
                 CallPropertyChanged();
             }
@@ -64,7 +66,8 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         public bool CreatingNewServer
         {
             get { return creatingNewServer; }
-            set {
+            set
+            {
                 creatingNewServer = value;
                 CallPropertyChanged();
             }
