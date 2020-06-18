@@ -29,7 +29,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Logs all messages from Server
         /// </summary>
-        public event EventHandler<string> Log;
+        public event Action<string> Log;
 
         /// <summary>
         /// 
@@ -140,7 +140,7 @@ namespace BedrockServerConfigurator.Library
 
         private void CallLog(string message)
         {
-            Log?.Invoke(null, message);
+            Log?.Invoke(message);
         }
     }
 }

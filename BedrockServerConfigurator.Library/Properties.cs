@@ -172,7 +172,7 @@ namespace BedrockServerConfigurator.Library
             }
 
             return string.Join("\n", PropertyAndValueFromFile()
-                .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
+                         .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
         }
 
         /// <summary>
