@@ -192,9 +192,9 @@ namespace BedrockServerConfigurator.Library
         public override string ToString()
         {
             return string.Join("\n",
-                this.GetType()
-                .GetProperties()
-                .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+                     this.GetType()
+                         .GetProperties()
+                         .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
         }
     }
 }

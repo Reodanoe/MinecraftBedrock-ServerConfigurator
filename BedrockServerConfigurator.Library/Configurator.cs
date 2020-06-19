@@ -71,7 +71,7 @@ namespace BedrockServerConfigurator.Library
             ServerName = serverName;
 
             Directory.CreateDirectory(serversRootPath);
-
+            
             if (serverName.Contains("_"))
             {
                 throw new Exception("Dont use _ in serverName");
@@ -95,7 +95,7 @@ namespace BedrockServerConfigurator.Library
             using var client = new WebClient();
 
             CallLog("Getting url address...");
-            string url = GetUrlAndVersion(client);
+            string url = GetUrl(client);
             string version = url.Split("-").Last()[..^4];
 
             client.DownloadProgressChanged += (_, downloadProgressChanged) => TemplateServerDownloadChanged?.Invoke(this, downloadProgressChanged);
@@ -229,7 +229,7 @@ namespace BedrockServerConfigurator.Library
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
-        private string GetUrlAndVersion(WebClient client)
+        private string GetUrl(WebClient client)
         {
             if (urlRegex == null)
             {
@@ -263,11 +263,9 @@ namespace BedrockServerConfigurator.Library
             // gets all servers that have the same ports
             var serversWithSamePorts = AllServers.Values
                 .Where(x =>
-                AllServers.Values.Any(
-                    y => ((x.ServerProperties.ServerPort == y.ServerProperties.ServerPort ||
-                         x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) &&
-                         x.Name != y.Name)))
-                .ToList();
+                AllServers.Values.Any(y => (x.ServerProperties.ServerPort == y.ServerProperties.ServerPort || 
+                                            x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) && 
+                                            x.Name != y.Name)).ToList();
 
             // removes first server (ID 1) from servers with same ports
             serversWithSamePorts.RemoveAll(x => x.ID == 1);
