@@ -42,7 +42,7 @@ namespace BedrockServerConfigurator.ConsoleApp
             config.Log += Log;
         }
 
-        private static void Log(object sender, string message)
+        private static void Log(string message)
         {
             Console.WriteLine(message);
         }
