@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using BedrockServerConfigurator.Library.Models;
+using System.Net.Http.Headers;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -30,6 +32,10 @@ namespace BedrockServerConfigurator.Library
         /// Logs all messages from Server
         /// </summary>
         public event Action<string> Log;
+
+        public List<Player> AllPlayers { get; } = new List<Player>();
+
+        private Task _messagesTask;
 
         /// <summary>
         /// 
@@ -66,7 +72,7 @@ namespace BedrockServerConfigurator.Library
                 ServerInstance.Start();
                 Running = true;
 
-                Task.Run(() => {
+                _messagesTask = Task.Run(() => {
                     while (!ServerInstance.StandardOutput.EndOfStream && Running)
                     {
                         NewMessageFromServer(ServerInstance.StandardOutput.ReadLine());
@@ -111,7 +117,68 @@ namespace BedrockServerConfigurator.Library
         private void NewMessageFromServer(string message)
         {
             CallLog(message);
+
+            if(message.Contains("Player") && message.Contains("connected"))
+            {
+                PlayerAction(message);
+            }
         }
+
+        private DateTime GetDateTimeFromServerMessage(string message)
+        {
+            if (DateTime.TryParse(message[1..20], out DateTime result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new FormatException("Cannot obtain DateTime from server message");
+            }
+        }
+
+        private void PlayerAction(string message)
+        {
+            // [2020-07-19 18:29:49 INFO] Player connected: PLAYER_NAME, xuid: ID
+            // [2020-07-19 18:30:57 INFO] Player disconnected: PLAYER_NAME, xuid: ID
+
+            var split = message.Split(':');
+
+            var date = GetDateTimeFromServerMessage(message);
+            var username = split[^2].Split(',')[0].Trim();
+            var xuid = long.Parse(split[^1].Trim());
+
+            var joinedPlayer = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
+            
+            if (message.Contains("disconnected"))
+            {
+                joinedPlayer.IsOnline = false;
+                joinedPlayer.LastAction = date;
+            }
+            else
+            {
+                if (joinedPlayer == null)
+                {
+                    AllPlayers.Add(new Player
+                    {
+                        Username = username,
+                        Xuid = xuid,
+                        IsOnline = true,
+                        LastAction = date
+                    });
+                }
+                else
+                {
+                    joinedPlayer.IsOnline = true;
+                    joinedPlayer.LastAction = date;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs a command on the running server.
+        /// </summary>
+        /// <param name="command"></param>
+        public void RunACommand(Command command) => RunACommand(command.ToString());
 
         /// <summary>
         /// Runs a command on the running server.

@@ -74,7 +74,7 @@ namespace BedrockServerConfigurator.Library
             
             if (serverName.Contains("_"))
             {
-                throw new Exception("Dont use _ in serverName");
+                throw new FormatException("Dont use _ in serverName");
             }
         }
 

@@ -38,7 +38,7 @@ namespace BedrockServerConfigurator.Library
         /// Pass in the content of server.properties
         /// </summary>
         /// <param name="propertiesFile"></param>
-        public Properties(string propertiesFilePath, bool autoSetProperties = true)
+        internal Properties(string propertiesFilePath, bool autoSetProperties = true)
         {
             this.propertiesFilePath = propertiesFilePath;
 

@@ -1,4 +1,6 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@inject Configurator config
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">Bedrock Server Configurator</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -11,6 +13,14 @@
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-cloud" aria-hidden="true"></span> Server configurator
             </NavLink>
+            @foreach (var server in config.AllServers)
+            {
+                string page = $"ServerPage/{server.Key}";
+
+                <NavLink class="nav-link" href="@(page)" Match="NavLinkMatch.All">
+                    <span class="oi oi-bolt"></span> @server.Value.Name
+                </NavLink>
+            }
         </li>
     </ul>
 </div>

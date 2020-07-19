@@ -1,0 +1,25 @@
+﻿@page "/ServerPage/{id:int}"
+@inject Configurator config
+
+@foreach (var player in MinecraftServer.AllPlayers)
+{
+    <p @onclick="(a) => SpawnCreepers(player.Username, 10)">@player.Username - @player.Xuid - @player.IsOnline - @player.LastAction</p>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    public Server MinecraftServer => config.AllServers[Id];
+    private Api api;
+
+    protected override void OnParametersSet()
+    {
+        api = new Api(config);
+    }
+
+    private void SpawnCreepers(string name, int amount)
+    {
+        api.SpawnMobsOnAPlayer(Id, name, "creeper", amount);
+    }
+}
