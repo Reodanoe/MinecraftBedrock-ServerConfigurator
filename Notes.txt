@@ -10,4 +10,4 @@ ServerController
 		arrow up should put last ran command into input
 
 Server
-	ServerInstance output could be used for keeping track of joined players for example
+	

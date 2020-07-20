@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BedrockServerConfigurator.Library.Entities;
 using BedrockServerConfigurator.Library.Location;
 
 namespace BedrockServerConfigurator.Library.Commands
@@ -26,31 +27,36 @@ namespace BedrockServerConfigurator.Library.Commands
 
             for (int i = 0; i < amount; i++)
             {
-                server.RunACommand(Builder.SummonMobOnPlayer(playerName, mob));
+                server.RunACommand(Builder.SummonMobOnEntity(new Entity(playerName), mob));
             }
         }
 
-        public void Teleport(int serverId, string from, string to)
+        public void TeleportEntityToEntity(int serverId, string from, string to)
         {
             var server = GetServer(serverId);
 
-            server.RunACommand(Builder.Teleport(from, to));
+            server.RunACommand(Builder.Teleport(new Entity(from), new Entity(to)));
         }
 
-        public void Teleport(int serverId, string from, float x, float y, float z)
+        public void TeleportEntityPublic(int serverId, string from, float x, float y, float z)
         {
             var server = GetServer(serverId);
 
-            server.RunACommand(Builder.Teleport(from, new Coordinate(new PublicPoint(Axis.X, x),
-                                                                     new PublicPoint(Axis.Y, y), 
-                                                                     new PublicPoint(Axis.Z, z))));
+            server.RunACommand(Builder.TeleportToCoordinate(new Entity(from), PublicCoordinate.GetPublicCoordinate(x, y, z)));
+        }
+
+        public void TeleportEntityLocal(int serverId, string from, float x, float y, float z)
+        {
+            var server = GetServer(serverId);
+
+            server.RunACommand(Builder.TeleportLocal(new Entity(from), LocalCoordinate.GetLocalCoordinate(x, y, z)));
         }
 
         public void TimeSet(int serverId, string timeOfDay)
         {
             var server = GetServer(serverId);
-
-            server.RunACommand(Builder.TimeSet(Enum.Parse<Time>(timeOfDay)));
+            
+            server.RunACommand(Builder.TimeSet(Enum.Parse<Time>(timeOfDay, true)));
         }
     }
 }

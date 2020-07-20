@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using BedrockServerConfigurator.Library.Models;
 using System.Net.Http.Headers;
+using BedrockServerConfigurator.Library.Entities;
+using BedrockServerConfigurator.Library.Commands;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -13,7 +14,15 @@ namespace BedrockServerConfigurator.Library
     {
         public Process ServerInstance { get; }
         public string Name { get; }
+
+        /// <summary>
+        /// The path where server is installed
+        /// </summary>
         public string FullPath { get; }
+
+        /// <summary>
+        /// Manipulates with server.properties file
+        /// </summary>
         public Properties ServerProperties { get; }
 
         public bool Running { get; private set; } = false;        
@@ -124,18 +133,25 @@ namespace BedrockServerConfigurator.Library
             }
         }
 
-        private DateTime GetDateTimeFromServerMessage(string message)
+        /// <summary>
+        /// All worlds in "worlds" directory in this server
+        /// </summary>
+        /// <returns></returns>
+        public string[] AvailableWorlds()
         {
-            if (DateTime.TryParse(message[1..20], out DateTime result))
+            var worldsDirectory = Path.Combine(FullPath, "worlds");
+
+            if (Directory.Exists(worldsDirectory)) 
             {
+                var result = Directory.GetDirectories(worldsDirectory);
+
                 return result;
             }
-            else
-            {
-                throw new FormatException("Cannot obtain DateTime from server message");
-            }
+
+            return null;
         }
 
+        // this should maybe be like in a server message processor class
         private void PlayerAction(string message)
         {
             // [2020-07-19 18:29:49 INFO] Player connected: PLAYER_NAME, xuid: ID
@@ -143,12 +159,12 @@ namespace BedrockServerConfigurator.Library
 
             var split = message.Split(':');
 
-            var date = GetDateTimeFromServerMessage(message);
+            var date = Utilities.GetDateTimeFromServerMessage(message);
             var username = split[^2].Split(',')[0].Trim();
             var xuid = long.Parse(split[^1].Trim());
 
             var joinedPlayer = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
-            
+
             if (message.Contains("disconnected"))
             {
                 joinedPlayer.IsOnline = false;

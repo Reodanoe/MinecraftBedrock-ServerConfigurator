@@ -4,11 +4,11 @@ namespace BedrockServerConfigurator.Library.Location
 {
     public class Coordinate
     {
-        public PublicPoint X { get; }
-        public PublicPoint Y { get; }
-        public PublicPoint Z { get; }
+        public Point X { get; }
+        public Point Y { get; }
+        public Point Z { get; }
 
-        public Coordinate(PublicPoint x, PublicPoint y, PublicPoint z)
+        public Coordinate(Point x, Point y, Point z)
         {
             if (x.Axis != Axis.X || y.Axis != Axis.Y || z.Axis != Axis.Z)
             {

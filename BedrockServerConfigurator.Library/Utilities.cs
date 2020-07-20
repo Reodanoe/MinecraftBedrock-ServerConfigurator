@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace BedrockServerConfigurator.Library
@@ -38,6 +39,18 @@ namespace BedrockServerConfigurator.Library
             }
 
             return process;
+        }
+
+        public static DateTime GetDateTimeFromServerMessage(string message)
+        {
+            if (DateTime.TryParse(message[1..20], out DateTime result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new FormatException("Cannot obtain DateTime from server message");
+            }
         }
     }
 }

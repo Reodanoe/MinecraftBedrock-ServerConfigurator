@@ -1,22 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using BedrockServerConfigurator.Library.Models;
 using BedrockServerConfigurator.Library.Location;
+using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Commands
 {
     public class CommandBuilder
     {
         /// <summary>
-        /// Spawns amount of mobs on a player
+        /// Needs to be combined with other command, executes it on entity
         /// </summary>
-        /// <param name="playerName">Username of a player in MineCraft server</param>
-        /// <param name="mob">Mob name</param>
+        /// <param name="entity"></param>
+        /// <param name="coordinate"></param>
         /// <returns></returns>
-        public Command SummonMobOnPlayer(string playerName, string mob)
+        public Command ExecuteOnEntityBase(IEntity entity, Coordinate coordinate)
         {
-            return new Command($"execute {playerName} ~ ~ ~ /summon {mob}");
+            return new Command($"execute {entity.Name} {coordinate} ");
+        }
+
+        /// <summary>
+        /// Executes a command on a given entity
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="coordinate"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public Command ExecuteOnEntityWithCommand(IEntity entity, Coordinate coordinate, Command command)
+        {
+            return ExecuteOnEntityBase(entity, coordinate) + command;
+        }
+
+        /// <summary>
+        /// Summons mob on an entity
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="mob"></param>
+        /// <returns></returns>
+        public Command SummonMobOnEntity(IEntity entity, string mob)
+        {
+            return ExecuteOnEntityWithCommand(entity, LocalCoordinate.GetLocalCoordinate(), new Command($"summon {mob}"));
         }
 
         /// <summary>
@@ -29,18 +52,57 @@ namespace BedrockServerConfigurator.Library.Commands
             return new Command($"time set {time}");
         }
 
-        public Command Teleport(IEntity from, IEntity to) => Teleport(from.Name, to.Name);
-
-        public Command Teleport(string from, string to)
+        /// <summary>
+        /// Teleports entity to another
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public Command Teleport(IEntity from, IEntity to)
         {
-            return new Command($"tp {from} {to}");
+            return new Command($"tp {from.Name} {to.Name}");
         }
 
-        public Command Teleport(IEntity from, Coordinate coordinate) => Teleport(from.Name, coordinate);
-
-        public Command Teleport(string from, Coordinate coordinate)
+        /// <summary>
+        /// Teleports entity to a coordinate
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="coordinate"></param>
+        /// <returns></returns>
+        public Command TeleportToCoordinate(IEntity from, Coordinate coordinate)
         {
-            return new Command($"tp {from} {coordinate}");
+            return new Command($"tp {from.Name} {coordinate}");
+        }
+
+        /// <summary>
+        /// Teleports entity relatively to itself
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="coordinate"></param>
+        /// <returns></returns>
+        public Command TeleportLocal(IEntity from, LocalCoordinate coordinate)
+        {
+            return ExecuteOnEntityWithCommand(from, LocalCoordinate.GetLocalCoordinate(), TeleportToCoordinate(from, coordinate));
+        }
+
+        /// <summary>
+        /// Gives operator to a player
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public Command Op(IEntity player)
+        {
+            return new Command($"op {player.Name}");
+        }
+
+        /// <summary>
+        /// Removes operator from a player
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public Command Deop(IEntity player)
+        {
+            return new Command("de") + Op(player);
         }
     }
 }

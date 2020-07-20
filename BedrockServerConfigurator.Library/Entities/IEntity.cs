@@ -1,4 +1,4 @@
-﻿namespace BedrockServerConfigurator.Library.Models
+﻿namespace BedrockServerConfigurator.Library.Entities
 {
     public interface IEntity
     {

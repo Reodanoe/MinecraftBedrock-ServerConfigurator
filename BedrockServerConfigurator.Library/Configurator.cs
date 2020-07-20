@@ -163,6 +163,31 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
+        /// Retruns
+        /// </summary>
+        /// <returns></returns>
+        public string GeneratePropertiesClass()
+        {
+            var props = new Properties(Path.Combine(OriginalServerFolderPath, "server.properties"), false);
+            var result = props.GenerateProperties();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Stops the server, removes it from collection of AllServers and deletes directory
+        /// </summary>
+        /// <param name="server"></param>
+        public void DeleteServer(Server server)
+        {
+            server.StopServer();
+            AllServers.Remove(server.ID);
+            Directory.Delete(server.FullPath, true);
+
+            CallLog($"Server {server.Name} has been deleted");
+        }
+
+        /// <summary>
         /// Runs a command on specified server
         /// </summary>
         /// <param name="serverID"></param>

@@ -1,4 +1,4 @@
-﻿namespace BedrockServerConfigurator.Library.Models
+﻿namespace BedrockServerConfigurator.Library.Commands
 {
     public class Command
     {
@@ -12,6 +12,11 @@
         public override string ToString()
         {
             return MinecraftCommand;
+        }
+
+        public static Command operator +(Command first, Command second)
+        {
+            return new Command(first.MinecraftCommand + second.MinecraftCommand);
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿namespace BedrockServerConfigurator.Library
 {
-    public enum Entity
+    public enum EntityType
     {
         All_Players,
         All_Entities,
         Closest_Player,
         Random_Player,
-        Yourself
+        Yourself,
+        Player
     }
-
 
     public enum Time
     {
