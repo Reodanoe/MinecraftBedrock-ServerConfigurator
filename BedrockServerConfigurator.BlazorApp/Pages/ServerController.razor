@@ -63,7 +63,7 @@ else
         }
 
         CurrentServer.Messages.CollectionChanged += (a, b) => this.InvokeAsync(StateHasChanged);
-
+        
         if (!CurrentServer.LoggingNewMessages)
         {
             MinecraftServer.Log += (msg) =>

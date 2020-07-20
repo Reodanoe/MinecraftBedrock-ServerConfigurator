@@ -39,6 +39,11 @@ namespace BedrockServerConfigurator.Library
         public List<Server> AllServersList => AllServers.Values.ToList();
 
         /// <summary>
+        /// List of running servers
+        /// </summary>
+        public List<Server> RunningServers => AllServersList.Where(x => x.Running).ToList();
+
+        /// <summary>
         /// Saves the regex for getting a download url for minecraft bedrock server
         /// </summary>
         private Regex urlRegex;

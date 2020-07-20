@@ -13,12 +13,12 @@
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-cloud" aria-hidden="true"></span> Server configurator
             </NavLink>
-            @foreach (var server in config.AllServers)
+            @foreach (var server in config.RunningServers)
             {
-                string page = $"ServerPage/{server.Key}";
+                string page = $"ServerPage/{server.ID}";
 
                 <NavLink class="nav-link" href="@(page)" Match="NavLinkMatch.All">
-                    <span class="oi oi-bolt"></span> @server.Value.Name
+                    <span class="oi oi-bolt"></span> @server.Name
                 </NavLink>
             }
         </li>
