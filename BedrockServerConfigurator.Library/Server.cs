@@ -42,7 +42,7 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public event Action<string> Log;
 
-        public List<Player> AllPlayers { get; } = new List<Player>();
+        public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
 
         private Task _messagesTask;
 
@@ -174,12 +174,13 @@ namespace BedrockServerConfigurator.Library
             {
                 if (joinedPlayer == null)
                 {
-                    AllPlayers.Add(new Player
+                    AllPlayers.Add(new ServerPlayer
                     {
                         Username = username,
                         Xuid = xuid,
                         IsOnline = true,
-                        LastAction = date
+                        LastAction = date,
+                        ServerId = ID
                     });
                 }
                 else
@@ -202,6 +203,8 @@ namespace BedrockServerConfigurator.Library
         /// <param name="command"></param>
         public void RunACommand(string command)
         {
+            Console.WriteLine(command);
+
             if (Running)
             {
                 ServerInstance.StandardInput.WriteLine(command);

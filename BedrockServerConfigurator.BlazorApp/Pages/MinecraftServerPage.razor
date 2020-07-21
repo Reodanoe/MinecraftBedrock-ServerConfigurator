@@ -8,7 +8,7 @@
 else if (!minecraftServer.Running)
 {
     <p>Server isn't running</p>
-    <button class="btn btn-primary" @onclick="() => minecraftServer.StartServer()">Start server</button>
+    <button class="btn btn-primary" @onclick="minecraftServer.StartServer">Start server</button>
 }
 else
 {
@@ -35,18 +35,7 @@ else
         </div>
     }
 
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Spawn mobs</h5>
-            <label for="mob-name">Name of mob</label>
-            <input type="text" id="mob-name" />
-
-            <label for="amount">Amount of mobs</label>
-            <input type="number" id="amount" />
-        </div>
-    </div>
-
-    <button class="btn btn-primary" @onclick="RunActions">Start hell</button>
+    <button class="btn btn-primary" @onclick="Start">Start hell</button>
 }
 
 @code {
@@ -56,16 +45,8 @@ else
     private Server minecraftServer;
     private Api api;
 
-    List<Player> selectedPlayers = new List<Player>();
-    List<Action<Player>> actionsToDo = new List<Action<Player>>();
-
-    // on this page
-    // player names appear
-    // makes those names red if the logged of IsOnline == false
-    // when a player is clicked it's selected
-    // then you can choose which action will happen
-    // the action will have parameters that can be set
-    // multiple players can be seletected at once
+    List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
+    List<MiniGame> runningMinigames = new List<MiniGame>();
 
     protected override void OnParametersSet()
     {
@@ -73,11 +54,16 @@ else
         {
             minecraftServer = server;
             api = new Api(config);
+        }
+    }
 
-            // maybe I can make like a class that will generate these actions
-            // so I can easier show them on the page
-            actionsToDo.Add(SpawnMobsAction("creeper", 10));
-            // actionsToDo.Add(TeleportUpAction(10));
+    private void Start()
+    {
+        runningMinigames.Clear();
+
+        foreach (var p in selectedPlayers)
+        {
+            runningMinigames.Add(new MiniGame(p, api));
         }
     }
 
@@ -97,34 +83,5 @@ else
     private void RemovePlayerFromSelected(Player p)
     {
         selectedPlayers.RemoveAll(x => x.Xuid == p.Xuid);
-    }
-
-    private Action<Player> SpawnMobsAction(string mob, int amount)
-    {
-        return new Action<Player>((player) =>
-        {
-            api.SpawnMobsOnAPlayer(Id, player.Name, mob, amount);
-        });
-    }
-
-    private Action<Player> TeleportUpAction(int distance)
-    {
-        return new Action<Player>((player) =>
-        {
-            api.TeleportEntityLocal(Id, player.Name, 0, distance, 0);
-        });
-    }
-
-    private void RunActions()
-    {
-        foreach (var p in selectedPlayers)
-        {
-            if (!p.IsOnline) continue;
-
-            foreach (var action in actionsToDo)
-            {
-                action(p);
-            }
-        }
     }
 }

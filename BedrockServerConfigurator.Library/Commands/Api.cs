@@ -55,8 +55,37 @@ namespace BedrockServerConfigurator.Library.Commands
         public void TimeSet(int serverId, string timeOfDay)
         {
             var server = GetServer(serverId);
-            
-            server.RunACommand(Builder.TimeSet(Enum.Parse<Time>(timeOfDay, true)));
+
+            server.RunACommand(Builder.TimeSet(Enum.Parse<MinecraftTime>(timeOfDay, true)));
         }
+
+        public void Say(int serverId, string message)
+        {
+            var server = GetServer(serverId);
+
+            server.RunACommand(Builder.Say(message));
+        }
+
+        public void SayInColor(int serverId, string message, string color)
+        {
+            SayInColor(serverId, message, Enum.Parse<MinecraftColor>(color, true));
+        }
+
+        public void SayInColor(int serverId, string message, MinecraftColor color)
+        {
+            var server = GetServer(serverId);
+
+            server.RunACommand(Builder.SayInColor(message, color));
+        }
+
+        public void AddEffect(int serverId, string entityName, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
+        {
+            var server = GetServer(serverId);
+
+            server.RunACommand(Builder.AddEffect(new Entity(entityName), effect, seconds, amplifier, hideParticles));
+        }
+
+        public void AddEffect(int serverId, string entityName, string effect, int seconds, byte amplifier, bool hideParticles = false) =>
+            AddEffect(serverId, entityName, Enum.Parse<MinecraftEffect>(effect, true), seconds, amplifier, hideParticles);
     }
 }

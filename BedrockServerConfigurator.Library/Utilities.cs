@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace BedrockServerConfigurator.Library
 {
     public static class Utilities
     {
+        public static Random RandomGenerator = new Random();
+
         /// <summary>
         /// Runs a command on the running machine.
         /// </summary>
@@ -51,6 +55,16 @@ namespace BedrockServerConfigurator.Library
             {
                 throw new FormatException("Cannot obtain DateTime from server message");
             }
+        }
+
+        public static T RandomElement<T>(this IList<T> list)
+        {
+            return list[RandomGenerator.Next(list.Count)];
+        }
+
+        public static KeyValuePair<T, U> RandomDictionaryElement<T, U>(this IDictionary<T, U> dict)
+        { 
+            return dict.ElementAt(RandomGenerator.Next(dict.Count));
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using BedrockServerConfigurator.Library.Location;
 using BedrockServerConfigurator.Library.Entities;
+using System.Drawing;
 
 namespace BedrockServerConfigurator.Library.Commands
 {
@@ -47,7 +48,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public Command TimeSet(Time time)
+        public Command TimeSet(MinecraftTime time)
         {
             return new Command($"time set {time}");
         }
@@ -103,6 +104,27 @@ namespace BedrockServerConfigurator.Library.Commands
         public Command Deop(IEntity player)
         {
             return new Command("de") + Op(player);
+        }
+
+        public Command Say(string message)
+        {
+            return new Command($"say {message}");
+        }
+
+        public Command SayInColor(string message, MinecraftColor color)
+        {
+            // seems like the minecraft server has a bug because it can't send colored messages
+            return Say(ColorMessage(message, color).MinecraftCommand);
+        }
+
+        public Command ColorMessage(string message, MinecraftColor color)
+        {
+            return new Command($"§{(int)color:x}{message}");
+        }
+
+        public Command AddEffect(IEntity entity, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
+        {
+            return new Command($"effect {entity.Name} {effect} {seconds} {amplifier} {hideParticles}");
         }
     }
 }
