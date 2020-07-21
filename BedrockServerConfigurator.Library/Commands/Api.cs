@@ -42,14 +42,14 @@ namespace BedrockServerConfigurator.Library.Commands
         {
             var server = GetServer(serverId);
 
-            server.RunACommand(Builder.TeleportToCoordinate(new Entity(from), PublicCoordinate.GetPublicCoordinate(x, y, z)));
+            server.RunACommand(Builder.TeleportToCoordinate(new Entity(from), new PublicCoordinate(x, y, z)));
         }
 
         public void TeleportEntityLocal(int serverId, string from, float x, float y, float z)
         {
             var server = GetServer(serverId);
 
-            server.RunACommand(Builder.TeleportLocal(new Entity(from), LocalCoordinate.GetLocalCoordinate(x, y, z)));
+            server.RunACommand(Builder.TeleportLocal(new Entity(from), new LocalCoordinate(x, y, z)));
         }
 
         public void TimeSet(int serverId, string timeOfDay)

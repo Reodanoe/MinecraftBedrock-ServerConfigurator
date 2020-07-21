@@ -8,9 +8,9 @@ namespace BedrockServerConfigurator.Library.Location
         {
         }
 
-        public static PublicCoordinate GetPublicCoordinate(float x = 0, float y = 0, float z = 0)
+        public PublicCoordinate(float x = 0, float y = 0, float z = 0) :
+            this(new PublicPoint(Axis.X, x), new PublicPoint(Axis.Y, y), new PublicPoint(Axis.Z, z))
         {
-            return new PublicCoordinate(new PublicPoint(Axis.X, x), new PublicPoint(Axis.Y, y), new PublicPoint(Axis.Z, z));
         }
 
         public static double Distance(PublicCoordinate one, PublicCoordinate two)

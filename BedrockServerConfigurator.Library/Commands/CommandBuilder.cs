@@ -39,7 +39,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <returns></returns>
         public Command SummonMobOnEntity(IEntity entity, string mob)
         {
-            return ExecuteOnEntityWithCommand(entity, LocalCoordinate.GetLocalCoordinate(), new Command($"summon {mob}"));
+            return ExecuteOnEntityWithCommand(entity, new LocalCoordinate(), new Command($"summon {mob}"));
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <returns></returns>
         public Command TeleportLocal(IEntity from, LocalCoordinate coordinate)
         {
-            return ExecuteOnEntityWithCommand(from, LocalCoordinate.GetLocalCoordinate(), TeleportToCoordinate(from, coordinate));
+            return ExecuteOnEntityWithCommand(from, new LocalCoordinate(), TeleportToCoordinate(from, coordinate));
         }
 
         /// <summary>
