@@ -7,7 +7,7 @@ namespace BedrockServerConfigurator.Library.Entities
     public class Entity : IEntity
     {
         public EntityType EntityType { get; }
-        public string PlayerName { get; }
+        private readonly string _playerName;
 
         public string Name => ToString();
 
@@ -30,6 +30,10 @@ namespace BedrockServerConfigurator.Library.Entities
             EntityType = entity;
         }
 
+        /// <summary>
+        /// Enter player's name, entering @a, @e, or other @'s will result in setting this entity to its correct type
+        /// </summary>
+        /// <param name="entity">Player's name or @a, @e, ...</param>
         public Entity(string entity)
         {
             var entityLower = entity.ToLower();
@@ -41,14 +45,14 @@ namespace BedrockServerConfigurator.Library.Entities
             }
             else
             {
-                PlayerName = entity;
+                _playerName = entity;
                 EntityType = EntityType.Player;
             }
         }
 
         private string EntityTag(EntityType entity) => entity switch
         {
-            EntityType.Player => PlayerName,
+            EntityType.Player => _playerName,
             _ => EntityName[entity]
         };
 

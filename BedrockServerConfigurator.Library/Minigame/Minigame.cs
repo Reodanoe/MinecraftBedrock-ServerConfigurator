@@ -15,22 +15,19 @@ namespace BedrockServerConfigurator.Library.Minigame
     /// </summary>
     public class Minigame
     {
-        private readonly ServerPlayer player;
-        private readonly Api api;
-
         private List<Microgame> microgames;
 
-        public Minigame(ServerPlayer player, Api api) : this(player, api, BasicMicrogames(player, api))
-        { 
+        public bool RunAllMicrogamesAtOnce { get; }
+
+        public Minigame(ServerPlayer player, Api api, bool runAllMicrogamesAtOnce) :
+            this(BasicMicrogames(player, api), runAllMicrogamesAtOnce)
+        {
         }
 
-        public Minigame(ServerPlayer player, Api api, List<Microgame> microgames)
+        public Minigame(List<Microgame> microgames, bool runAllMicrogamesAtOnce)
         {
-            this.player = player;
-            this.api = api;
             this.microgames = microgames;
-
-            microgames.ForEach(x => x.OnCreatedMicrogame += MicrogameCreated);
+            RunAllMicrogamesAtOnce = runAllMicrogamesAtOnce;
         }
 
         private void MicrogameCreated(object sender, MicrogameEventArgs e)
@@ -39,23 +36,65 @@ namespace BedrockServerConfigurator.Library.Minigame
             Console.WriteLine(e);
         }
 
+        private Microgame runningSingleMicrogame;
+
         public void Start()
         {
-            microgames.ForEach(x => x.StartMicrogame());
+            if (RunAllMicrogamesAtOnce)
+            {
+                microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
+
+                microgames.ForEach(x => x.StartMicrogame());
+            }
+            else
+            {
+                runningSingleMicrogame = microgames.RandomElement();
+
+                // work on this
+                runningSingleMicrogame.OnMicrogameEnded += MicrogameEnded;
+                runningSingleMicrogame.OnMicrogameCreated += MicrogameCreated;
+
+                runningSingleMicrogame.StartMicrogame();
+            }
         }
 
         public void Stop()
         {
-            microgames.ForEach(x => x.StopMicrogame());
+            if (RunAllMicrogamesAtOnce)
+            {
+                microgames.ForEach(x => x.OnMicrogameCreated -= MicrogameCreated);
+
+                microgames.ForEach(x => x.StopMicrogame());
+            }
+            else
+            {
+                // should unregister events here too
+
+                runningSingleMicrogame.StopMicrogame();
+            }
+        }
+
+        private void MicrogameEnded(Microgame game)
+        {
+            // runs the log to `MicrogameCreated` twice, fix it
+
+            game.StopMicrogame();
+
+            Start();
         }
 
         public static List<Microgame> BasicMicrogames(ServerPlayer player, Api api)
         {
             return new List<Microgame>
             {
-                new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api, 5, 20),
-                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api, 3, 7),
-                new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api)
+                new TeleportUpMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api, 5, 20),
+                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api, 3, 7),
+                new BadEffectMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api)
+
+                // testing
+                //new TeleportUpMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api, 5, 20),
+                //new SpawnRandomMobsMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api, 3, 7),
+                //new BadEffectMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api)
             };
         }
     }

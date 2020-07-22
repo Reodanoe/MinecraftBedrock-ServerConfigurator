@@ -85,5 +85,12 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public void AddEffect(int serverId, string entityName, string effect, int seconds, byte amplifier, bool hideParticles = false) =>
             AddEffect(serverId, entityName, Enum.Parse<MinecraftEffect>(effect, true), seconds, amplifier, hideParticles);
+
+        public bool IsServerRunning(int serverId)
+        {
+            var server = GetServer(serverId);
+
+            return server.Running;
+        }
     }
 }

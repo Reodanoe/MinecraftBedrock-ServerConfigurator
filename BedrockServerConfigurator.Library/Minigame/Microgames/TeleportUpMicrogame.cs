@@ -21,7 +21,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var delay = RandomDelay;
             var amount = Utilities.RandomGenerator.Next(MinBlocks, MaxBlocks + 1);
 
-            OnMicrogameCreated(new MicrogameEventArgs(Player, "Teleport Up", delay, $"Blocks: {amount}"));
+            MicrogameCreated(new MicrogameEventArgs(Player, "Teleport Up", delay, $"Blocks: {amount}"));
 
             string[] messages =
             {

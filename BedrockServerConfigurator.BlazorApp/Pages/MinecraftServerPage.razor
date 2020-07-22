@@ -65,7 +65,8 @@ else
 
         foreach (var p in selectedPlayers)
         {
-            runningMinigames.Add(new Minigame(p, api));
+            // also microgames have to stop when server stops running
+            runningMinigames.Add(new Minigame(p, api, false));
         }
 
         runningMinigames.ForEach(x => x.Start());

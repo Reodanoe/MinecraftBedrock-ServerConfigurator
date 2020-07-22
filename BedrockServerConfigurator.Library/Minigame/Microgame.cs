@@ -11,17 +11,28 @@ namespace BedrockServerConfigurator.Library.Minigame
     {
         public TimeSpan MinDelay { get; }
         public TimeSpan MaxDelay { get; }
+        protected ServerPlayer Player { get; }
+        protected Api Api { get; }
 
         protected TimeSpan RandomDelay => Utilities.RandomDelay(MinDelay, MaxDelay);
 
-        public ServerPlayer Player { get; }
-        public Api Api { get; }
+        /// <summary>
+        /// Runs inside `DelayAndMicrogame()` use `MicrogameCreated()` to call it in derived types
+        /// </summary>
+        public event EventHandler<MicrogameEventArgs> OnMicrogameCreated;
 
-        public event EventHandler<MicrogameEventArgs> OnCreatedMicrogame;
-        public event EventHandler OnMicrogameStarted;
+        /// <summary>
+        /// Runs after timer has started counting down until when microgame runs
+        /// </summary>
+        public event EventHandler OnMicrogameCountdownStarted;
+
+        /// <summary>
+        /// Runs right after microgame finished
+        /// </summary>
+        public event Action<Microgame> OnMicrogameEnded;
 
         private Timer timer;
-        private Action microgameToRun;
+        private Action microgameToRun;        
 
         public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api)
         {
@@ -33,31 +44,40 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         public void StartMicrogame()
         {
-            var (delay, game) = DelayAndMicrogame();
-            microgameToRun = game;
+            if(timer == null)
+            {
+                var (delay, game) = DelayAndMicrogame();
+                microgameToRun = game;
 
-            OnMicrogameStarted?.Invoke(this, null);
+                timer = new Timer(delay.TotalMilliseconds);
+                timer.Elapsed += Timer_Elapsed;
+                timer.AutoReset = false;
+                timer.Start();
 
-            timer = new Timer(delay.TotalMilliseconds);
-            timer.Elapsed += Timer_Elapsed;
-            timer.AutoReset = false;
-            timer.Start();
+                OnMicrogameCountdownStarted?.Invoke(this, null);
+            }
         }
 
         public void StopMicrogame()
         {
-            timer.Close();
-            timer = null;
+            if(timer != null)
+            {
+                timer.Elapsed -= Timer_Elapsed;
+                timer.Close();
+                timer = null;
+            }
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (Player.IsOnline)
+            if (Player.IsOnline && Api.IsServerRunning(Player.ServerId))
             {
                 microgameToRun();
+                OnMicrogameEnded?.Invoke(this);
             }
 
-            StartMicrogame();
+            StopMicrogame();
+            StartMicrogame();            
         }
 
         /// <summary>
@@ -68,9 +88,10 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <returns></returns>
         public abstract (TimeSpan, Action) DelayAndMicrogame();
 
-        protected void OnMicrogameCreated(MicrogameEventArgs args)
+        protected void MicrogameCreated(MicrogameEventArgs args)
         {
-            OnCreatedMicrogame?.Invoke(this, args);
+            // this is invoked twice in non parallel microgames, a bug
+            OnMicrogameCreated?.Invoke(this, args);
         }
     }
 }

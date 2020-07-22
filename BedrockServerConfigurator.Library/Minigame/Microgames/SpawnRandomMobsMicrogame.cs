@@ -31,7 +31,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var amount = Utilities.RandomGenerator.Next(MinMobs, MaxMobs + 1);
             var mob = hostileMobs.RandomElement();
 
-            OnMicrogameCreated(new MicrogameEventArgs(Player, "Spawn random mobs", delay, $"Mobs: {mob}, Amount: {amount}"));
+            MicrogameCreated(new MicrogameEventArgs(Player, "Spawn random mobs", delay, $"Mobs: {mob}, Amount: {amount}"));
 
             string[] messages =
             {

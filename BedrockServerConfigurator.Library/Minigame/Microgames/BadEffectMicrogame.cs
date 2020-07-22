@@ -17,7 +17,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var delay = RandomDelay;
             var (effect, messages) = BadEffectWithMessage(Player.Name);
 
-            OnMicrogameCreated(new MicrogameEventArgs(Player, "Bad effect", delay, $"Effect: {effect}"));
+            MicrogameCreated(new MicrogameEventArgs(Player, "Bad effect", delay, $"Effect: {effect}"));
 
             void game()
             {
