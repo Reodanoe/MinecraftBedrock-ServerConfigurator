@@ -8,6 +8,4 @@ PropertiesChanger
 ServerController
 	Add features
 		arrow up should put last ran command into input
-
-Server
-	
+_________________________________________________________________________________

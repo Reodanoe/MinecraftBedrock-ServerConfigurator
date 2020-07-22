@@ -70,8 +70,6 @@ namespace BedrockServerConfigurator.Library
         /// <param name="serverName">Name of individual servers.</param>
         public Configurator(string serversRootPath, string serverName)
         {
-            AppDomain.CurrentDomain.ProcessExit += (a, b) => StopAllServers();
-
             ServersRootPath = serversRootPath;
             ServerName = serverName;
 
@@ -123,7 +121,8 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Copies server template into a new folder which makes it a new server
         /// </summary>
-        public void NewServer()
+        /// <returns>Path to newly created server</returns>
+        public string NewServer()
         {
             CallLog("Creating new server");
 
@@ -141,6 +140,8 @@ namespace BedrockServerConfigurator.Library
             _ = copyFolder.StandardOutput.ReadToEnd();
 
             CallLog("Folder copied");
+
+            return newServerPath;
         }
 
         /// <summary>
@@ -168,7 +169,7 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Retruns
+        /// Returns properties in server.properties file in template server the C# way
         /// </summary>
         /// <returns></returns>
         public string GeneratePropertiesClass()
@@ -197,15 +198,15 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="serverID"></param>
         /// <param name="command"></param>
-        public void RunCommandOnSpecifiedServer(int serverID, string command)
+        public void RunCommandOnSpecifiedServer(int serverId, string command)
         {
-            if (AllServers.TryGetValue(serverID, out Server server))
+            if (AllServers.TryGetValue(serverId, out Server server))
             {
                 server.RunACommand(command);
             }
             else
             {
-                CallLog($"Couldn't run command \"{command}\" because server with the ID \"{serverID}\" doesn't exist.");
+                CallLog($"Couldn't run command \"{command}\" because server with the ID \"{serverId}\" doesn't exist.");
             }
         }
 
