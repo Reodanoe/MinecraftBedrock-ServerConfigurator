@@ -7,24 +7,25 @@ namespace BedrockServerConfigurator.Library.Minigame
     {
         public DateTime CreatedOn { get; }
         public ServerPlayer Player { get; }
-        public string MicroGameName { get; }
+        public string MicrogameName { get; }
         public TimeSpan Delay { get; }
-        public string AdditionaInfo { get; }
+        public string AdditionalInfo { get; }
 
-        // I need to work on this
-        public MicrogameEventArgs(ServerPlayer player, string microGameName, TimeSpan delay, string additionalInfo = "")
+        public DateTime RunsOn => CreatedOn.Add(Delay);
+
+        public MicrogameEventArgs(ServerPlayer player, string microgameName, TimeSpan delay, string additionalInfo = "")
         {
             CreatedOn = DateTime.Now;
 
             Player = player;
-            MicroGameName = microGameName;
+            MicrogameName = microgameName;
             Delay = delay;
-            AdditionaInfo = additionalInfo;
+            AdditionalInfo = additionalInfo;
         }
 
         public override string ToString()
         {
-            return $"[{MicroGameName}] - [{CreatedOn}] - Delay: {Delay} - Runs on player: {Player.Name} - Additional info: \"{AdditionaInfo}\"";
+            return $"[{MicrogameName}] - ([{CreatedOn}] + Delay: {Delay} = [{RunsOn}]) - Runs on player: {Player.Name} - Additional info: \"{AdditionalInfo}\"";
         }
     }
 }

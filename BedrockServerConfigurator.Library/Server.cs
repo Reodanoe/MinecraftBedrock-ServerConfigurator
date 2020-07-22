@@ -165,6 +165,8 @@ namespace BedrockServerConfigurator.Library
 
             var joinedPlayer = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
 
+            // this should maybe get checked if for example user is trying to join..
+            // the server could glitch and it would say the person disconnected when they never actually connected
             if (message.Contains("disconnected"))
             {
                 joinedPlayer.IsOnline = false;

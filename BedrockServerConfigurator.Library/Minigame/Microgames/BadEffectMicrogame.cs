@@ -1,32 +1,31 @@
-﻿using BedrockServerConfigurator.Library.Commands;
-using BedrockServerConfigurator.Library.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using BedrockServerConfigurator.Library.Commands;
+using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame.Microgames
 {
     public class BadEffectMicrogame : Microgame
     {
-        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay) : 
-            base(minDelay, maxDelay)
+        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api) : 
+            base(minDelay, maxDelay, player, api)
         {
         }
 
-        public override (TimeSpan, Action) DelayAndMicrogame(ServerPlayer player, Api api)
+        public override (TimeSpan, Action) DelayAndMicrogame()
         {
-            var toWait = Utilities.RandomDelay(MinDelay, MaxDelay);
-            var (effect, messages) = BadEffectWithMessage(player.Name);
+            var delay = RandomDelay;
+            var (effect, messages) = BadEffectWithMessage(Player.Name);
 
-            OnMicrogameCreated(new MicrogameEventArgs(player, "Bad effect", toWait, $"Effect: {effect}"));
+            OnMicrogameCreated(new MicrogameEventArgs(Player, "Bad effect", delay, $"Effect: {effect}"));
 
             void game()
             {
-                api.Say(player.ServerId, messages.RandomElement());
-                api.AddEffect(player.ServerId, player.Name, effect, 15, 1);
+                Api.Say(Player.ServerId, messages.RandomElement());
+                Api.AddEffect(Player.ServerId, Player.Name, effect, 15, 1);
             }
 
-            return (toWait, game);
+            return (delay, game);
         }
 
         private KeyValuePair<MinecraftEffect, string[]> BadEffectWithMessage(string name)

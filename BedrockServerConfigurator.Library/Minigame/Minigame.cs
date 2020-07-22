@@ -13,40 +13,49 @@ namespace BedrockServerConfigurator.Library.Minigame
     /// <summary>
     /// This class creates random minigames for a player to deal with
     /// </summary>
-    public class MiniGame
+    public class Minigame
     {
         private readonly ServerPlayer player;
         private readonly Api api;
 
-        public Player ServerPlayer => player;
-
         private List<Microgame> microgames;
 
-        public MiniGame(ServerPlayer player, Api api)
+        public Minigame(ServerPlayer player, Api api) : this(player, api, BasicMicrogames(player, api))
+        { 
+        }
+
+        public Minigame(ServerPlayer player, Api api, List<Microgame> microgames)
         {
             this.player = player;
             this.api = api;
+            this.microgames = microgames;
 
-            var basicMicrogames = BasicMicrogames();
-            microgames = basicMicrogames;
-
-            Start();
+            microgames.ForEach(x => x.OnCreatedMicrogame += MicrogameCreated);
         }
 
-        private void Start()
+        private void MicrogameCreated(object sender, MicrogameEventArgs e)
         {
-            // two modes
-            // microgames take turns
-            // they all start at the same time
+            // maybe save it to a list so I can see which ones are upcoming or something
+            Console.WriteLine(e);
         }
 
-        private List<Microgame> BasicMicrogames()
+        public void Start()
+        {
+            microgames.ForEach(x => x.StartMicrogame());
+        }
+
+        public void Stop()
+        {
+            microgames.ForEach(x => x.StopMicrogame());
+        }
+
+        public static List<Microgame> BasicMicrogames(ServerPlayer player, Api api)
         {
             return new List<Microgame>
             {
-                new TeleportUpMicrogame(TimeSpan.FromSeconds(20), TimeSpan.FromMinutes(2), 5, 20),
-                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), 3, 7),
-                new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2))
+                new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api, 5, 20),
+                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api, 3, 7),
+                new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2), player, api)
             };
         }
     }

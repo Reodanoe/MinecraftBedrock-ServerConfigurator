@@ -46,7 +46,7 @@ else
     private Api api;
 
     List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
-    List<MiniGame> runningMinigames = new List<MiniGame>();
+    List<Minigame> runningMinigames = new List<Minigame>();
 
     protected override void OnParametersSet()
     {
@@ -59,12 +59,16 @@ else
 
     private void Start()
     {
+        runningMinigames.ForEach(x => x.Stop());
+
         runningMinigames.Clear();
 
         foreach (var p in selectedPlayers)
         {
-            runningMinigames.Add(new MiniGame(p, api));
+            runningMinigames.Add(new Minigame(p, api));
         }
+
+        runningMinigames.ForEach(x => x.Start());
     }
 
     private string ProcessTime(DateTime date)
