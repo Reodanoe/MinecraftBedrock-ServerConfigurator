@@ -203,8 +203,6 @@ namespace BedrockServerConfigurator.Library
         /// <param name="command"></param>
         public void RunACommand(string command)
         {
-            Console.WriteLine(command);
-
             if (Running)
             {
                 ServerInstance.StandardInput.WriteLine(command);

@@ -57,14 +57,18 @@ namespace BedrockServerConfigurator.Library
             }
         }
 
-        public static T RandomElement<T>(this IList<T> list)
+        public static TimeSpan RandomDelay(TimeSpan minDelay, TimeSpan maxDelay)
         {
-            return list[RandomGenerator.Next(list.Count)];
-        }
+            if(maxDelay < minDelay)
+            {
+                throw new ArgumentException("maxDelay has to be bigger than minDelay", "maxDelay");
+            }
 
-        public static KeyValuePair<T, U> RandomDictionaryElement<T, U>(this IDictionary<T, U> dict)
-        { 
-            return dict.ElementAt(RandomGenerator.Next(dict.Count));
+            var timeBetween = maxDelay - minDelay;
+            var randomDelayMiliseconds = RandomGenerator.Next((int)timeBetween.TotalMilliseconds);
+            var randomDelay = minDelay.TotalMilliseconds + randomDelayMiliseconds;
+
+            return TimeSpan.FromMilliseconds(randomDelay);
         }
     }
 }
