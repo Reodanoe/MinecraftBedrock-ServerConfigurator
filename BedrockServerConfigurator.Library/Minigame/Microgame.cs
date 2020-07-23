@@ -11,7 +11,9 @@ namespace BedrockServerConfigurator.Library.Minigame
     {
         public TimeSpan MinDelay { get; }
         public TimeSpan MaxDelay { get; }
-        protected ServerPlayer Player { get; }
+
+        // Not entirely which access modifiers these should be
+        internal ServerPlayer Player { get; }
         protected Api Api { get; }
 
         protected TimeSpan RandomDelay => Utilities.RandomDelay(MinDelay, MaxDelay);
@@ -95,7 +97,6 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <param name="args"></param>
         protected void MicrogameCreated(MicrogameEventArgs args)
         {
-            // this is invoked twice in non parallel microgames, a bug
             OnMicrogameCreated?.Invoke(this, args);
         }
     }

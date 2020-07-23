@@ -8,15 +8,13 @@ using BedrockServerConfigurator.Library.Minigame.Microgames;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
-    /// <summary>
-    /// This class creates random minigames for a player to deal with
-    /// </summary>
     public class Minigame
     {
         private readonly List<Microgame> microgames;
 
         public bool RunAllMicrogamesAtOnce { get; }
 
+        // this won't exist
         private Microgame runningSingleMicrogame;
 
         public Minigame(ServerPlayer player, Api api, bool runAllMicrogamesAtOnce) :
@@ -42,7 +40,7 @@ namespace BedrockServerConfigurator.Library.Minigame
             {
                 microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
 
-                microgames.ForEach(x => x.StartMicrogame(RunAllMicrogamesAtOnce));
+                microgames.ForEach(x => x.StartMicrogame());
             }
             else
             {
@@ -51,6 +49,22 @@ namespace BedrockServerConfigurator.Library.Minigame
                 // it means that the players take turn
                 // it does execute for each player separetly
 
+                /* Something like this will be here instead
+                var grouped = microgames.GroupBy(x => x.Player).Select(y =>
+                new { 
+                    Player = y.Key, 
+                    Microgames = y.ToList()
+                });
+
+                foreach (var entry in grouped)
+                {
+                    var randomGame = entry.Microgames.RandomElement();
+                    randomGame.DelayAndMicrogame();
+                }
+                */
+                
+
+                // runs microgames one by one, what could happen is that some players dont get to play
                 runningSingleMicrogame = microgames.RandomElement();
 
                 runningSingleMicrogame.OnMicrogameEnded += MicrogameEnded;
@@ -70,7 +84,6 @@ namespace BedrockServerConfigurator.Library.Minigame
             }
             else
             {
-                // not sure if this is correct
                 runningSingleMicrogame.OnMicrogameEnded -= MicrogameEnded;
                 runningSingleMicrogame.OnMicrogameCreated -= MicrogameCreated;
 
