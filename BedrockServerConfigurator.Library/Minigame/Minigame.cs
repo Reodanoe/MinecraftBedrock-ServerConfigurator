@@ -1,12 +1,10 @@
-﻿using BedrockServerConfigurator.Library.Commands;
-using BedrockServerConfigurator.Library.Entities;
-using BedrockServerConfigurator.Library.Minigame.Microgames;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
+using System.Reflection;
+using BedrockServerConfigurator.Library.Commands;
+using BedrockServerConfigurator.Library.Entities;
+using BedrockServerConfigurator.Library.Minigame.Microgames;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
@@ -15,9 +13,11 @@ namespace BedrockServerConfigurator.Library.Minigame
     /// </summary>
     public class Minigame
     {
-        private List<Microgame> microgames;
+        private readonly List<Microgame> microgames;
 
         public bool RunAllMicrogamesAtOnce { get; }
+
+        private Microgame runningSingleMicrogame;
 
         public Minigame(ServerPlayer player, Api api, bool runAllMicrogamesAtOnce) :
             this(BasicMicrogames(player, api), runAllMicrogamesAtOnce)
@@ -34,9 +34,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             // maybe save it to a list so I can see which ones are upcoming or something
             Console.WriteLine(e);
-        }
-
-        private Microgame runningSingleMicrogame;
+        }        
 
         public void Start()
         {
@@ -44,17 +42,21 @@ namespace BedrockServerConfigurator.Library.Minigame
             {
                 microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
 
-                microgames.ForEach(x => x.StartMicrogame());
+                microgames.ForEach(x => x.StartMicrogame(RunAllMicrogamesAtOnce));
             }
             else
             {
+                // well, I didnt think this through completely
+                // because those minigames arent bound to a player
+                // it means that the players take turn
+                // it does execute for each player separetly
+
                 runningSingleMicrogame = microgames.RandomElement();
 
-                // work on this
                 runningSingleMicrogame.OnMicrogameEnded += MicrogameEnded;
                 runningSingleMicrogame.OnMicrogameCreated += MicrogameCreated;
 
-                runningSingleMicrogame.StartMicrogame();
+                runningSingleMicrogame.StartMicrogame(RunAllMicrogamesAtOnce);
             }
         }
 
@@ -68,7 +70,9 @@ namespace BedrockServerConfigurator.Library.Minigame
             }
             else
             {
-                // should unregister events here too
+                // not sure if this is correct
+                runningSingleMicrogame.OnMicrogameEnded -= MicrogameEnded;
+                runningSingleMicrogame.OnMicrogameCreated -= MicrogameCreated;
 
                 runningSingleMicrogame.StopMicrogame();
             }
@@ -76,10 +80,9 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         private void MicrogameEnded(Microgame game)
         {
-            // runs the log to `MicrogameCreated` twice, fix it
-
-            game.StopMicrogame();
-
+            runningSingleMicrogame.OnMicrogameEnded -= MicrogameEnded;
+            runningSingleMicrogame.OnMicrogameCreated -= MicrogameCreated;
+            
             Start();
         }
 
@@ -87,14 +90,14 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             return new List<Microgame>
             {
-                new TeleportUpMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api, 5, 20),
-                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api, 3, 7),
-                new BadEffectMicrogame(TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3), player, api)
+                //new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
+                //new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
+                //new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
 
                 // testing
-                //new TeleportUpMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api, 5, 20),
-                //new SpawnRandomMobsMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api, 3, 7),
-                //new BadEffectMicrogame(TimeSpan.Zero, TimeSpan.FromSeconds(20), player, api)
+                new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
+                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
+                new BadEffectMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api)
             };
         }
     }

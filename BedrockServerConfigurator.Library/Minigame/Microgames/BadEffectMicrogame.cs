@@ -7,7 +7,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 {
     public class BadEffectMicrogame : Microgame
     {
-        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api) : 
+        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api) :
             base(minDelay, maxDelay, player, api)
         {
         }
