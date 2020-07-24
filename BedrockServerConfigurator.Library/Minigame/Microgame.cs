@@ -1,9 +1,7 @@
-﻿using BedrockServerConfigurator.Library.Commands;
-using BedrockServerConfigurator.Library.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Timers;
+using BedrockServerConfigurator.Library.Commands;
+using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
@@ -11,10 +9,8 @@ namespace BedrockServerConfigurator.Library.Minigame
     {
         public TimeSpan MinDelay { get; }
         public TimeSpan MaxDelay { get; }
-
-        // Not entirely which access modifiers these should be
-        internal ServerPlayer Player { get; }
-        protected Api Api { get; }
+        public ServerPlayer Player { get; }
+        public Api Api { get; }
 
         protected TimeSpan RandomDelay => Utilities.RandomDelay(MinDelay, MaxDelay);
 

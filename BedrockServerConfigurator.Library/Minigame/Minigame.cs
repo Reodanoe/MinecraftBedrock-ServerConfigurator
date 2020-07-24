@@ -10,12 +10,20 @@ namespace BedrockServerConfigurator.Library.Minigame
 {
     public class Minigame
     {
-        private readonly List<Microgame> microgames;
-
+        public List<Microgame> Microgames { get; }
         public bool RunAllMicrogamesAtOnce { get; }
 
         // this won't exist
         private Microgame runningSingleMicrogame;
+
+        public Dictionary<ServerPlayer, List<Microgame>> groupedMicrogames => 
+            Microgames.GroupBy(a => a.Player).Select(b =>
+            new
+            {
+                Player = b.Key,
+                Microgames = b.ToList()
+            }).ToDictionary(c => c.Player, d => d.Microgames);
+
 
         public Minigame(ServerPlayer player, Api api, bool runAllMicrogamesAtOnce) :
             this(BasicMicrogames(player, api), runAllMicrogamesAtOnce)
@@ -24,7 +32,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         public Minigame(List<Microgame> microgames, bool runAllMicrogamesAtOnce)
         {
-            this.microgames = microgames;
+            Microgames = microgames;
             RunAllMicrogamesAtOnce = runAllMicrogamesAtOnce;
         }
 
@@ -38,9 +46,9 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             if (RunAllMicrogamesAtOnce)
             {
-                microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
+                Microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
 
-                microgames.ForEach(x => x.StartMicrogame());
+                Microgames.ForEach(x => x.StartMicrogame());
             }
             else
             {
@@ -49,23 +57,8 @@ namespace BedrockServerConfigurator.Library.Minigame
                 // it means that the players take turn
                 // it does execute for each player separetly
 
-                /* Something like this will be here instead
-                var grouped = microgames.GroupBy(x => x.Player).Select(y =>
-                new { 
-                    Player = y.Key, 
-                    Microgames = y.ToList()
-                });
-
-                foreach (var entry in grouped)
-                {
-                    var randomGame = entry.Microgames.RandomElement();
-                    randomGame.DelayAndMicrogame();
-                }
-                */
-                
-
                 // runs microgames one by one, what could happen is that some players dont get to play
-                runningSingleMicrogame = microgames.RandomElement();
+                runningSingleMicrogame = Microgames.RandomElement();
 
                 runningSingleMicrogame.OnMicrogameEnded += MicrogameEnded;
                 runningSingleMicrogame.OnMicrogameCreated += MicrogameCreated;
@@ -78,9 +71,9 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             if (RunAllMicrogamesAtOnce)
             {
-                microgames.ForEach(x => x.OnMicrogameCreated -= MicrogameCreated);
+                Microgames.ForEach(x => x.OnMicrogameCreated -= MicrogameCreated);
 
-                microgames.ForEach(x => x.StopMicrogame());
+                Microgames.ForEach(x => x.StopMicrogame());
             }
             else
             {
