@@ -16,7 +16,14 @@ namespace BedrockServerConfigurator.Library.Commands
 
         private Server GetServer(int id)
         {
-            return Configurator.AllServers[id];
+            if(Configurator.AllServers.TryGetValue(id, out Server server))
+            {
+                return server;
+            }
+            else
+            {
+                throw new IndexOutOfRangeException($"Server with id {id} wasn't found in Configurator.AllServers");
+            }            
         }
 
         public void SpawnMobsOnAPlayer(int serverId, string playerName, string mob, int amount)

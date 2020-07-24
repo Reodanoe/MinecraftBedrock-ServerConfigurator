@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BedrockServerConfigurator.Library.Entities
+﻿namespace BedrockServerConfigurator.Library.Entities
 {
     public class Player : IEntity
     {

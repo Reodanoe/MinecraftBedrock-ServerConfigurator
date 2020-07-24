@@ -16,7 +16,7 @@ else
     {
         <div class="card" style="width: 18rem;">
             <div class="card-body">
-                <h5 class="card-title">@player.Username</h5>
+                <h5 class="card-title">@player.Name</h5>
                 <p class="card-text">Xuid - @player.Xuid</p>
                 <p class="card-text">
                     @(player.IsOnline ? $"Has been online since: {player.LastAction} = {ProcessTime(player.LastAction)}"
@@ -46,7 +46,7 @@ else
     private Api api;
 
     List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
-    List<Minigame> runningMinigames = new List<Minigame>();
+    Minigame runningMinigame;
 
     protected override void OnParametersSet()
     {
@@ -57,19 +57,42 @@ else
         }
     }
 
+    private List<Microgame> BasicMicrogames(ServerPlayer player)
+    {
+        return new List<Microgame>
+        {
+            new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
+            new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
+            new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
+
+            // testing
+            //new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
+            //new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
+            //new BadEffectMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api)
+        };
+    }
+
     private void Start()
     {
-        runningMinigames.ForEach(x => x.Stop());
+        if (runningMinigame != null)
+        {
+            Stop();
+        }
 
-        runningMinigames.Clear();
+        var listMicrogames = new List<Microgame>();
 
         foreach (var p in selectedPlayers)
         {
-            // also microgames have to stop when server stops running
-            runningMinigames.Add(new Minigame(p, api, false));
+            listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        runningMinigames.ForEach(x => x.Start());
+        runningMinigame = new Minigame(listMicrogames, false);
+        runningMinigame.Start();
+    }
+
+    private void Stop()
+    {
+        runningMinigame.Stop();
     }
 
     private string ProcessTime(DateTime date)

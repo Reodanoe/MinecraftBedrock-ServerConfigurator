@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.Entities;
-using BedrockServerConfigurator.Library.Minigame.Microgames;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
@@ -13,10 +10,10 @@ namespace BedrockServerConfigurator.Library.Minigame
         public List<Microgame> Microgames { get; }
         public bool RunAllMicrogamesAtOnce { get; }
 
-        // this won't exist
-        private Microgame runningSingleMicrogame;
-
-        public Dictionary<ServerPlayer, List<Microgame>> groupedMicrogames => 
+        /// <summary>
+        /// Groups property Microgames by a player
+        /// </summary>
+        public Dictionary<ServerPlayer, List<Microgame>> GroupedMicrogamesByPlayer => 
             Microgames.GroupBy(a => a.Player).Select(b =>
             new
             {
@@ -24,23 +21,18 @@ namespace BedrockServerConfigurator.Library.Minigame
                 Microgames = b.ToList()
             }).ToDictionary(c => c.Player, d => d.Microgames);
 
+        private readonly List<Microgame> runningMicrogames = new List<Microgame>();
 
-        public Minigame(ServerPlayer player, Api api, bool runAllMicrogamesAtOnce) :
-            this(BasicMicrogames(player, api), runAllMicrogamesAtOnce)
-        {
-        }
-
+        /// <summary>
+        /// Class for running microgames
+        /// </summary>
+        /// <param name="microgames">If true all microgames are started for every player, if false, microgames take turns</param>
+        /// <param name="runAllMicrogamesAtOnce"></param>
         public Minigame(List<Microgame> microgames, bool runAllMicrogamesAtOnce)
         {
             Microgames = microgames;
             RunAllMicrogamesAtOnce = runAllMicrogamesAtOnce;
         }
-
-        private void MicrogameCreated(object sender, MicrogameEventArgs e)
-        {
-            // maybe save it to a list so I can see which ones are upcoming or something
-            Console.WriteLine(e);
-        }        
 
         public void Start()
         {
@@ -52,18 +44,11 @@ namespace BedrockServerConfigurator.Library.Minigame
             }
             else
             {
-                // well, I didnt think this through completely
-                // because those minigames arent bound to a player
-                // it means that the players take turn
-                // it does execute for each player separetly
-
-                // runs microgames one by one, what could happen is that some players dont get to play
-                runningSingleMicrogame = Microgames.RandomElement();
-
-                runningSingleMicrogame.OnMicrogameEnded += MicrogameEnded;
-                runningSingleMicrogame.OnMicrogameCreated += MicrogameCreated;
-
-                runningSingleMicrogame.StartMicrogame(RunAllMicrogamesAtOnce);
+                foreach (var item in GroupedMicrogamesByPlayer)
+                {
+                    var game = StartRandomMicrogameForPlayer(item.Key);
+                    runningMicrogames.Add(game);
+                }
             }
         }
 
@@ -77,34 +62,46 @@ namespace BedrockServerConfigurator.Library.Minigame
             }
             else
             {
-                runningSingleMicrogame.OnMicrogameEnded -= MicrogameEnded;
-                runningSingleMicrogame.OnMicrogameCreated -= MicrogameCreated;
-
-                runningSingleMicrogame.StopMicrogame();
+                runningMicrogames.ForEach(x => x.StopMicrogame());
+                runningMicrogames.Clear();
             }
+        }
+
+        private void MicrogameCreated(object sender, MicrogameEventArgs e)
+        {
+            // maybe save it to a list so I can see which ones are upcoming or something
+            Console.WriteLine(e);
         }
 
         private void MicrogameEnded(Microgame game)
         {
-            runningSingleMicrogame.OnMicrogameEnded -= MicrogameEnded;
-            runningSingleMicrogame.OnMicrogameCreated -= MicrogameCreated;
-            
-            Start();
+            runningMicrogames.Remove(game);
+
+            var newGame = RegisterNewMicrogame(game);
+            runningMicrogames.Add(newGame);
         }
 
-        public static List<Microgame> BasicMicrogames(ServerPlayer player, Api api)
-        {
-            return new List<Microgame>
-            {
-                //new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
-                //new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
-                //new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
+        private Microgame RandomPlayerMicrogame(ServerPlayer player) => 
+            GroupedMicrogamesByPlayer[player].RandomElement();
 
-                // testing
-                new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
-                new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
-                new BadEffectMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api)
-            };
+        private Microgame RegisterNewMicrogame(Microgame oldGame)
+        {
+            oldGame.OnMicrogameCreated -= MicrogameCreated;
+            oldGame.OnMicrogameEnded -= MicrogameEnded;
+
+            var newGame = StartRandomMicrogameForPlayer(oldGame.Player);
+
+            return newGame;
+        }
+
+        private Microgame StartRandomMicrogameForPlayer(ServerPlayer player)
+        {
+            var newGame = RandomPlayerMicrogame(player);
+            newGame.OnMicrogameCreated += MicrogameCreated;
+            newGame.OnMicrogameEnded += MicrogameEnded;
+            newGame.StartMicrogame(false);
+
+            return newGame;
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using BedrockServerConfigurator.Library.Entities;
-using System;
+﻿using System;
+using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
@@ -25,7 +25,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         public override string ToString()
         {
-            return $"[{MicrogameName}] - ([{CreatedOn}] + Delay: {Delay} = [{RunsOn}]) - Runs on player: {Player.Name} - Additional info: \"{AdditionalInfo}\"";
+            return $"[{MicrogameName}] - ([{CreatedOn}] + Delay: {Delay} = [{RunsOn}]) - {Player.Name} - Additional info: \"{AdditionalInfo}\"";
         }
     }
 }
