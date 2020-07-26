@@ -197,7 +197,7 @@ namespace BedrockServerConfigurator.Library
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public async Task RunCommandAsync(Command command) => await RunCommandAsync(command.ToString());
+        public async Task RunCommandAsync(Command command) => await RunCommandAsync(command.MinecraftCommand);
 
         /// <summary>
         /// Runs a command on the running server.

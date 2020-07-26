@@ -7,7 +7,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 {
     public class BadEffectMicrogame : Microgame
     {
-        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api) :
+        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api) :
             base(minDelay, maxDelay, player, api)
         {
         }
@@ -17,12 +17,12 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var delay = RandomDelay;
             var (effect, messages) = BadEffectWithMessage(Player.Name);
 
-            MicrogameCreated(new MicrogameEventArgs(Player, "Bad effect", delay, $"Effect: {effect}"));
+            MicrogameCreated(new MicrogameEventArgs(this, Player, "Bad effect", delay, $"Effect: {effect}"));
 
             async void game()
             {
-                await Api.Say(Player.ServerId, messages.RandomElement());
-                await Api.AddEffect(Player.ServerId, Player.Name, effect, 15, 1);
+                await Api.Say(messages.RandomElement());
+                await Api.AddEffect(Player.Name, effect, 15, 1);
             }
 
             return (delay, game);

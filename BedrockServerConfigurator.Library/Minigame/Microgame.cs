@@ -11,7 +11,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         public TimeSpan MinDelay { get; }
         public TimeSpan MaxDelay { get; }
         public ServerPlayer Player { get; }
-        public Api Api { get; }
+        public ServerApi Api { get; }
 
         protected TimeSpan RandomDelay => Utilities.RandomDelay(MinDelay, MaxDelay);
 
@@ -29,7 +29,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         private Action microgameToRun;
         private bool microgameRepeats;
 
-        public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api)
+        public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api)
         {
             MinDelay = minDelay;
             MaxDelay = maxDelay;
@@ -42,6 +42,7 @@ namespace BedrockServerConfigurator.Library.Minigame
             if(timer == null)
             {
                 microgameRepeats = repeats;
+
                 var (delay, game) = DelayAndMicrogame();
                 microgameToRun = game;
 
@@ -64,7 +65,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         private void RunMicrogame(object sender, ElapsedEventArgs e)
         {
-            if (Player.IsOnline && Api.IsServerRunning(Player.ServerId))
+            if (Player.IsOnline && Api.IsServerRunning())
             {
                 microgameToRun();
             }

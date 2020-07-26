@@ -43,7 +43,7 @@ else
     public int Id { get; set; }
 
     private Server minecraftServer;
-    private Api api;
+    private ServerApi api;
 
     List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
     Minigame runningMinigame;
@@ -53,7 +53,7 @@ else
         if (config.AllServers.TryGetValue(Id, out Server server))
         {
             minecraftServer = server;
-            api = new Api(config);
+            api = new ServerApi(minecraftServer);
         }
     }
 
@@ -87,7 +87,7 @@ else
             listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        runningMinigame = new Minigame(listMicrogames, false);
+        runningMinigame = new Minigame(listMicrogames, true);
         runningMinigame.Start();
     }
 
@@ -99,7 +99,7 @@ else
     private string ProcessTime(DateTime date)
     {
         var time = DateTime.Now.Subtract(date);
-        var minutes = Math.Round(time.TotalMinutes, 1);
+        var minutes = Math.Floor(time.TotalMinutes);
 
         return $"{minutes} minutes";
     }

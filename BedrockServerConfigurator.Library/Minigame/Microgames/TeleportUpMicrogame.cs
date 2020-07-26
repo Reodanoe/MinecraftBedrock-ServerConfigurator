@@ -9,7 +9,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
         public int MinBlocks { get; }
         public int MaxBlocks { get; }
 
-        public TeleportUpMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api, int minBlocks, int maxBlocks) : 
+        public TeleportUpMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api, int minBlocks, int maxBlocks) : 
             base(minDelay, maxDelay, player, api)
         {
             MinBlocks = minBlocks;
@@ -21,7 +21,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var delay = RandomDelay;
             var amount = Utilities.RandomGenerator.Next(MinBlocks, MaxBlocks + 1);
 
-            MicrogameCreated(new MicrogameEventArgs(Player, "Teleport Up", delay, $"Blocks: {amount}"));
+            MicrogameCreated(new MicrogameEventArgs(this, Player, "Teleport Up", delay, $"Blocks: {amount}"));
 
             string[] messages =
             {
@@ -35,8 +35,8 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             async void game()
             {
-                await Api.Say(Player.ServerId, randomMessage);
-                await Api.TeleportEntityLocal(Player.ServerId, Player.Name, 0, amount, 0);
+                await Api.Say(randomMessage);
+                await Api.TeleportEntityLocal(Player.Name, 0, amount, 0);
             }
 
             return (delay, game);

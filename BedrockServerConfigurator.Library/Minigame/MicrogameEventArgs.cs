@@ -6,6 +6,7 @@ namespace BedrockServerConfigurator.Library.Minigame
     public class MicrogameEventArgs : EventArgs
     {
         public DateTime CreatedOn { get; }
+        public Microgame Sender { get; }
         public ServerPlayer Player { get; }
         public string MicrogameName { get; }
         public TimeSpan Delay { get; }
@@ -13,10 +14,11 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         public DateTime RunsOn => CreatedOn.Add(Delay);
 
-        public MicrogameEventArgs(ServerPlayer player, string microgameName, TimeSpan delay, string additionalInfo = "")
+        public MicrogameEventArgs(Microgame sender, ServerPlayer player, string microgameName, TimeSpan delay, string additionalInfo = "")
         {
             CreatedOn = DateTime.Now;
 
+            Sender = sender;
             Player = player;
             MicrogameName = microgameName;
             Delay = delay;

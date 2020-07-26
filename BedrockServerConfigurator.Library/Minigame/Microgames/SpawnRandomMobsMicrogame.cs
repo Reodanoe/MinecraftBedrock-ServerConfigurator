@@ -19,7 +19,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             "blaze"
         };
 
-        public SpawnRandomMobsMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, Api api, int minMobs, int maxMobs) : 
+        public SpawnRandomMobsMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api, int minMobs, int maxMobs) : 
             base(minDelay, maxDelay, player, api)
         {
             MinMobs = minMobs;
@@ -32,7 +32,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             var amount = Utilities.RandomGenerator.Next(MinMobs, MaxMobs + 1);
             var mob = hostileMobs.RandomElement();
 
-            MicrogameCreated(new MicrogameEventArgs(Player, "Spawn random mobs", delay, $"Mobs: {mob}, Amount: {amount}"));
+            MicrogameCreated(new MicrogameEventArgs(this, Player, "Spawn random mobs", delay, $"Mobs: {mob}, Amount: {amount}"));
 
             string[] messages =
             {
@@ -46,8 +46,8 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             async void game()
             {
-                await Api.Say(Player.ServerId, randomMessage);
-                await Api.SpawnMobsOnAPlayer(Player.ServerId, Player.Name, mob, amount);
+                await Api.Say(randomMessage);
+                await Api.SpawnMobsOnAPlayer(Player.Name, mob, amount);
             }
 
             return (delay, game);

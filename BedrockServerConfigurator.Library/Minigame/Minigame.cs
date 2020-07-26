@@ -18,7 +18,7 @@ namespace BedrockServerConfigurator.Library.Minigame
             Microgames.GroupBy(a => a.Player)
                       .ToDictionary(b => b.Key, c => c.ToList());
 
-        private List<Microgame> runningMicrogames = new List<Microgame>();
+        private readonly List<Microgame> runningMicrogames = new List<Microgame>();
 
         /// <summary>
         /// Class for running microgames

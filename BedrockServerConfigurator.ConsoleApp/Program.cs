@@ -10,9 +10,9 @@ namespace BedrockServerConfigurator.ConsoleApp
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
-            // await EasyStart();
+            await EasyStart();
         }
 
         private static async Task EasyStart()
