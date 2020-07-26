@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame
@@ -13,15 +14,11 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <summary>
         /// Groups property Microgames by a player
         /// </summary>
-        public Dictionary<ServerPlayer, List<Microgame>> GroupedMicrogamesByPlayer => 
-            Microgames.GroupBy(a => a.Player).Select(b =>
-            new
-            {
-                Player = b.Key,
-                Microgames = b.ToList()
-            }).ToDictionary(c => c.Player, d => d.Microgames);
+        public Dictionary<ServerPlayer, List<Microgame>> GroupedMicrogamesByPlayer =>
+            Microgames.GroupBy(a => a.Player)
+                      .ToDictionary(b => b.Key, c => c.ToList());
 
-        private readonly List<Microgame> runningMicrogames = new List<Microgame>();
+        private List<Microgame> runningMicrogames = new List<Microgame>();
 
         /// <summary>
         /// Class for running microgames
@@ -38,15 +35,20 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             if (RunAllMicrogamesAtOnce)
             {
-                Microgames.ForEach(x => x.OnMicrogameCreated += MicrogameCreated);
+                runningMicrogames.AddRange(Microgames);
 
-                Microgames.ForEach(x => x.StartMicrogame());
+                foreach (var game in runningMicrogames)
+                {
+                    game.OnMicrogameCreated += MicrogameCreated;
+                    game.StartMicrogame();
+                }
             }
             else
             {
                 foreach (var item in GroupedMicrogamesByPlayer)
                 {
                     var game = StartRandomMicrogameForPlayer(item.Key);
+
                     runningMicrogames.Add(game);
                 }
             }
@@ -54,17 +56,9 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         public void Stop()
         {
-            if (RunAllMicrogamesAtOnce)
-            {
-                Microgames.ForEach(x => x.OnMicrogameCreated -= MicrogameCreated);
+            runningMicrogames.ForEach(x => x.StopMicrogame());
 
-                Microgames.ForEach(x => x.StopMicrogame());
-            }
-            else
-            {
-                runningMicrogames.ForEach(x => x.StopMicrogame());
-                runningMicrogames.Clear();
-            }
+            runningMicrogames.Clear();
         }
 
         private void MicrogameCreated(object sender, MicrogameEventArgs e)
@@ -73,35 +67,54 @@ namespace BedrockServerConfigurator.Library.Minigame
             Console.WriteLine(e);
         }
 
-        private void MicrogameEnded(Microgame game)
+        /// <summary>
+        /// When a game ends it starts a new one
+        /// </summary>
+        /// <param name="game"></param>
+        private void Solo_MicrogameEnded(Microgame game)
         {
             runningMicrogames.Remove(game);
 
-            var newGame = RegisterNewMicrogame(game);
+            var newGame = RegisterNewSoloMicrogame(game);
             runningMicrogames.Add(newGame);
         }
 
-        private Microgame RandomPlayerMicrogame(ServerPlayer player) => 
-            GroupedMicrogamesByPlayer[player].RandomElement();
-
-        private Microgame RegisterNewMicrogame(Microgame oldGame)
+        /// <summary>
+        /// Replaces old microgame of a player for a new one
+        /// </summary>
+        /// <param name="oldGame"></param>
+        /// <returns></returns>
+        private Microgame RegisterNewSoloMicrogame(Microgame oldGame)
         {
             oldGame.OnMicrogameCreated -= MicrogameCreated;
-            oldGame.OnMicrogameEnded -= MicrogameEnded;
+            oldGame.OnMicrogameEnded -= Solo_MicrogameEnded;
 
             var newGame = StartRandomMicrogameForPlayer(oldGame.Player);
 
             return newGame;
         }
 
+        /// <summary>
+        /// Selects a new microgame for a player and starts it
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
         private Microgame StartRandomMicrogameForPlayer(ServerPlayer player)
         {
             var newGame = RandomPlayerMicrogame(player);
             newGame.OnMicrogameCreated += MicrogameCreated;
-            newGame.OnMicrogameEnded += MicrogameEnded;
+            newGame.OnMicrogameEnded += Solo_MicrogameEnded;
             newGame.StartMicrogame(false);
 
             return newGame;
         }
+
+        /// <summary>
+        /// Selects a new random microgame that's registered under a player
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        private Microgame RandomPlayerMicrogame(ServerPlayer player) =>
+            GroupedMicrogamesByPlayer[player].RandomElement();
     }
 }

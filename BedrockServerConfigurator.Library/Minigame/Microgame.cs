@@ -55,7 +55,6 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             if(timer != null)
             {
-                microgameRepeats = false;
                 timer.Elapsed -= RunMicrogame;
                 timer.Close();
                 timer = null;

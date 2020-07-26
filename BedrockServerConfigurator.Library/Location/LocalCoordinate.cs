@@ -2,7 +2,7 @@
 {
     public class LocalCoordinate : Coordinate
     {
-        public LocalCoordinate(LocalPoint x, LocalPoint y, LocalPoint z) : base(x, y, z)
+        private LocalCoordinate(LocalPoint x, LocalPoint y, LocalPoint z) : base(x, y, z)
         {
         }
 
