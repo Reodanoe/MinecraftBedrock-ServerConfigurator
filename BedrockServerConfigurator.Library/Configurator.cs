@@ -184,9 +184,9 @@ namespace BedrockServerConfigurator.Library
         /// Stops the server, removes it from collection of AllServers and deletes directory
         /// </summary>
         /// <param name="server"></param>
-        public void DeleteServer(Server server)
+        public async Task DeleteServerAsync(Server server)
         {
-            server.StopServer();
+            await server.StopServerAsync();
             AllServers.Remove(server.ID);
             Directory.Delete(server.FullPath, true);
 
@@ -198,11 +198,11 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="serverID"></param>
         /// <param name="command"></param>
-        public void RunCommandOnSpecifiedServer(int serverId, string command)
+        public async Task RunCommandOnSpecifiedServerAsync(int serverId, string command)
         {
             if (AllServers.TryGetValue(serverId, out Server server))
             {
-                server.RunACommand(command);
+                await server.RunCommandAsync(command);
             }
             else
             {
@@ -223,7 +223,7 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void StopAllServers()
         {
-            AllServersAction(x => x.StopServer());
+            AllServersAction(async x => await x.StopServerAsync());
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void RestartAllServers()
         {
-            AllServersAction(x => x.RestartServer());
+            AllServersAction(async x => await x.RestartServerAsync());
         }
 
         /// <summary>

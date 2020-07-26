@@ -33,10 +33,10 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             var randomMessage = messages.RandomElement();
 
-            void game()
+            async void game()
             {
-                Api.Say(Player.ServerId, randomMessage);
-                Api.TeleportEntityLocal(Player.ServerId, Player.Name, 0, amount, 0);
+                await Api.Say(Player.ServerId, randomMessage);
+                await Api.TeleportEntityLocal(Player.ServerId, Player.Name, 0, amount, 0);
             }
 
             return (delay, game);

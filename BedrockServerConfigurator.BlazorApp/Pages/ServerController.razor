@@ -9,7 +9,7 @@
         Start server
     </button>
 
-    <button @onclick="@MinecraftServer.StopServer"
+    <button @onclick="@MinecraftServer.StopServerAsync"
             disabled="@(!MinecraftServer.Running)"
             class="btn @(!MinecraftServer.Running ? "" : "btn-primary")">
         Stop server
@@ -30,8 +30,8 @@
 else
 {
     <input @bind="@CurrentServer.CurrentCommand"
-           @onkeypress="(enter) => {
-                        if(KeyPressed(enter))
+           @onkeypress="async (enter) => {
+                        if(await KeyPressed(enter))
                         {
                             CurrentServer.CurrentCommand = null;
                         }
@@ -80,11 +80,11 @@ else
         CurrentServer.CurrentCommand = (string)changeEventArgs.Value;
     }
 
-    private bool KeyPressed(KeyboardEventArgs keyboard)
+    private async Task<bool> KeyPressed(KeyboardEventArgs keyboard)
     {
         if (keyboard.Key == "Enter")
         {
-            MinecraftServer.RunACommand(CurrentServer.CurrentCommand);
+            await MinecraftServer.RunCommandAsync(CurrentServer.CurrentCommand);
 
             CurrentServer.Commands.Add(CurrentServer.CurrentCommand);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.Entities;
 
@@ -43,10 +44,10 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             var randomMessage = messages.RandomElement();
 
-            void game()
+            async void game()
             {
-                Api.Say(Player.ServerId, randomMessage);
-                Api.SpawnMobsOnAPlayer(Player.ServerId, Player.Name, mob, amount);
+                await Api.Say(Player.ServerId, randomMessage);
+                await Api.SpawnMobsOnAPlayer(Player.ServerId, Player.Name, mob, amount);
             }
 
             return (delay, game);

@@ -19,10 +19,10 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             MicrogameCreated(new MicrogameEventArgs(Player, "Bad effect", delay, $"Effect: {effect}"));
 
-            void game()
+            async void game()
             {
-                Api.Say(Player.ServerId, messages.RandomElement());
-                Api.AddEffect(Player.ServerId, Player.Name, effect, 15, 1);
+                await Api.Say(Player.ServerId, messages.RandomElement());
+                await Api.AddEffect(Player.ServerId, Player.Name, effect, 15, 1);
             }
 
             return (delay, game);

@@ -81,10 +81,10 @@ namespace BedrockServerConfigurator.Library
                 ServerInstance.Start();
                 Running = true;
 
-                _messagesTask = Task.Run(() => {
+                _messagesTask = Task.Run(async () => {
                     while (!ServerInstance.StandardOutput.EndOfStream && Running)
                     {
-                        NewMessageFromServer(ServerInstance.StandardOutput.ReadLine());
+                        NewMessageFromServer(await ServerInstance.StandardOutput.ReadLineAsync());
                     }
                 });
 
@@ -95,11 +95,11 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Stops a server if it's running
         /// </summary>
-        public void StopServer()
+        public async Task StopServerAsync()
         {
             if (Running)
             {
-                RunACommand("stop");
+                await RunCommandAsync("stop");
                 Running = false;
                 ServerInstance.WaitForExit();
 
@@ -110,11 +110,11 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// If server is running, calls StopServer then StartServer
         /// </summary>
-        public void RestartServer()
+        public async Task RestartServerAsync()
         {
             if (Running)
             {
-                StopServer();
+                await StopServerAsync();
                 StartServer();
             }
         }
@@ -197,17 +197,17 @@ namespace BedrockServerConfigurator.Library
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public void RunACommand(Command command) => RunACommand(command.ToString());
+        public async Task RunCommandAsync(Command command) => await RunCommandAsync(command.ToString());
 
         /// <summary>
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public void RunACommand(string command)
+        public async Task RunCommandAsync(string command)
         {
             if (Running)
             {
-                ServerInstance.StandardInput.WriteLine(command);
+                await ServerInstance.StandardInput.WriteLineAsync(command);
             }
             else
             {

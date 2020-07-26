@@ -61,14 +61,15 @@ else
     {
         return new List<Microgame>
         {
+#if DEBUG
+            new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
+            new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
+            new BadEffectMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api)
+#else
             new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
             new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
             new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
-
-            // testing
-            //new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
-            //new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
-            //new BadEffectMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api)
+#endif
         };
     }
 
