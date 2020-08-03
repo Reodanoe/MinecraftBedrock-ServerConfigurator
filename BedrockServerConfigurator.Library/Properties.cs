@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -33,7 +34,7 @@ namespace BedrockServerConfigurator.Library
         public bool CorrectPlayerMovement { get; set; }
 
         private readonly string propertiesFilePath;
-
+        
         /// <summary>
         /// Pass in the content of server.properties
         /// </summary>
@@ -76,7 +77,7 @@ namespace BedrockServerConfigurator.Library
             {
                 var prop = type.GetProperty(FilePropertyToProperty(name));
 
-                if (double.TryParse(value, out double valueDouble))
+                if (double.TryParse(value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator), out double valueDouble))
                 {
                     prop.SetValue(properties, valueDouble);
                 }
@@ -151,7 +152,10 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         public string GenerateProperties()
         {
-            string getType(string value)
+            return string.Join("\n", PropertyAndValueFromFile()
+                         .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
+
+            static string getType(string value)
             {
                 string result = "";
 
@@ -170,9 +174,6 @@ namespace BedrockServerConfigurator.Library
 
                 return result;
             }
-
-            return string.Join("\n", PropertyAndValueFromFile()
-                         .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
         }
 
         /// <summary>

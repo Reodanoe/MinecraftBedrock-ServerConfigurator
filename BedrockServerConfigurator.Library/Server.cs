@@ -12,7 +12,14 @@ namespace BedrockServerConfigurator.Library
 {
     public class Server
     {
+        /// <summary>
+        /// The process of Minecraft serevr
+        /// </summary>
         public Process ServerInstance { get; }
+
+        /// <summary>
+        /// Name of server
+        /// </summary>
         public string Name { get; }
 
         /// <summary>
@@ -211,7 +218,7 @@ namespace BedrockServerConfigurator.Library
             }
             else
             {
-                CallLog($"Can't run command \"{command}\" because ServerInstance isn't running.");
+                CallLog($"Can't run command \"{command}\" because server isn't running.");
             }
         }
 

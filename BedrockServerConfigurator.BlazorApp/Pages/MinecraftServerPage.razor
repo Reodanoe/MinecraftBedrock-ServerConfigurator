@@ -35,7 +35,8 @@ else
         </div>
     }
 
-    <button class="btn btn-primary" @onclick="Start">Start hell</button>
+    <button class="btn btn-primary" @onclick="Start" disabled="@(minigameRunning)">Start minigame</button>
+    <button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
 }
 
 @code {
@@ -45,8 +46,10 @@ else
     private Server minecraftServer;
     private ServerApi api;
 
-    List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
-    Minigame runningMinigame;
+    private List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
+    private Minigame runningMinigame;
+
+    private bool minigameRunning;
 
     protected override void OnParametersSet()
     {
@@ -60,7 +63,7 @@ else
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
-        {
+    {
 #if DEBUG
             new TeleportUpMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 5, 20),
             new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(20), player, api, 3, 7),
@@ -89,11 +92,15 @@ else
 
         runningMinigame = new Minigame(listMicrogames, true);
         runningMinigame.Start();
+
+        minigameRunning = true;
     }
 
     private void Stop()
     {
         runningMinigame.Stop();
+
+        minigameRunning = false;
     }
 
     private string ProcessTime(DateTime date)
