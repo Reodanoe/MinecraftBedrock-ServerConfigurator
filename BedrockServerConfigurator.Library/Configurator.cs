@@ -98,7 +98,7 @@ namespace BedrockServerConfigurator.Library
             using var client = new WebClient();
 
             CallLog("Getting url address...");
-            string url = GetUrl(client);
+            string url = GetDownloadUrlFromWebsite(client);
             string version = url.Split("-").Last()[..^4];
 
             client.DownloadProgressChanged += (_, downloadProgressChanged) => TemplateServerDownloadChanged?.Invoke(this, downloadProgressChanged);
@@ -131,7 +131,7 @@ namespace BedrockServerConfigurator.Library
             CallLog("Original = " + OriginalServerFolderPath);
             CallLog("New = " + newServerPath);
 
-            var copyFolder = Utilities.RunACommand(
+            var copyFolder = Utilities.RunShellCommand(
                              windows: $"xcopy /E /I \"{OriginalServerFolderPath}\" \"{newServerPath}\"",
                              ubuntu: $"cp -r \"{OriginalServerFolderPath}\" \"{newServerPath}\"");
 
@@ -153,12 +153,12 @@ namespace BedrockServerConfigurator.Library
             {
                 var serverFolder = Path.Combine(ServersRootPath, name);
 
-                var instance = Utilities.RunACommand(
+                var instance = Utilities.RunShellCommand(
                                windows: $"cd {serverFolder} && bedrock_server.exe",
                                ubuntu: $"cd {serverFolder} && chmod +x bedrock_server && ./bedrock_server");
 
                 var server = new Server(instance, name, serverFolder, new Properties(Path.Combine(serverFolder, "server.properties")));
-                server.Log += (a) => CallLog(a);
+                // server.Log += (a) => CallLog(a);
 
                 AllServers.Add(server.ID, server);
 
@@ -260,7 +260,7 @@ namespace BedrockServerConfigurator.Library
         /// Gets url to download minecraft server
         /// </summary>
         /// <returns></returns>
-        private string GetUrl(WebClient client)
+        private string GetDownloadUrlFromWebsite(WebClient client)
         {
             if (urlRegex == null)
             {

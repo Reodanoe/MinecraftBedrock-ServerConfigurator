@@ -6,23 +6,23 @@ namespace BedrockServerConfigurator.Library.Entities
 {
     public class Entity : IEntity
     {
-        public EntityType EntityType { get; }
+        public MinecraftEntityType EntityType { get; }
         private readonly string _playerName;
 
         public string Name => ToString();
 
-        public static Dictionary<EntityType, string> EntityName => new Dictionary<EntityType, string>
+        public static Dictionary<MinecraftEntityType, string> EntityName => new Dictionary<MinecraftEntityType, string>
         {
-            [EntityType.All_Players] = "@a",
-            [EntityType.All_Entities] = "@e",
-            [EntityType.Closest_Player] = "@p",
-            [EntityType.Random_Player] = "@r",
-            [EntityType.Yourself] = "@s"
+            [MinecraftEntityType.All_Players] = "@a",
+            [MinecraftEntityType.All_Entities] = "@e",
+            [MinecraftEntityType.Closest_Player] = "@p",
+            [MinecraftEntityType.Random_Player] = "@r",
+            [MinecraftEntityType.Yourself] = "@s"
         };
 
-        public Entity(EntityType entity)
+        public Entity(MinecraftEntityType entity)
         {
-            if(entity == EntityType.Player)
+            if (entity == MinecraftEntityType.Player)
             {
                 throw new Exception("To use EntityType.Player use other constructor for playerName");
             }
@@ -46,13 +46,19 @@ namespace BedrockServerConfigurator.Library.Entities
             else
             {
                 _playerName = entity;
-                EntityType = EntityType.Player;
+                EntityType = MinecraftEntityType.Player;
             }
         }
 
-        private string EntityTag(EntityType entity) => entity switch
+        public Entity(Player player)
         {
-            EntityType.Player => _playerName,
+            _playerName = player.Username;
+            EntityType = MinecraftEntityType.Player;
+        }
+
+        private string EntityTag(MinecraftEntityType entity) => entity switch
+        {
+            MinecraftEntityType.Player => _playerName,
             _ => EntityName[entity]
         };
 

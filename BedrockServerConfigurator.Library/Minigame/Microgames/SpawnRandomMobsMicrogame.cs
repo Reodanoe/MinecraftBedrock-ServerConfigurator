@@ -26,7 +26,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             MaxMobs = maxMobs;
         }
 
-        public override (TimeSpan, Action) DelayAndMicrogame()
+        public override (TimeSpan, Func<Task>) DelayAndMicrogame()
         {
             var delay = RandomDelay;
             var amount = Utilities.RandomGenerator.Next(MinMobs, MaxMobs + 1);
@@ -44,10 +44,10 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             var randomMessage = messages.RandomElement();
 
-            async void game()
+            async Task game()
             {
                 await Api.Say(randomMessage);
-                await Api.SpawnMobsOnAPlayer(Player.Name, mob, amount);
+                await Api.SpawnMobsOnEntity(Player.Name, mob, amount);
             }
 
             return (delay, game);

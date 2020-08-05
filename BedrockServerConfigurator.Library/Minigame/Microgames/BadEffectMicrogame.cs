@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.Entities;
 
@@ -12,14 +13,14 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
         {
         }
 
-        public override (TimeSpan, Action) DelayAndMicrogame()
+        public override (TimeSpan, Func<Task>) DelayAndMicrogame()
         {
             var delay = RandomDelay;
             var (effect, messages) = BadEffectWithMessage(Player.Name);
 
             MicrogameCreated(new MicrogameEventArgs(this, Player, "Bad effect", delay, $"Effect: {effect}"));
 
-            async void game()
+            async Task game()
             {
                 await Api.Say(messages.RandomElement());
                 await Api.AddEffect(Player.Name, effect, 15, 1);

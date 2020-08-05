@@ -12,7 +12,7 @@ namespace BedrockServerConfigurator.Library.Location
         {
             if (x.Axis != Axis.X || y.Axis != Axis.Y || z.Axis != Axis.Z)
             {
-                throw new Exception("Points must be X - Y - Z");
+                throw new Exception("Point axis must be X, Y, Z");
             }
 
             X = x;

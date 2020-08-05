@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using System.Net.Http.Headers;
 using BedrockServerConfigurator.Library.Entities;
 using BedrockServerConfigurator.Library.Commands;
 
@@ -13,7 +12,7 @@ namespace BedrockServerConfigurator.Library
     public class Server
     {
         /// <summary>
-        /// The process of Minecraft serevr
+        /// The process of Minecraft server
         /// </summary>
         public Process ServerInstance { get; }
 
@@ -32,6 +31,9 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public Properties ServerProperties { get; }
 
+        /// <summary>
+        /// If ServerInstance is started, server is running
+        /// </summary>
         public bool Running { get; private set; } = false;        
 
         /// <summary>
@@ -49,6 +51,12 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public event Action<string> Log;
 
+        public event Action<ServerPlayer> PlayerConnected;
+        public event Action<ServerPlayer> PlayerDisconnected;
+
+        /// <summary>
+        /// All players that are/were connected to the server
+        /// </summary>
         public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
 
         private Task _messagesTask;
@@ -136,7 +144,7 @@ namespace BedrockServerConfigurator.Library
 
             if(message.Contains("Player") && message.Contains("connected"))
             {
-                PlayerAction(message);
+                SetPlayerOnlineOrOffline(message);
             }
         }
 
@@ -159,7 +167,7 @@ namespace BedrockServerConfigurator.Library
         }
 
         // this should maybe be like in a server message processor class
-        private void PlayerAction(string message)
+        private void SetPlayerOnlineOrOffline(string message)
         {
             // [2020-07-19 18:29:49 INFO] Player connected: PLAYER_NAME, xuid: ID
             // [2020-07-19 18:30:57 INFO] Player disconnected: PLAYER_NAME, xuid: ID
@@ -170,33 +178,40 @@ namespace BedrockServerConfigurator.Library
             var username = split[^2].Split(',')[0].Trim();
             var xuid = long.Parse(split[^1].Trim());
 
-            var joinedPlayer = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
+            var player = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
 
-            // this should maybe get checked if for example user is trying to join..
-            // the server could glitch and it would say the person disconnected when they never actually connected
             if (message.Contains("disconnected"))
             {
-                joinedPlayer.IsOnline = false;
-                joinedPlayer.LastAction = date;
+                // if server glitched and player never actually connected
+                if (player == null) return;
+
+                player.IsOnline = false;
+                player.LastAction = date;
+
+                PlayerDisconnected?.Invoke(player);
             }
             else
             {
-                if (joinedPlayer == null)
+                if (player == null)
                 {
-                    AllPlayers.Add(new ServerPlayer
+                    player = new ServerPlayer
                     {
                         Username = username,
                         Xuid = xuid,
                         IsOnline = true,
                         LastAction = date,
                         ServerId = ID
-                    });
+                    };
+
+                    AllPlayers.Add(player);
                 }
                 else
                 {
-                    joinedPlayer.IsOnline = true;
-                    joinedPlayer.LastAction = date;
+                    player.IsOnline = true;
+                    player.LastAction = date;
                 }
+
+                PlayerConnected?.Invoke(player);
             }
         }
 
@@ -220,15 +235,6 @@ namespace BedrockServerConfigurator.Library
             {
                 CallLog($"Can't run command \"{command}\" because server isn't running.");
             }
-        }
-
-        /// <summary>
-        /// ID - Name - ["server-name"] - ["server-port"]
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"{ID} - {Name} - {ServerProperties.ServerName} - {ServerProperties.ServerPort}";
         }
 
         private void CallLog(string message)

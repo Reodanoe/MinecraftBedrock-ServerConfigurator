@@ -1,0 +1,37 @@
+﻿@page "/ServerPage/{id:int}"
+@inject Configurator config
+
+<a href="/" class="btn btn-primary">Back to home page</a>
+
+@if (minecraftServer == null)
+{
+    <h1>No server with id @Id exists</h1>
+}
+else if (!minecraftServer.Running)
+{
+    <h1>Server isn't running</h1>
+    <button class="btn btn-primary" @onclick="minecraftServer.StartServer">Start server</button>
+}
+else
+{
+    <MinigameController MinecraftServer="minecraftServer"></MinigameController>
+
+    <div class="card-body">
+        <PropertiesChanger MinecraftServer="minecraftServer"></PropertiesChanger>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Server minecraftServer;
+
+    protected override void OnParametersSet()
+    {
+        if (config.AllServers.TryGetValue(Id, out Server server))
+        {
+            minecraftServer = server;
+        }
+    }
+}

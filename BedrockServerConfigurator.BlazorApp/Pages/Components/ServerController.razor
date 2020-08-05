@@ -15,39 +15,34 @@
         Stop server
     </button>
 
-    <button @onclick="@(() => CurrentServer.ShowProperties = !CurrentServer.ShowProperties)"
-            class="btn btn-secondary">
-        @(CurrentServer.ShowProperties ? "Back" : "Show properties")
-    </button>
+    <a href="@($"ServerPage/{MinecraftServer.ID}")" class="btn btn-primary">Server page</a>
 </div>
 
-@if (CurrentServer.ShowProperties)
-{
-    <div class="card-body">
-        <PropertiesChanger MinecraftServer="MinecraftServer"></PropertiesChanger>
-    </div>
-}
-else
-{
-    <input @bind="@CurrentServer.CurrentCommand"
-           @onkeypress="async (enter) => {
-                        if(await KeyPressed(enter))
-                        {
-                            CurrentServer.CurrentCommand = null;
-                        }
-                    }"
-           @oninput="Input"
-           type="text"
-           placeholder="Enter a command"
-           class="form-control" />
+<input @bind="@CurrentServer.CurrentCommand"
+       @onkeypress="@(async (key) =>
+                      {
+                          switch (key.Key)
+                          {
+                              case "Enter":
+                                    await MinecraftServer.RunCommandAsync(CurrentServer.CurrentCommand);
+                                    CurrentServer.Commands.Add(CurrentServer.CurrentCommand);
+                                    CurrentServer.CurrentCommand = null;
+                                    break;
+                              default:
+                                  break;
+                          }
+                      })"
+       @oninput="Input"
+       type="text"
+       placeholder="Enter a command"
+       class="form-control" />
 
-    <div class="card-body pre-scrollable h-25 card-text">
-        @foreach (var message in CurrentServer.Messages)
-        {
-            <p>@message</p>
-        }
-    </div>
-}
+<div class="card-body pre-scrollable h-25 card-text">
+    @foreach (var message in CurrentServer.Messages)
+    {
+        <p>@message</p>
+    }
+</div>
 
 @code {
     [Parameter]
@@ -63,7 +58,7 @@ else
         }
 
         CurrentServer.Messages.CollectionChanged += (a, b) => this.InvokeAsync(StateHasChanged);
-        
+
         if (!CurrentServer.LoggingNewMessages)
         {
             MinecraftServer.Log += (msg) =>
@@ -78,19 +73,5 @@ else
     private void Input(ChangeEventArgs changeEventArgs)
     {
         CurrentServer.CurrentCommand = (string)changeEventArgs.Value;
-    }
-
-    private async Task<bool> KeyPressed(KeyboardEventArgs keyboard)
-    {
-        if (keyboard.Key == "Enter")
-        {
-            await MinecraftServer.RunCommandAsync(CurrentServer.CurrentCommand);
-
-            CurrentServer.Commands.Add(CurrentServer.CurrentCommand);
-
-            return true;
-        }
-
-        return false;
     }
 }

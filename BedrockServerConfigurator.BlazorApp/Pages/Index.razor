@@ -30,7 +30,7 @@
 </div>
 
 <div class="row">
-    <h3 class="col-md-12">Available servers</h3>
+    <h4 class="col-md-12">Available servers</h4>
     @foreach (var server in config.AllServerDirectories())
     {
         <div class="col-md-2">
@@ -69,7 +69,7 @@
     {
         config.StopAllServers();
 
-        Utilities.RunACommand("taskkill /f /fi \"imagename eq bedrock_server.exe\"", "killall bedrock_server").Start();
+        Utilities.KillRunningMinecraftServers();
     }
 
     private async void Download()

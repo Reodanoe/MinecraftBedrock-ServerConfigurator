@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -47,19 +46,19 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Gets property name and its value from server.properties file
+        /// Gets all properties and their values from server.properties file
         /// </summary>
         /// <returns></returns>
         public List<(string propertyName, string propertyValue)> PropertyAndValueFromFile()
         {
             return File.ReadAllText(propertiesFilePath)
-                       .Split("\n")
-                       .Select(a => a.Trim())
-                       .Where(b => !b.StartsWith("#") && b.Length > 0)
-                       .Select(c => c.Split("="))
-                       .Select(d => Tuple.Create(d[0], d[1])
-                                         .ToValueTuple())
-                       .ToList();
+                       .Split("\n")                                     // split to every line
+                       .Select(a => a.Trim())                           // trim whitespace from every line
+                       .Where(b => !b.StartsWith("#") && b.Length > 0)  // every line that isn't a comment like or isn't empty
+                       .Select(c => c.Split("="))                       // split them with =
+                       .Select(d => Tuple.Create(d[0], d[1])            // on left side is property and on right is its value
+                                         .ToValueTuple())               // let's turn them into a tuple
+                       .ToList();                                       // and finally into a list
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace BedrockServerConfigurator.Library
             {
                 var prop = type.GetProperty(FilePropertyToProperty(name));
 
-                if (double.TryParse(value.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator), out double valueDouble))
+                if (double.TryParse(Utilities.FormatNumberStringDecimalSeparator(value), out double valueDouble))
                 {
                     prop.SetValue(properties, valueDouble);
                 }
@@ -93,7 +92,8 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Converts class property name to format of file property
+        /// Converts class property name to format of file property -
+        /// ServerName -> server-name
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>
@@ -121,7 +121,8 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Converts name of a property in a server.properties file to a format of class property
+        /// Converts name of a property in a server.properties file to a format of class property -
+        /// server-name -> ServerName
         /// </summary>
         /// <param name="fileProperty"></param>
         /// <returns></returns>
@@ -159,7 +160,7 @@ namespace BedrockServerConfigurator.Library
             {
                 string result = "";
 
-                if (double.TryParse(value, out _))
+                if (double.TryParse(Utilities.FormatNumberStringDecimalSeparator(value), out _))
                 {
                     result += "double";
                 }
@@ -177,7 +178,7 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Gets value from file based on class property
+        /// Gets value from file property with class property name
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>

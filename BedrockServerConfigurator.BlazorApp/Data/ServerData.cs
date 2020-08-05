@@ -24,10 +24,5 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// Holds info if server is listening to new messages
         /// </summary>
         public bool LoggingNewMessages { get; set; }
-
-        /// <summary>
-        /// If component should show window of changing properties
-        /// </summary>
-        public bool ShowProperties { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         public ServerPlayer Player { get; }
         public ServerApi Api { get; }
 
-        protected TimeSpan RandomDelay => Utilities.RandomDelay(MinDelay, MaxDelay);
+        public TimeSpan RandomDelay => Utilities.RandomTimeSpan(MinDelay, MaxDelay);
 
         /// <summary>
         /// Runs inside DelayAndMicrogame(), use MicrogameCreated() to call it in derived types
@@ -26,11 +26,16 @@ namespace BedrockServerConfigurator.Library.Minigame
         public event Action<Microgame> OnMicrogameEnded;
 
         private Timer timer;
-        private Action microgameToRun;
+        private Func<Task> microgameToRun;
         private bool microgameRepeats;
 
         public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api)
         {
+            if (maxDelay < minDelay)
+            {
+                throw new ArgumentException("maxDelay has to be bigger than minDelay", "maxDelay");
+            }
+
             MinDelay = minDelay;
             MaxDelay = maxDelay;
             Player = player;
@@ -63,11 +68,11 @@ namespace BedrockServerConfigurator.Library.Minigame
             }
         }
 
-        private void RunMicrogame(object sender, ElapsedEventArgs e)
+        private async void RunMicrogame(object sender, ElapsedEventArgs e)
         {
             if (Player.IsOnline && Api.IsServerRunning())
             {
-                microgameToRun();
+                await microgameToRun();
             }
 
             StopMicrogame();
@@ -86,7 +91,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <param name="player"></param>
         /// <param name="api"></param>
         /// <returns></returns>
-        public abstract (TimeSpan, Action) DelayAndMicrogame();
+        public abstract (TimeSpan, Func<Task>) DelayAndMicrogame(); // seems like the action really needs to be a task
 
         /// <summary>
         /// Call this to log some information about new created microgame

@@ -2,7 +2,7 @@
 
 namespace BedrockServerConfigurator.Library
 {
-    public enum EntityType
+    public enum MinecraftEntityType
     {
         All_Players,
         All_Entities,

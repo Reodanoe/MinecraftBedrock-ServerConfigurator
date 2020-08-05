@@ -87,9 +87,9 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command Op(IEntity player)
+        public Command Op(Player player)
         {
-            return new Command($"op {player.Name}");
+            return new Command($"op {player.Username}");
         }
 
         /// <summary>
@@ -97,27 +97,53 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command Deop(IEntity player)
+        public Command DeOp(Player player)
         {
             return new Command("de") + Op(player);
         }
 
+        /// <summary>
+        /// Says message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public Command Say(string message)
         {
             return new Command($"say {message}");
         }
 
+        /// <summary>
+        /// Says message in color
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         public Command SayInColor(string message, MinecraftColor color)
         {
             // seems like the minecraft server has a bug because it can't send colored messages
             return Say(ColorMessage(message, color).MinecraftCommand);
         }
 
+        /// <summary>
+        /// Appends color to a message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         public Command ColorMessage(string message, MinecraftColor color)
         {
             return new Command($"§{(int)color:x}{message}");
         }
 
+        /// <summary>
+        /// Adds effect to an entity
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="effect"></param>
+        /// <param name="seconds"></param>
+        /// <param name="amplifier"></param>
+        /// <param name="hideParticles"></param>
+        /// <returns></returns>
         public Command AddEffect(IEntity entity, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
         {
             return new Command($"effect {entity.Name} {effect} {seconds} {amplifier} {hideParticles}");

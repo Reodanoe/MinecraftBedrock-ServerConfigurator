@@ -2,12 +2,8 @@
 {
     public class LocalCoordinate : Coordinate
     {
-        private LocalCoordinate(LocalPoint x, LocalPoint y, LocalPoint z) : base(x, y, z)
-        {
-        }
-
         public LocalCoordinate(float x = 0, float y = 0, float z = 0) : 
-            this(new LocalPoint(Axis.X, x), new LocalPoint(Axis.Y, y), new LocalPoint(Axis.Z, z))
+            base(new LocalPoint(Axis.X, x), new LocalPoint(Axis.Y, y), new LocalPoint(Axis.Z, z))
         {
         }
     }

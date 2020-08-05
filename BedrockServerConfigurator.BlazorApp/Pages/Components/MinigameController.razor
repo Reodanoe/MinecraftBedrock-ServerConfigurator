@@ -1,0 +1,159 @@
+﻿@inject Configurator config
+
+<div class="row">
+    @foreach (var player in MinecraftServer.AllPlayers)
+    {
+        <div class="col-md-3 card">
+            <div class="card-body">
+                <h5 class="card-title">@player.Name</h5>
+                <p class="card-text">Xuid - @player.Xuid</p>
+                <p class="card-text">
+                    @(player.IsOnline ? $"Has been online since: {player.LastAction} = {HowLongAgo(player.LastAction)}"
+                                      : $"Last online: {player.LastAction} = {HowLongAgo(player.LastAction)} ago")
+                </p>
+
+                @if (player.IsOnline)
+                {
+                    <button class="btn btn-primary"
+                            disabled="@(!player.IsOnline || minigameRunning)"
+                            @onclick="() =>
+                                  {
+                                      if (IsPlayerSelected(player)) RemovePlayerFromSelectedPlayers(player);
+                                      else selectedPlayers.Add(player);
+                                  }">
+                        @(IsPlayerSelected(player) ? "Remove from minigame" : "Add to minigame")
+                    </button>
+
+                    <button class="btn btn-primary"
+                            disabled="@(!player.IsOnline)"
+                            @onclick="async () => await api.Op(player)">
+                        Op
+                    </button>
+
+                    <button class="btn btn-primary"
+                            disabled="@(!player.IsOnline)"
+                            @onclick="async () => await api.DeOp(player)">
+                        De-op
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<button class="btn btn-primary" @onclick="Start" disabled="@(minigameRunning || !selectedPlayers.Any())">Start minigame</button>
+<button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
+
+<p>Delay</p>
+<input @bind="minDelay" />
+<input @bind="maxDelay" />
+
+<p>Teleport up</p>
+<input @bind="minBlocks" placeholder="Min blocks"/>
+<input @bind="maxBlocks" placeholder="Max blocks"/>
+
+<p>Mob spawner</p>
+<input @bind="minMobs" placeholder="Min mobs"/>
+<input @bind="maxMobs" placeholder="Max mobs"/>
+
+@code {
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+
+    private ServerApi api;
+
+    private List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
+    private Minigame runningMinigame;
+
+    private bool minigameRunning;
+
+    protected override void OnParametersSet()
+    {
+        api = new ServerApi(MinecraftServer);
+
+        MinecraftServer.PlayerConnected += PlayerConnected;
+        MinecraftServer.PlayerDisconnected += PlayerDisconnected;
+
+        void PlayerConnected(ServerPlayer joined)
+        {
+            InvokeAsync(StateHasChanged);
+        }
+
+        void PlayerDisconnected(ServerPlayer left)
+        {
+            selectedPlayers.Remove(left);
+
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private TimeSpan minDelay;
+    private TimeSpan maxDelay;
+
+    private int minBlocks;
+    private int maxBlocks;
+
+    private int minMobs;
+    private int maxMobs;
+
+    private List<Microgame> BasicMicrogames(ServerPlayer player)
+    {
+        return new List<Microgame>
+{
+#if DEBUG
+            new TeleportUpMicrogame(minDelay, maxDelay, player, api, minBlocks, maxBlocks),
+            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, api, minMobs, maxMobs),
+            new BadEffectMicrogame(minDelay, maxDelay, player, api)
+#else
+            new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
+            new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
+            new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
+#endif
+        };
+    }
+
+    private void Start()
+    {
+        Stop();
+
+        var listMicrogames = new List<Microgame>();
+
+        foreach (var p in selectedPlayers)
+        {
+            listMicrogames.AddRange(BasicMicrogames(p));
+        }
+
+        runningMinigame = new Minigame(listMicrogames, true);
+        runningMinigame.Start();
+
+        minigameRunning = true;
+    }
+
+    private void Stop()
+    {
+        if (runningMinigame != null)
+        {
+            runningMinigame.Stop();
+        }
+
+        minigameRunning = false;
+    }
+
+    private string HowLongAgo(DateTime date)
+    {
+        var time = DateTime.Now.Subtract(date);
+        var minutes = Math.Floor(time.TotalMinutes);
+
+        return $"{minutes} minutes";
+    }
+
+    private bool IsPlayerSelected(Player p)
+    {
+        return selectedPlayers.FirstOrDefault(x => x.Xuid == p.Xuid) != null;
+    }
+
+    private void RemovePlayerFromSelectedPlayers(Player p)
+    {
+        selectedPlayers.RemoveAll(x => x.Xuid == p.Xuid);
+    }
+}

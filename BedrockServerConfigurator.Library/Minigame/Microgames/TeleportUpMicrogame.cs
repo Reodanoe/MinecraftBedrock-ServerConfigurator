@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.Entities;
 
@@ -16,7 +17,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             MaxBlocks = maxBlocks;
         }
 
-        public override (TimeSpan, Action) DelayAndMicrogame()
+        public override (TimeSpan, Func<Task>) DelayAndMicrogame()
         {
             var delay = RandomDelay;
             var amount = Utilities.RandomGenerator.Next(MinBlocks, MaxBlocks + 1);
@@ -33,7 +34,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
 
             var randomMessage = messages.RandomElement();
 
-            async void game()
+            async Task game()
             {
                 await Api.Say(randomMessage);
                 await Api.TeleportEntityLocal(Player.Name, 0, amount, 0);
