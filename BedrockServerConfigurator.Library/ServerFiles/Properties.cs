@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace BedrockServerConfigurator.Library
+namespace BedrockServerConfigurator.Library.ServerFiles
 {
     public class Properties
     {
         public string ServerName { get; set; }
-        public string Gamemode { get; set; }
-        public string Difficulty { get; set; }
+        public string Gamemode { get; set; } // use enum
+        public string Difficulty { get; set; } // use enum
         public bool AllowCheats { get; set; }
         public double MaxPlayers { get; set; }
         public bool OnlineMode { get; set; }
@@ -22,7 +22,7 @@ namespace BedrockServerConfigurator.Library
         public double MaxThreads { get; set; }
         public string LevelName { get; set; }
         public string LevelSeed { get; set; }
-        public string DefaultPlayerPermissionLevel { get; set; }
+        public string DefaultPlayerPermissionLevel { get; set; } // use enum
         public bool TexturepackRequired { get; set; }
         public bool ContentLogFileEnabled { get; set; }
         public double CompressionThreshold { get; set; }
@@ -43,6 +43,16 @@ namespace BedrockServerConfigurator.Library
             this.propertiesFilePath = propertiesFilePath;
 
             if (autoSetProperties) SetProperties();
+        }
+
+        /// <summary>
+        /// Overwrites server.properties with current version of ServerProperties.
+        /// If server is running it's recommended to call RestartServer.
+        /// Call this everytime ServerProperties are updated so they will be saved.
+        /// </summary>
+        public void SavePropertiesToFile()
+        {
+            File.WriteAllText(propertiesFilePath, ClassPropertiesToFileProperties());
         }
 
         /// <summary>
@@ -188,15 +198,24 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
+        /// Converts all properties into a format which server.properties file uses
+        /// </summary>
+        /// <returns></returns>
+        public string ClassPropertiesToFileProperties()
+        {
+            return string.Join("\n",
+                     this.GetType()
+                         .GetProperties()
+                         .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.PropertyType == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+        }
+
+        /// <summary>
         /// Returns all properties in a server.properties format
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Join("\n",
-                     this.GetType()
-                         .GetProperties()
-                         .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+            return ClassPropertiesToFileProperties();
         }
     }
 }

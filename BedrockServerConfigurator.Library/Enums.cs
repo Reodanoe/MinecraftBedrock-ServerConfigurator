@@ -77,4 +77,26 @@ namespace BedrockServerConfigurator.Library
         Weakness,
         Wither
     };
+
+    public enum MinecraftPermission
+    {
+        Visitor,
+        Member,
+        Operator
+    }
+
+    public enum MinecraftGamemode
+    {
+        Adventure,
+        Survival,
+        Creative
+    }
+
+    public enum MinecraftDifficulty
+    {
+        Peaceful,
+        Easy,
+        Normal,
+        Hard
+    }
 }

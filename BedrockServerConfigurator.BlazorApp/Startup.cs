@@ -20,6 +20,7 @@ namespace BedrockServerConfigurator.BlazorApp
 
             string defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
+            // make this customizable
             configurator = new Configurator(
                 Path.Combine(defaultPath, "bedrockServers"),
                 "bedServer");

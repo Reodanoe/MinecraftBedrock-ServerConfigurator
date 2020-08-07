@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BedrockServerConfigurator.Library.ServerFiles;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -312,7 +313,7 @@ namespace BedrockServerConfigurator.Library
 
                 alrightServers.Add(server);
 
-                server.UpdateProperties();
+                server.ServerProperties.SavePropertiesToFile();
             }
         }
 

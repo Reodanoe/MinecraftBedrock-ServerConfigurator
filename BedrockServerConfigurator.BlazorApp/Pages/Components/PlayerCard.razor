@@ -1,0 +1,27 @@
+﻿<div class="col-md-3 card">
+    <div class="card-body">
+        <h5 class="card-title">@Player.Name</h5>
+        <p class="card-text">Xuid - @Player.Xuid</p>
+        <p class="card-text">
+            @(Player.IsOnline ? $"Has been online since: {Player.LastAction} = {HowLongAgoInMinutes(Player.LastAction)}"
+                              : $"Last online: {Player.LastAction} = {HowLongAgoInMinutes(Player.LastAction)} ago")
+        </p>
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ServerPlayer Player { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private string HowLongAgoInMinutes(DateTime date)
+    {
+        var time = DateTime.Now.Subtract(date);
+        var minutes = Math.Floor(time.TotalMinutes);
+
+        return $"{minutes} minutes";
+    }
+}

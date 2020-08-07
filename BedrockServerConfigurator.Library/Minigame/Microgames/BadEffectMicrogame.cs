@@ -59,7 +59,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
                 }
             };
 
-            return badEffects.RandomDictionaryElement();
+            return badEffects.RandomElement();
         }
     }
 }

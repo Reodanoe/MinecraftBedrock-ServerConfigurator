@@ -2,59 +2,60 @@
 
 <div class="row">
     @foreach (var player in MinecraftServer.AllPlayers)
-    {
-        <div class="col-md-3 card">
-            <div class="card-body">
-                <h5 class="card-title">@player.Name</h5>
-                <p class="card-text">Xuid - @player.Xuid</p>
-                <p class="card-text">
-                    @(player.IsOnline ? $"Has been online since: {player.LastAction} = {HowLongAgo(player.LastAction)}"
-                                      : $"Last online: {player.LastAction} = {HowLongAgo(player.LastAction)} ago")
-                </p>
-
-                @if (player.IsOnline)
+     {
+        <PlayerCard Player="player">
+            @if (player.IsOnline)
+             {
+                if (!minigameRunning)
                 {
                     <button class="btn btn-primary"
-                            disabled="@(!player.IsOnline || minigameRunning)"
                             @onclick="() =>
-                                  {
-                                      if (IsPlayerSelected(player)) RemovePlayerFromSelectedPlayers(player);
-                                      else selectedPlayers.Add(player);
-                                  }">
+                                      {
+                                          if (IsPlayerSelected(player)) RemovePlayerFromSelectedPlayers(player);
+                                          else selectedPlayers.Add(player);
+                                      }">
                         @(IsPlayerSelected(player) ? "Remove from minigame" : "Add to minigame")
                     </button>
-
-                    <button class="btn btn-primary"
-                            disabled="@(!player.IsOnline)"
-                            @onclick="async () => await api.Op(player)">
-                        Op
-                    </button>
-
-                    <button class="btn btn-primary"
-                            disabled="@(!player.IsOnline)"
-                            @onclick="async () => await api.DeOp(player)">
-                        De-op
-                    </button>
                 }
-            </div>
-        </div>
-    }
+
+                <button class="btn btn-primary"
+                        @onclick="async () => await api.Op(player)">
+                    Op
+                </button>
+
+                <button class="btn btn-primary"
+                        @onclick="async () => await api.DeOp(player)">
+                    De-op
+                </button>
+             }
+        </PlayerCard>
+     }
 </div>
+
+@if (minigameRunning)
+{
+    <h3>Minigame running for players</h3>
+
+    foreach (var player in minigame.GroupedMicrogamesByPlayer)
+    {
+        <p>@player.Key.Username</p>
+    }
+}
 
 <button class="btn btn-primary" @onclick="Start" disabled="@(minigameRunning || !selectedPlayers.Any())">Start minigame</button>
 <button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
 
-<p>Delay</p>
-<input @bind="minDelay" />
-<input @bind="maxDelay" />
+<h4>Delay</h4>
+Min delay: <input @bind="minDelay" />
+Max delay: <input @bind="maxDelay" />
 
-<p>Teleport up</p>
-<input @bind="minBlocks" placeholder="Min blocks"/>
-<input @bind="maxBlocks" placeholder="Max blocks"/>
+<h4>Teleport up</h4>
+Min blocks: <input @bind="minBlocks" placeholder="Min blocks" />
+Max blocks: <input @bind="maxBlocks" placeholder="Max blocks" />
 
-<p>Mob spawner</p>
-<input @bind="minMobs" placeholder="Min mobs"/>
-<input @bind="maxMobs" placeholder="Max mobs"/>
+<h4>Mob spawner</h4>
+Min mobs: <input @bind="minMobs" placeholder="Min mobs" />
+Max mobs: <input @bind="maxMobs" placeholder="Max mobs" />
 
 @code {
     [Parameter]
@@ -63,7 +64,7 @@
     private ServerApi api;
 
     private List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
-    private Minigame runningMinigame;
+    private Minigame minigame;
 
     private bool minigameRunning;
 
@@ -87,28 +88,22 @@
         }
     }
 
-    private TimeSpan minDelay;
-    private TimeSpan maxDelay;
+    private TimeSpan minDelay = TimeSpan.FromSeconds(30);
+    private TimeSpan maxDelay = TimeSpan.FromMinutes(3);
 
-    private int minBlocks;
-    private int maxBlocks;
+    private int minBlocks = 5;
+    private int maxBlocks = 20;
 
-    private int minMobs;
-    private int maxMobs;
+    private int minMobs = 2;
+    private int maxMobs = 7;
 
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
-{
-#if DEBUG
+        {
             new TeleportUpMicrogame(minDelay, maxDelay, player, api, minBlocks, maxBlocks),
             new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, api, minMobs, maxMobs),
             new BadEffectMicrogame(minDelay, maxDelay, player, api)
-#else
-            new TeleportUpMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 5, 20),
-            new SpawnRandomMobsMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api, 3, 7),
-            new BadEffectMicrogame(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(3), player, api)
-#endif
         };
     }
 
@@ -123,23 +118,23 @@
             listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        runningMinigame = new Minigame(listMicrogames, true);
-        runningMinigame.Start();
+        minigame = new Minigame(listMicrogames, true);
+        minigame.Start();
 
         minigameRunning = true;
     }
 
     private void Stop()
     {
-        if (runningMinigame != null)
+        if (minigame != null)
         {
-            runningMinigame.Stop();
+            minigame.Stop();
         }
 
         minigameRunning = false;
     }
 
-    private string HowLongAgo(DateTime date)
+    private string HowLongAgoInMinutes(DateTime date)
     {
         var time = DateTime.Now.Subtract(date);
         var minutes = Math.Floor(time.TotalMinutes);

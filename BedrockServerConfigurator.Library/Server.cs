@@ -6,6 +6,8 @@ using System.IO;
 using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Entities;
 using BedrockServerConfigurator.Library.Commands;
+using BedrockServerConfigurator.Library.ServerFiles;
+using Newtonsoft.Json;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -42,9 +44,11 @@ namespace BedrockServerConfigurator.Library
         public int ID => int.Parse(Name.Split("_")[^1]);
 
         /// <summary>
-        /// Gets version of minecraft server
+        /// Version of Minecraft server
         /// </summary>
-        public string Version => File.ReadAllLines(Path.Combine(FullPath, "version.txt"))[0];
+        public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
+
+        public Permissions[] Permissions => JsonConvert.DeserializeObject<Permissions[]>(File.ReadAllText(GetFilePath("permissions.json")));
 
         /// <summary>
         /// Logs all messages from Server
@@ -77,13 +81,15 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Overwrites server.properties with current version of ServerProperties.
-        /// If server is running it's recommended to call RestartServer.
-        /// Call this everytime ServerProperties are updated so they will be saved.
+        /// Returns file path to file in server directory
         /// </summary>
-        public void UpdateProperties()
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public string GetFilePath(string fileName)
         {
-            File.WriteAllText(Path.Combine(FullPath, "server.properties"), ServerProperties.ToString());
+            var path = Path.Combine(FullPath, fileName);
+
+            return File.Exists(path) ? path : null;
         }
 
         /// <summary>
@@ -156,14 +162,7 @@ namespace BedrockServerConfigurator.Library
         {
             var worldsDirectory = Path.Combine(FullPath, "worlds");
 
-            if (Directory.Exists(worldsDirectory)) 
-            {
-                var result = Directory.GetDirectories(worldsDirectory);
-
-                return result;
-            }
-
-            return null;
+            return Directory.Exists(worldsDirectory) ? Directory.GetDirectories(worldsDirectory) : null;
         }
 
         // this should maybe be like in a server message processor class
@@ -175,11 +174,12 @@ namespace BedrockServerConfigurator.Library
             var split = message.Split(':');
 
             var date = Utilities.GetDateTimeFromServerMessage(message);
-            var username = split[^2].Split(',')[0].Trim();
-            var xuid = long.Parse(split[^1].Trim());
+            var username = split[^2].Split(',')[0].Trim();  // " PLAYER_NAME, xuid: ID" -> " PLAYER_NAME" -> "PLAYER_NAME"
+            var xuid = long.Parse(split[^1].Trim());        // " ID" -> (long)"ID"
 
             var player = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
 
+            // but what if there's a player called disconnected and they connected ...
             if (message.Contains("disconnected"))
             {
                 // if server glitched and player never actually connected
@@ -219,23 +219,30 @@ namespace BedrockServerConfigurator.Library
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public async Task RunCommandAsync(Command command) => await RunCommandAsync(command.MinecraftCommand);
+        /// <returns>Returns back the command or null if command didn't run</returns>
+        public async Task<Command> RunCommandAsync(Command command)
+        {
+            if (Running)
+            {
+                await ServerInstance.StandardInput.WriteLineAsync(command.MinecraftCommand);
+
+                return command;
+            }
+            else
+            {
+                CallLog($"Can't run command \"{command}\" because server isn't running.");
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public async Task RunCommandAsync(string command)
-        {
-            if (Running)
-            {
-                await ServerInstance.StandardInput.WriteLineAsync(command);
-            }
-            else
-            {
-                CallLog($"Can't run command \"{command}\" because server isn't running.");
-            }
-        }
+        /// <returns>Returns back the command or null if command didn't run</returns>
+        public async Task<Command> RunCommandAsync(string command) =>
+            await RunCommandAsync(new Command(command));
 
         private void CallLog(string message)
         {

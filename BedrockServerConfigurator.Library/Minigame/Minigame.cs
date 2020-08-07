@@ -39,7 +39,7 @@ namespace BedrockServerConfigurator.Library.Minigame
                 foreach (var game in runningMicrogames)
                 {
                     game.OnMicrogameCreated += MicrogameCreated;
-                    game.StartMicrogame();
+                    game.StartMicrogame(true);
                 }
             }
             else

@@ -42,7 +42,7 @@ namespace BedrockServerConfigurator.Library.Minigame
             Api = api;
         }
 
-        public void StartMicrogame(bool repeats = true)
+        public void StartMicrogame(bool repeats)
         {
             if(timer == null)
             {
@@ -81,7 +81,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
             if (microgameRepeats)
             {
-                StartMicrogame();
+                StartMicrogame(true);
             }
         }
 
@@ -91,7 +91,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <param name="player"></param>
         /// <param name="api"></param>
         /// <returns></returns>
-        public abstract (TimeSpan, Func<Task>) DelayAndMicrogame(); // seems like the action really needs to be a task
+        public abstract (TimeSpan, Func<Task>) DelayAndMicrogame();
 
         /// <summary>
         /// Call this to log some information about new created microgame
