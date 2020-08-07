@@ -108,9 +108,19 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="num"></param>
         /// <returns></returns>
-        public static string FormatNumberStringDecimalSeparator(string num)
+        public static string DecimalStringToCurrentCulture(string num)
         {
             return num.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+        }
+
+        /// <summary>
+        /// Replaces current culture's decimal separator in decimal string with .
+        /// </summary>
+        /// <param name="num"></param>
+        /// <returns></returns>
+        public static string DecimalStringToDot(string num)
+        {
+            return num.Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, ".");
         }
     }
 }

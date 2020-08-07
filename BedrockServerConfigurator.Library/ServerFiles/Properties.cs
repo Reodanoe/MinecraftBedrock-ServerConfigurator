@@ -8,8 +8,8 @@ namespace BedrockServerConfigurator.Library.ServerFiles
     public class Properties
     {
         public string ServerName { get; set; }
-        public string Gamemode { get; set; } // use enum
-        public string Difficulty { get; set; } // use enum
+        public MinecraftGamemode Gamemode { get; set; }
+        public MinecraftDifficulty Difficulty { get; set; }
         public bool AllowCheats { get; set; }
         public double MaxPlayers { get; set; }
         public bool OnlineMode { get; set; }
@@ -22,7 +22,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         public double MaxThreads { get; set; }
         public string LevelName { get; set; }
         public string LevelSeed { get; set; }
-        public string DefaultPlayerPermissionLevel { get; set; } // use enum
+        public MinecraftPermission DefaultPlayerPermissionLevel { get; set; }
         public bool TexturepackRequired { get; set; }
         public bool ContentLogFileEnabled { get; set; }
         public double CompressionThreshold { get; set; }
@@ -33,7 +33,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         public bool CorrectPlayerMovement { get; set; }
 
         private readonly string propertiesFilePath;
-        
+
         /// <summary>
         /// Pass in the content of server.properties
         /// </summary>
@@ -78,25 +78,35 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         public void SetProperties()
         {
             var propsVals = PropertyAndValueFromFile();
-
-            var properties = this;
-            var type = properties.GetType();
+            var type = GetType();
 
             foreach (var (name, value) in propsVals)
             {
                 var prop = type.GetProperty(FilePropertyToProperty(name));
 
-                if (double.TryParse(Utilities.FormatNumberStringDecimalSeparator(value), out double valueDouble))
+                if (prop.PropertyType == typeof(bool))
                 {
-                    prop.SetValue(properties, valueDouble);
+                    prop.SetValue(this, bool.Parse(value));
                 }
-                else if (bool.TryParse(value, out bool valueBool))
+                else if (prop.PropertyType == typeof(double))
                 {
-                    prop.SetValue(properties, valueBool);
+                    prop.SetValue(this, double.Parse(Utilities.DecimalStringToCurrentCulture(value)));
                 }
-                else
+                else if (prop.PropertyType == typeof(string))
                 {
-                    prop.SetValue(properties, value);
+                    prop.SetValue(this, value);
+                }
+                else if (prop.PropertyType == typeof(MinecraftGamemode))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftGamemode>(value, true));
+                }
+                else if (prop.PropertyType == typeof(MinecraftDifficulty))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftDifficulty>(value, true));
+                }
+                else if (prop.PropertyType == typeof(MinecraftPermission))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftPermission>(value, true));
                 }
             }
         }
@@ -170,7 +180,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
             {
                 string result = "";
 
-                if (double.TryParse(Utilities.FormatNumberStringDecimalSeparator(value), out _))
+                if (double.TryParse(Utilities.DecimalStringToCurrentCulture(value), out _))
                 {
                     result += "double";
                 }
@@ -182,6 +192,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
                 {
                     result += "string";
                 }
+                // not sure how I would generate for enums yet
 
                 return result;
             }
@@ -203,10 +214,28 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// <returns></returns>
         public string ClassPropertiesToFileProperties()
         {
-            return string.Join("\n",
-                     this.GetType()
-                         .GetProperties()
-                         .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.PropertyType == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+            var properties = GetType().GetProperties();
+
+            var result = new List<string>();
+
+            foreach (var prop in properties)
+            {
+                var name = PropertyToFileProperty(prop.Name);
+                var value = prop.GetValue(this);
+
+                if (prop.PropertyType == typeof(double))
+                {
+                    value = Utilities.DecimalStringToDot(value.ToString());
+                }
+                else if (prop.PropertyType != typeof(string))
+                {
+                    value = value.ToString().ToLower();
+                }
+
+                result.Add($"{name}={value}");
+            }
+
+            return string.Join('\n', result);
         }
 
         /// <summary>
