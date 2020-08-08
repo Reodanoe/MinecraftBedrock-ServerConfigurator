@@ -70,11 +70,11 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// When a game ends it starts a new one
         /// </summary>
         /// <param name="game"></param>
-        private void Solo_MicrogameEnded(Microgame game)
+        private void Solo_MicrogameEnded(object sender, MicrogameEventArgs game)
         {
-            runningMicrogames.Remove(game);
+            runningMicrogames.Remove(game.Sender);
 
-            var newGame = RegisterNewSoloMicrogame(game);
+            var newGame = RegisterNewSoloMicrogame(game.Sender);
             runningMicrogames.Add(newGame);
         }
 

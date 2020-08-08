@@ -16,14 +16,21 @@ namespace BedrockServerConfigurator.Library.Minigame
         public TimeSpan RandomDelay => Utilities.RandomTimeSpan(MinDelay, MaxDelay);
 
         /// <summary>
-        /// Runs inside DelayAndMicrogame(), use MicrogameCreated() to call it in derived types
+        /// When microgame runs
+        /// </summary>
+        public DateTime RunsIn { get; private set; }
+
+        /// <summary>
+        /// Runs inside GetGame(), use MicrogameCreated() to call it in derived types
         /// </summary>
         public event EventHandler<MicrogameEventArgs> OnMicrogameCreated;
 
         /// <summary>
         /// Runs right after microgame finished
         /// </summary>
-        public event Action<Microgame> OnMicrogameEnded;
+        public event EventHandler<MicrogameEventArgs> OnMicrogameEnded;
+
+        private MicrogameEventArgs microgameEventArgs;
 
         private Timer timer;
         private Func<Task> microgameToRun;
@@ -48,8 +55,10 @@ namespace BedrockServerConfigurator.Library.Minigame
             {
                 microgameRepeats = repeats;
 
-                var (delay, game) = DelayAndMicrogame();
-                microgameToRun = game;
+                var delay = RandomDelay;
+                RunsIn = DateTime.Now.Add(delay);
+
+                microgameToRun = GetGame();
 
                 timer = new Timer(delay.TotalMilliseconds);
                 timer.Elapsed += RunMicrogame;
@@ -77,7 +86,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
             StopMicrogame();
 
-            OnMicrogameEnded?.Invoke(this);            
+            OnMicrogameEnded?.Invoke(this, microgameEventArgs);            
 
             if (microgameRepeats)
             {
@@ -86,12 +95,12 @@ namespace BedrockServerConfigurator.Library.Minigame
         }
 
         /// <summary>
-        /// Returns a TimeSpan and an Action. TimeSpan says when the Action (the microgame) should run.
+        /// Returns a Func<Task> where Task is the game that's gonna be ran
         /// </summary>
         /// <param name="player"></param>
         /// <param name="api"></param>
         /// <returns></returns>
-        public abstract (TimeSpan, Func<Task>) DelayAndMicrogame();
+        public abstract Func<Task> GetGame();
 
         /// <summary>
         /// Call this to log some information about new created microgame
@@ -99,6 +108,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         /// <param name="args"></param>
         protected void MicrogameCreated(MicrogameEventArgs args)
         {
+            microgameEventArgs = args;
             OnMicrogameCreated?.Invoke(this, args);
         }
     }

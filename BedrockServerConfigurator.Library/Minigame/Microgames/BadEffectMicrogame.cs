@@ -13,12 +13,11 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
         {
         }
 
-        public override (TimeSpan, Func<Task>) DelayAndMicrogame()
+        public override Func<Task> GetGame()
         {
-            var delay = RandomDelay;
             var (effect, messages) = BadEffectWithMessage(Player.Name);
 
-            MicrogameCreated(new MicrogameEventArgs(this, Player, "Bad effect", delay, $"Effect: {effect}"));
+            MicrogameCreated(new MicrogameEventArgs(this, $"Effect: {effect}"));
 
             async Task game()
             {
@@ -26,7 +25,7 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
                 await Api.AddEffect(Player.Name, effect, 15, 1);
             }
 
-            return (delay, game);
+            return game;
         }
 
         private KeyValuePair<MinecraftEffect, string[]> BadEffectWithMessage(string name)

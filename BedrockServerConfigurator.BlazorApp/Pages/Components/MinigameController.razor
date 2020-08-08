@@ -46,16 +46,19 @@
 <button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
 
 <h4>Delay</h4>
+Run microgames all at once: <input type="checkbox" @bind="allAtOnce" class="form-check" />
+
+<h4>Delay</h4>
 Min delay: <input @bind="minDelay" />
 Max delay: <input @bind="maxDelay" />
 
 <h4>Teleport up</h4>
-Min blocks: <input @bind="minBlocks" placeholder="Min blocks" />
-Max blocks: <input @bind="maxBlocks" placeholder="Max blocks" />
+Min blocks: <input type="number" @bind="minBlocks" placeholder="Min blocks" />
+Max blocks: <input type="number" @bind="maxBlocks" placeholder="Max blocks" />
 
 <h4>Mob spawner</h4>
-Min mobs: <input @bind="minMobs" placeholder="Min mobs" />
-Max mobs: <input @bind="maxMobs" placeholder="Max mobs" />
+Min mobs: <input type="number" @bind="minMobs" placeholder="Min mobs" />
+Max mobs: <input type="number" @bind="maxMobs" placeholder="Max mobs" />
 
 @code {
     [Parameter]
@@ -97,6 +100,8 @@ Max mobs: <input @bind="maxMobs" placeholder="Max mobs" />
     private int minMobs = 2;
     private int maxMobs = 7;
 
+    private bool allAtOnce;
+
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
@@ -118,7 +123,7 @@ Max mobs: <input @bind="maxMobs" placeholder="Max mobs" />
             listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        minigame = new Minigame(listMicrogames, true);
+        minigame = new Minigame(listMicrogames, allAtOnce);
         minigame.Start();
 
         minigameRunning = true;
