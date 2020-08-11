@@ -74,8 +74,8 @@ Max mobs:
     {
         api = new ServerApi(MinecraftServer);
 
-        MinecraftServer.PlayerConnected += PlayerConnected;
-        MinecraftServer.PlayerDisconnected += PlayerDisconnected;
+        MinecraftServer.OnPlayerConnected += PlayerConnected;
+        MinecraftServer.OnPlayerDisconnected += PlayerDisconnected;
 
         void PlayerConnected(ServerPlayer joined)
         {

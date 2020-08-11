@@ -51,33 +51,6 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Returns date from ServerInstance's output
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public static DateTime GetDateTimeFromServerMessage(string message)
-        {
-            if (!message.Contains('[') || !message.Contains(']'))
-            {
-                throw new FormatException("Message doesn't contain date and time");
-            }
-
-            var indexWhereDateBegins = message.IndexOf('[') + 1;
-            var dateEndsAt = indexWhereDateBegins + 19;
-            
-            var datePart = message[indexWhereDateBegins..dateEndsAt];
-
-            if (DateTime.TryParse(datePart, out DateTime result))
-            {
-                return result;
-            }
-            else
-            {
-                throw new FormatException("Cannot obtain DateTime from server message");
-            }
-        }
-
-        /// <summary>
         /// Returns random TimeSpan set between 2 TimeSpans
         /// </summary>
         /// <param name="min"></param>

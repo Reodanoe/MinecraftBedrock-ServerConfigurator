@@ -8,6 +8,7 @@ using BedrockServerConfigurator.Library.Entities;
 using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.ServerFiles;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -53,15 +54,17 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public event Action<string> Log;
 
-        public event Action<ServerPlayer> PlayerConnected;
-        public event Action<ServerPlayer> PlayerDisconnected;
+        public event Action<ServerPlayer> OnPlayerConnected;
+        public event Action<ServerPlayer> OnPlayerDisconnected;
+
+        public event Action<ServerOutputMessage> OnServerOutput;
 
         /// <summary>
         /// All players that are/were connected to the server
         /// </summary>
         public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
 
-        private Task _messagesTask;
+        private Thread _serverInstanceOutputThread;
 
         /// <summary>
         /// 
@@ -88,7 +91,7 @@ namespace BedrockServerConfigurator.Library
             var path = Path.Combine(FullPath, fileName);
 
             return File.Exists(path) ? path : null;
-        }
+        }        
 
         /// <summary>
         /// Starts a server if it's not running
@@ -100,14 +103,15 @@ namespace BedrockServerConfigurator.Library
                 ServerInstance.Start();
                 Running = true;
 
-                // this eats exceptions, maybe use threads instead?
-                _messagesTask = Task.Run(async () =>
+                _serverInstanceOutputThread = new Thread(async () =>
                 {
                     while (!ServerInstance.StandardOutput.EndOfStream && Running)
                     {
                         await NewMessageFromServerAsync(await ServerInstance.StandardOutput.ReadLineAsync());
                     }
                 });
+
+                _serverInstanceOutputThread.Start();
 
                 CallLog("Server started");
             }
@@ -130,8 +134,9 @@ namespace BedrockServerConfigurator.Library
 
                 await RunCommandAsync("stop");
                 ServerInstance.WaitForExit();
-                Running = false;
 
+                Running = false;
+                
                 CallLog("Server stopped");
             }
         }
@@ -154,18 +159,11 @@ namespace BedrockServerConfigurator.Library
         /// <param name="message"></param>
         private async Task NewMessageFromServerAsync(string message)
         {
-            CallLog(message);          
+            CallLog(message);
 
-            if (message.Contains("Player") && message.Contains("connected"))
-            {
-                SetPlayerOnlineOrOffline(message);
-            }
-            else if (message.Contains("Network port occupied, can't start server."))
-            {
-                await StopServerAsync();
+            var msg = await ServerOutputMessage.Create(this, message);
 
-                throw new Exception($"Port {ServerProperties.ServerPort} is occupied, please close the application which is using it.");
-            }
+            OnServerOutput?.Invoke(msg);
         }
 
         /// <summary>
@@ -177,56 +175,6 @@ namespace BedrockServerConfigurator.Library
             var worldsDirectory = Path.Combine(FullPath, "worlds");
 
             return Directory.Exists(worldsDirectory) ? Directory.GetDirectories(worldsDirectory) : null;
-        }
-
-        // this should maybe be like in a server message processor class
-        private void SetPlayerOnlineOrOffline(string message)
-        {
-            // [2020-07-19 18:29:49 INFO] Player connected: PLAYER_NAME, xuid: ID
-            // [2020-07-19 18:30:57 INFO] Player disconnected: PLAYER_NAME, xuid: ID
-
-            var split = message.Split(':');
-
-            var date = Utilities.GetDateTimeFromServerMessage(message);
-            var username = split[^2].Split(',')[0].Trim();  // " PLAYER_NAME, xuid: ID" -> " PLAYER_NAME" -> "PLAYER_NAME"
-            var xuid = long.Parse(split[^1].Trim());        // " ID" -> (long)"ID"
-
-            var player = AllPlayers.FirstOrDefault(x => x.Xuid == xuid);
-
-            // but what if there's a player called disconnected and they connected ...
-            if (message.Contains("disconnected"))
-            {
-                // if server glitched and player never actually connected
-                if (player == null) return;
-
-                player.IsOnline = false;
-                player.LastAction = date;
-
-                PlayerDisconnected?.Invoke(player);
-            }
-            else
-            {
-                if (player == null)
-                {
-                    player = new ServerPlayer
-                    {
-                        Username = username,
-                        Xuid = xuid,
-                        IsOnline = true,
-                        LastAction = date,
-                        ServerId = ID
-                    };
-
-                    AllPlayers.Add(player);
-                }
-                else
-                {
-                    player.IsOnline = true;
-                    player.LastAction = date;
-                }
-
-                PlayerConnected?.Invoke(player);
-            }
         }
 
         /// <summary>
@@ -268,6 +216,16 @@ namespace BedrockServerConfigurator.Library
         /// <returns>Returns back the command or null if command didn't run</returns>
         public async Task<Command> RunCommandAsync(string command) =>
             await RunCommandAsync(new Command(command));
+
+        internal void CallPlayerConnected(ServerPlayer player)
+        {
+            OnPlayerConnected?.Invoke(player);
+        }
+
+        internal void CallPlayerDisconnected(ServerPlayer player)
+        {
+            OnPlayerDisconnected?.Invoke(player);
+        }
 
         private void CallLog(string message)
         {
