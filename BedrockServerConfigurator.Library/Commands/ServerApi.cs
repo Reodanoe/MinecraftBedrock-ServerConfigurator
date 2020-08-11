@@ -85,14 +85,19 @@ namespace BedrockServerConfigurator.Library.Commands
             return await Server.RunCommandAsync(_builder.AddEffect(new Entity(entityName), effect, seconds, amplifier, hideParticles));
         }
 
-        public async Task<Command> Op(Player player)
+        public async Task<Command> SetOperator(Player player)
         {
-            return await Server.RunCommandAsync(_builder.Op(player));
+            return await Server.RunCommandAsync(_builder.SetOperator(player));
         }
 
-        public async Task<Command> DeOp(Player player)
+        public async Task<Command> SetMember(Player player)
         {
-            return await Server.RunCommandAsync(_builder.DeOp(player));
+            return await Server.RunCommandAsync(_builder.SetMember(player));
+        }
+
+        public async Task<Command> SetVisitor(Player player)
+        {
+            return await Server.RunCommandAsync(_builder.SetVisitor(player));
         }
 
         public async Task<MinecraftPermission> GetPlayerPermissionAsync(Player player)

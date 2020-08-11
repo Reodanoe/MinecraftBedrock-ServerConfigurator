@@ -1,5 +1,6 @@
 ﻿using BedrockServerConfigurator.Library.Location;
 using BedrockServerConfigurator.Library.Entities;
+using System;
 
 namespace BedrockServerConfigurator.Library.Commands
 {
@@ -87,7 +88,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command Op(Player player)
+        public Command SetOperator(Player player)
         {
             return new Command($"op {player.Username}");
         }
@@ -97,9 +98,19 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command DeOp(Player player)
+        public Command SetMember(Player player)
         {
-            return new Command("de") + Op(player);
+            return new Command("de") + SetOperator(player);
+        }
+
+        /// <summary>
+        /// Removes operator from a player
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public Command SetVisitor(Player player)
+        {
+            throw new NotImplementedException("Can't set player as a visitor");
         }
 
         /// <summary>
