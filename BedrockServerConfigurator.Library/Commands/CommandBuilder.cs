@@ -1,6 +1,6 @@
-﻿using BedrockServerConfigurator.Library.Location;
+﻿using System;
+using BedrockServerConfigurator.Library.Location;
 using BedrockServerConfigurator.Library.Entities;
-using System;
 
 namespace BedrockServerConfigurator.Library.Commands
 {
@@ -131,7 +131,6 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <returns></returns>
         public Command SayInColor(string message, MinecraftColor color)
         {
-            // seems like the minecraft server has a bug because it can't send colored messages
             return Say(ColorMessage(message, color).MinecraftCommand);
         }
 
