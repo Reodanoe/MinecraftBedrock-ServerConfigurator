@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BedrockServerConfigurator.Library.ServerFiles
+﻿namespace BedrockServerConfigurator.Library.ServerFiles
 {
     public class Whitelist
     {

@@ -1,8 +1,13 @@
-﻿namespace BedrockServerConfigurator.Library.ServerFiles
+﻿using Newtonsoft.Json;
+
+namespace BedrockServerConfigurator.Library.ServerFiles
 {
     public class Permissions
     {
-        public MinecraftPermission Permission { get; set; }
-        public long Xuid { get; set; }
+        [JsonProperty("permission")]
+        public MinecraftPermission Permission { get; internal set; }
+
+        [JsonProperty("xuid")]
+        public long Xuid { get; internal set; }
     }
 }

@@ -216,7 +216,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         {
             var properties = GetType().GetProperties();
 
-            var result = new List<string>();
+            var result = new List<string>(properties.Length);
 
             foreach (var prop in properties)
             {

@@ -1,0 +1,33 @@
+﻿@inject Configurator config
+
+<button class="btn btn-primary"
+        @onclick="async () => await api.Op(Player)">
+    Op
+</button>
+
+<button class="btn btn-primary"
+        @onclick="async () => await api.DeOp(Player)">
+    De-op
+</button>
+
+@code {
+    [Parameter]
+    public ServerPlayer Player { get; set; }
+
+    private ServerApi api;
+
+    protected override void OnParametersSet()
+    {
+        api = config.GetServerApi(Player.ServerId);
+    }
+
+    private async Task<bool> IsOpAsync()
+    {
+        // this method works but when I try to use it on the UI it doesn't
+        // I spent a lot of time trying to make it work
+
+        var permission = await api.GetPlayerPermissionAsync(Player);
+
+        return permission == MinecraftPermission.Operator;
+    }
+}

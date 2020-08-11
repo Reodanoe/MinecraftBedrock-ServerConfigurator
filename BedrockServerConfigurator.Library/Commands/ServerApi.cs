@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Entities;
 using BedrockServerConfigurator.Library.Location;
@@ -92,6 +93,13 @@ namespace BedrockServerConfigurator.Library.Commands
         public async Task<Command> DeOp(Player player)
         {
             return await Server.RunCommandAsync(_builder.DeOp(player));
+        }
+
+        public async Task<MinecraftPermission> GetPlayerPermissionAsync(Player player)
+        {
+            var playerPermission = (await Server.GetPermissionsAsync()).FirstOrDefault(x => x.Xuid == player.Xuid);
+
+            return playerPermission?.Permission ?? Server.ServerProperties.DefaultPlayerPermissionLevel;
         }
 
         public bool IsServerRunning()

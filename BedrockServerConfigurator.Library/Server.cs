@@ -36,7 +36,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// If ServerInstance is started, server is running
         /// </summary>
-        public bool Running { get; private set; } = false;        
+        public bool Running { get; private set; } = false;
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)
@@ -47,8 +47,6 @@ namespace BedrockServerConfigurator.Library
         /// Version of Minecraft server
         /// </summary>
         public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
-
-        public Permissions[] Permissions => JsonConvert.DeserializeObject<Permissions[]>(File.ReadAllText(GetFilePath("permissions.json")));
 
         /// <summary>
         /// Logs all messages from Server
@@ -102,10 +100,12 @@ namespace BedrockServerConfigurator.Library
                 ServerInstance.Start();
                 Running = true;
 
-                _messagesTask = Task.Run(async () => {
+                // this eats exceptions, maybe use threads instead?
+                _messagesTask = Task.Run(async () =>
+                {
                     while (!ServerInstance.StandardOutput.EndOfStream && Running)
                     {
-                        NewMessageFromServer(await ServerInstance.StandardOutput.ReadLineAsync());
+                        await NewMessageFromServerAsync(await ServerInstance.StandardOutput.ReadLineAsync());
                     }
                 });
 
@@ -120,9 +120,17 @@ namespace BedrockServerConfigurator.Library
         {
             if (Running)
             {
+                var time = DateTime.Now;
+
+                foreach (var player in AllPlayers)
+                {
+                    player.IsOnline = false;
+                    player.LastAction = time;
+                }
+
                 await RunCommandAsync("stop");
-                Running = false;
                 ServerInstance.WaitForExit();
+                Running = false;
 
                 CallLog("Server stopped");
             }
@@ -144,13 +152,19 @@ namespace BedrockServerConfigurator.Library
         /// When ServerInstance writes new line of message this method gets called which works with it
         /// </summary>
         /// <param name="message"></param>
-        private void NewMessageFromServer(string message)
+        private async Task NewMessageFromServerAsync(string message)
         {
-            CallLog(message);
+            CallLog(message);          
 
-            if(message.Contains("Player") && message.Contains("connected"))
+            if (message.Contains("Player") && message.Contains("connected"))
             {
                 SetPlayerOnlineOrOffline(message);
+            }
+            else if (message.Contains("Network port occupied, can't start server."))
+            {
+                await StopServerAsync();
+
+                throw new Exception($"Port {ServerProperties.ServerPort} is occupied, please close the application which is using it.");
             }
         }
 
@@ -213,6 +227,17 @@ namespace BedrockServerConfigurator.Library
 
                 PlayerConnected?.Invoke(player);
             }
+        }
+
+        /// <summary>
+        /// Gets permissions of players saved in permissions.json file
+        /// </summary>
+        public async Task<IReadOnlyCollection<Permissions>> GetPermissionsAsync()
+        {
+            var fileContent = await File.ReadAllTextAsync(GetFilePath("permissions.json"));
+            var json = JsonConvert.DeserializeObject<IReadOnlyCollection<Permissions>>(fileContent);
+
+            return json;
         }
 
         /// <summary>

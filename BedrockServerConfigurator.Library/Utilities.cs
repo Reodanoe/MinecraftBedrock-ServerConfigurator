@@ -57,7 +57,17 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         public static DateTime GetDateTimeFromServerMessage(string message)
         {
-            if (DateTime.TryParse(message[1..20], out DateTime result))
+            if (!message.Contains('[') || !message.Contains(']'))
+            {
+                throw new FormatException("Message doesn't contain date and time");
+            }
+
+            var indexWhereDateBegins = message.IndexOf('[') + 1;
+            var dateEndsAt = indexWhereDateBegins + 19;
+            
+            var datePart = message[indexWhereDateBegins..dateEndsAt];
+
+            if (DateTime.TryParse(datePart, out DateTime result))
             {
                 return result;
             }

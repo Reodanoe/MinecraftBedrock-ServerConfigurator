@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.ServerFiles;
+using BedrockServerConfigurator.Library.Commands;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -75,7 +76,7 @@ namespace BedrockServerConfigurator.Library
             ServerName = serverName;
 
             Directory.CreateDirectory(serversRootPath);
-            
+
             if (serverName.Contains("_"))
             {
                 throw new FormatException("Dont use _ in serverName");
@@ -295,8 +296,8 @@ namespace BedrockServerConfigurator.Library
             // gets all servers that have the same ports
             var serversWithSamePorts = AllServers.Values
                 .Where(x =>
-                AllServers.Values.Any(y => (x.ServerProperties.ServerPort == y.ServerProperties.ServerPort || 
-                                            x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) && 
+                AllServers.Values.Any(y => (x.ServerProperties.ServerPort == y.ServerProperties.ServerPort ||
+                                            x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) &&
                                             x.Name != y.Name)).ToList();
 
             // removes first server (ID 1) from servers with same ports
@@ -314,6 +315,18 @@ namespace BedrockServerConfigurator.Library
                 alrightServers.Add(server);
 
                 server.ServerProperties.SavePropertiesToFile();
+            }
+        }
+
+        public ServerApi GetServerApi(int serverId)
+        {
+            if (AllServers.TryGetValue(serverId, out Server server))
+            {
+                return new ServerApi(server);
+            }
+            else
+            {
+                throw new IndexOutOfRangeException($"No server with the ID [{serverId}] exists");
             }
         }
 

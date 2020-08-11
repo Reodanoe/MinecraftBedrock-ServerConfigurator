@@ -2,10 +2,10 @@
 
 <div class="row">
     @foreach (var player in MinecraftServer.AllPlayers)
-     {
+    {
         <PlayerCard Player="player">
             @if (player.IsOnline)
-             {
+            {
                 if (!minigameRunning)
                 {
                     <button class="btn btn-primary"
@@ -18,18 +18,10 @@
                     </button>
                 }
 
-                <button class="btn btn-primary"
-                        @onclick="async () => await api.Op(player)">
-                    Op
-                </button>
-
-                <button class="btn btn-primary"
-                        @onclick="async () => await api.DeOp(player)">
-                    De-op
-                </button>
-             }
+                <OpDeopButtons Player="player"></OpDeopButtons>
+            }
         </PlayerCard>
-     }
+    }
 </div>
 
 @if (minigameRunning)
@@ -46,19 +38,26 @@
 <button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
 
 <h4>Delay</h4>
-Run microgames all at once: <input type="checkbox" @bind="allAtOnce" class="form-check" />
+Run microgames all at once:
+<input type="checkbox" @bind="allAtOnce" class="form-check" />
 
 <h4>Delay</h4>
-Min delay: <input @bind="minDelay" />
-Max delay: <input @bind="maxDelay" />
+Min delay:
+<input @bind="minDelay" />
+Max delay:
+<input @bind="maxDelay" />
 
 <h4>Teleport up</h4>
-Min blocks: <input type="number" @bind="minBlocks" placeholder="Min blocks" />
-Max blocks: <input type="number" @bind="maxBlocks" placeholder="Max blocks" />
+Min blocks:
+<input type="number" @bind="minBlocks" placeholder="Min blocks" />
+Max blocks:
+<input type="number" @bind="maxBlocks" placeholder="Max blocks" />
 
 <h4>Mob spawner</h4>
-Min mobs: <input type="number" @bind="minMobs" placeholder="Min mobs" />
-Max mobs: <input type="number" @bind="maxMobs" placeholder="Max mobs" />
+Min mobs:
+<input type="number" @bind="minMobs" placeholder="Min mobs" />
+Max mobs:
+<input type="number" @bind="maxMobs" placeholder="Max mobs" />
 
 @code {
     [Parameter]

@@ -3,17 +3,20 @@
 <h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort = Version @MinecraftServer.Version</h4>
 
 <div class="btn-group">
-    <button @onclick="@MinecraftServer.StartServer"
-            disabled="@(MinecraftServer.Running)"
-            class="btn @(MinecraftServer.Running ? "" : "btn-primary")">
-        Start server
-    </button>
-
-    <button @onclick="@MinecraftServer.StopServerAsync"
-            disabled="@(!MinecraftServer.Running)"
-            class="btn @(!MinecraftServer.Running ? "" : "btn-primary")">
-        Stop server
-    </button>
+    @if (MinecraftServer.Running)
+    {
+        <button @onclick="async () => await MinecraftServer.StopServerAsync()"
+                class="btn btn-danger">
+            Stop server
+        </button>
+    }
+    else
+    {
+        <button @onclick="MinecraftServer.StartServer"
+                class="btn btn-success">
+            Start server
+        </button>
+    }
 
     <a href="@($"ServerPage/{MinecraftServer.ID}")" class="btn btn-primary">Server page</a>
 </div>
