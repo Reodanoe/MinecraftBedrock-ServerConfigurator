@@ -81,7 +81,7 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         private async void RunMicrogame(object sender, ElapsedEventArgs e)
         {
-            if (Player.IsOnline && Api.IsServerRunning())
+            if (Player.IsOnline && Api.Server.Running)
             {
                 await microgameToRun();
             }

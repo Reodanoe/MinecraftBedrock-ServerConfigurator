@@ -106,10 +106,5 @@ namespace BedrockServerConfigurator.Library.Commands
 
             return playerPermission?.Permission ?? Server.ServerProperties.DefaultPlayerPermissionLevel;
         }
-
-        public bool IsServerRunning()
-        {
-            return Server.Running;
-        }
     }
 }

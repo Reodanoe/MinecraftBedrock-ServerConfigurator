@@ -22,7 +22,7 @@ namespace BedrockServerConfigurator.ConsoleApp
             var config = new Configurator("servers", "bedrockServer");
 
             // downloads "template" server
-            // is used for creating other servers by copying it to a new directory and giving it an ID
+            // template server is used for creating other servers by copying it to a new directory and giving it an ID
             /// TIP: Try handling event `config.TemplateServerDownloadChanged` to see download progress in action
             await config.DownloadBedrockServer();
 
@@ -55,7 +55,8 @@ namespace BedrockServerConfigurator.ConsoleApp
             /// * To see how server.properties file would look like as a class you can run `Console.WriteLine(config.GeneratePropertiesClass())`
             ///   it's actually used in Properties class
             /// * To run a command on a server you can use `config.RunCommandOnSpecifiedServer(int serverId, string command)` 
-            ///   or by accessing a server directly through one of mentioned collections and using `RunACommand(string command)` 
+            ///   or by accessing a server directly through one of mentioned collections and using `RunACommand(string command)`
+            ///   But much easier way is to use GetServerApi(int serverId) to instantiate ServerApi and use its methods which are prepared for you to use
             /// * Listen to event `config.Log` for valuable information
 
             // Stop this program from quitting instantly
