@@ -216,13 +216,35 @@ namespace BedrockServerConfigurator.Library
         public async Task<Command> RunCommandAsync(string command) =>
             await RunCommandAsync(new Command(command));
 
-        private void CallPlayerConnected(ServerPlayer player)
+        private void CallPlayerConnected(string username, long xuid, DateTime when)
         {
+            var player = new ServerPlayer
+            {
+                Username = username,
+                Xuid = xuid,
+                LastAction = when,
+                IsOnline = true,
+                ServerId = ID
+            };
+
+            AllPlayers.Add(player);
+
             OnPlayerConnected?.Invoke(player);
         }
 
-        private void CallPlayerDisconnected(ServerPlayer player)
+        private void CallPlayerConnected(ServerPlayer player, DateTime when)
         {
+            player.IsOnline = true;
+            player.LastAction = when;
+
+            OnPlayerConnected?.Invoke(player);
+        }
+
+        private void CallPlayerDisconnected(ServerPlayer player, DateTime when)
+        {
+            player.IsOnline = false;
+            player.LastAction = when;
+
             OnPlayerDisconnected?.Invoke(player);
         }
 

@@ -67,33 +67,18 @@ namespace BedrockServerConfigurator.Library
                     // if server glitched and player never actually connected
                     if (player == null) return;
 
-                    player.IsOnline = false;
-                    player.LastAction = CreatedOn;
-
-                    Server.CallPlayerDisconnected(player);
+                    Server.CallPlayerDisconnected(player, CreatedOn);
                 }
                 else
                 {
                     if (player == null)
                     {
-                        player = new ServerPlayer
-                        {
-                            Username = username,
-                            Xuid = xuid,
-                            IsOnline = true,
-                            LastAction = CreatedOn,
-                            ServerId = Server.ID
-                        };
-
-                        Server.AllPlayers.Add(player);
+                        Server.CallPlayerConnected(username, xuid, CreatedOn);
                     }
                     else
                     {
-                        player.IsOnline = true;
-                        player.LastAction = CreatedOn;
+                        Server.CallPlayerConnected(player, CreatedOn);
                     }
-
-                    Server.CallPlayerConnected(player);
                 }
             }
 
