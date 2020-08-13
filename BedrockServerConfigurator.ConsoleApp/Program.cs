@@ -1,10 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BedrockServerConfigurator.Library;
-using BedrockServerConfigurator.Library.Commands;
-using BedrockServerConfigurator.Library.Entities;
-using BedrockServerConfigurator.Library.Location;
 
 namespace BedrockServerConfigurator.ConsoleApp
 {

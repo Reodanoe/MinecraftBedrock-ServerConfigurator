@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.Entities;
@@ -12,7 +11,7 @@ using System.Threading;
 
 namespace BedrockServerConfigurator.Library
 {
-    public class Server
+    public partial class Server
     {
         /// <summary>
         /// The process of Minecraft server
@@ -57,7 +56,7 @@ namespace BedrockServerConfigurator.Library
         public event Action<ServerPlayer> OnPlayerConnected;
         public event Action<ServerPlayer> OnPlayerDisconnected;
 
-        public event Action<ServerOutputMessage> OnServerOutput;
+        public event Action<ServerInstanceOutputMessage> OnServerOutput;
 
         /// <summary>
         /// All players that are/were connected to the server
@@ -161,7 +160,7 @@ namespace BedrockServerConfigurator.Library
         {
             CallLog(message);
 
-            var msg = await ServerOutputMessage.Create(this, message);
+            var msg = await ServerInstanceOutputMessage.Create(this, message);
 
             OnServerOutput?.Invoke(msg);
         }
@@ -217,12 +216,12 @@ namespace BedrockServerConfigurator.Library
         public async Task<Command> RunCommandAsync(string command) =>
             await RunCommandAsync(new Command(command));
 
-        internal void CallPlayerConnected(ServerPlayer player)
+        private void CallPlayerConnected(ServerPlayer player)
         {
             OnPlayerConnected?.Invoke(player);
         }
 
-        internal void CallPlayerDisconnected(ServerPlayer player)
+        private void CallPlayerDisconnected(ServerPlayer player)
         {
             OnPlayerDisconnected?.Invoke(player);
         }
