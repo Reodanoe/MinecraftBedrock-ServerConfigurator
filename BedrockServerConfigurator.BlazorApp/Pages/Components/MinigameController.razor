@@ -1,4 +1,5 @@
 ﻿@inject Configurator config
+@inject ConfiguratorData data
 
 <div class="row">
     @foreach (var player in MinecraftServer.AllPlayers)
@@ -6,13 +7,13 @@
         <PlayerCard Player="player">
             @if (player.IsOnline)
             {
-                if (!minigameRunning)
+                if (!MinigameData.Running)
                 {
                     <button class="btn btn-primary"
                             @onclick="() =>
                                       {
                                           if (IsPlayerSelected(player)) RemovePlayerFromSelectedPlayers(player);
-                                          else selectedPlayers.Add(player);
+                                          else MinigameData.SelectedPlayers.Add(player);
                                       }">
                         @(IsPlayerSelected(player) ? "Remove from minigame" : "Add to minigame")
                     </button>
@@ -24,18 +25,18 @@
     }
 </div>
 
-@if (minigameRunning)
+@if (MinigameData.Running)
 {
     <h3>Minigame running for players</h3>
 
-    foreach (var player in minigame.GroupedMicrogamesByPlayer)
+    foreach (var player in MinigameData.Minigame.GroupedMicrogamesByPlayer)
     {
         <p>@player.Key.Username</p>
     }
 }
 
-<button class="btn btn-primary" @onclick="Start" disabled="@(minigameRunning || !selectedPlayers.Any())">Start minigame</button>
-<button class="btn btn-primary" @onclick="Stop" disabled="@(!minigameRunning)">Stop minigame</button>
+<button class="btn btn-primary" @onclick="Start" disabled="@(MinigameData.Running || !MinigameData.SelectedPlayers.Any())">Start minigame</button>
+<button class="btn btn-primary" @onclick="Stop" disabled="@(!MinigameData.Running)">Stop minigame</button>
 
 <h4>Delay</h4>
 Run microgames all at once:
@@ -63,16 +64,22 @@ Max mobs:
     [Parameter]
     public Server MinecraftServer { get; set; }
 
-    private ServerApi api;
+    private MinigameData MinigameData => data.AllServerData[MinecraftServer].Minigame;
 
-    private List<ServerPlayer> selectedPlayers = new List<ServerPlayer>();
-    private Minigame minigame;
+    private TimeSpan minDelay = TimeSpan.FromSeconds(30);
+    private TimeSpan maxDelay = TimeSpan.FromMinutes(2);
 
-    private bool minigameRunning;
+    private int minBlocks = 5;
+    private int maxBlocks = 20;
+
+    private int minMobs = 2;
+    private int maxMobs = 7;
+
+    private bool allAtOnce;
 
     protected override void OnParametersSet()
     {
-        api = new ServerApi(MinecraftServer);
+        MinigameData.Api = new ServerApi(MinecraftServer);
 
         MinecraftServer.OnPlayerConnected += PlayerConnected;
         MinecraftServer.OnPlayerDisconnected += PlayerDisconnected;
@@ -84,30 +91,19 @@ Max mobs:
 
         void PlayerDisconnected(ServerPlayer left)
         {
-            selectedPlayers.Remove(left);
+            MinigameData.SelectedPlayers.Remove(left);
 
             InvokeAsync(StateHasChanged);
         }
     }
 
-    private TimeSpan minDelay = TimeSpan.FromSeconds(30);
-    private TimeSpan maxDelay = TimeSpan.FromMinutes(3);
-
-    private int minBlocks = 5;
-    private int maxBlocks = 20;
-
-    private int minMobs = 2;
-    private int maxMobs = 7;
-
-    private bool allAtOnce;
-
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
         {
-            new TeleportUpMicrogame(minDelay, maxDelay, player, api, minBlocks, maxBlocks),
-            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, api, minMobs, maxMobs),
-            new BadEffectMicrogame(minDelay, maxDelay, player, api)
+            new TeleportUpMicrogame(minDelay, maxDelay, player, MinigameData.Api, minBlocks, maxBlocks),
+            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, MinigameData.Api, minMobs, maxMobs),
+            new BadEffectMicrogame(minDelay, maxDelay, player, MinigameData.Api)
         };
     }
 
@@ -117,25 +113,25 @@ Max mobs:
 
         var listMicrogames = new List<Microgame>();
 
-        foreach (var p in selectedPlayers)
+        foreach (var p in MinigameData.SelectedPlayers)
         {
             listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        minigame = new Minigame(listMicrogames, allAtOnce);
-        minigame.Start();
+        MinigameData.Minigame = new Minigame(listMicrogames, allAtOnce);
+        MinigameData.Minigame.Start();
 
-        minigameRunning = true;
+        MinigameData.Running = true;
     }
 
     private void Stop()
     {
-        if (minigame != null)
+        if (MinigameData.Minigame != null)
         {
-            minigame.Stop();
+            MinigameData.Minigame.Stop();
         }
 
-        minigameRunning = false;
+        MinigameData.Running = false;
     }
 
     private string HowLongAgoInMinutes(DateTime date)
@@ -148,11 +144,11 @@ Max mobs:
 
     private bool IsPlayerSelected(Player p)
     {
-        return selectedPlayers.FirstOrDefault(x => x.Xuid == p.Xuid) != null;
+        return MinigameData.SelectedPlayers.FirstOrDefault(x => x.Xuid == p.Xuid) != null;
     }
 
     private void RemovePlayerFromSelectedPlayers(Player p)
     {
-        selectedPlayers.RemoveAll(x => x.Xuid == p.Xuid);
+        MinigameData.SelectedPlayers.RemoveAll(x => x.Xuid == p.Xuid);
     }
 }

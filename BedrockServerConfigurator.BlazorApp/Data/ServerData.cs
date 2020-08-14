@@ -24,5 +24,10 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// Holds info if server is listening to new messages
         /// </summary>
         public bool LoggingNewMessages { get; set; }
+
+        /// <summary>
+        /// Minigame running on a server
+        /// </summary>
+        public MinigameData Minigame { get; set; } = new MinigameData();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BedrockServerConfigurator.Library;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -16,7 +17,7 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// <summary>
         /// int is ID of server, ServerData holds data on individual server components
         /// </summary>
-        public Dictionary<int, ServerData> AllServerData { get; set; } = new Dictionary<int, ServerData>();
+        public Dictionary<Server, ServerData> AllServerData { get; set; } = new Dictionary<Server, ServerData>();
 
         private int percentDownloaded;
 

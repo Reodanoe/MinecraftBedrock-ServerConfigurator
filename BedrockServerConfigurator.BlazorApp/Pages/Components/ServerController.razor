@@ -51,13 +51,13 @@
     [Parameter]
     public Server MinecraftServer { get; set; }
 
-    private ServerData CurrentServer => ConfiguratorData.AllServerData[MinecraftServer.ID];
+    private ServerData CurrentServer => ConfiguratorData.AllServerData[MinecraftServer];
 
     protected override void OnParametersSet()
     {
-        if (!ConfiguratorData.AllServerData.ContainsKey(MinecraftServer.ID))
+        if (!ConfiguratorData.AllServerData.ContainsKey(MinecraftServer))
         {
-            ConfiguratorData.AllServerData.Add(MinecraftServer.ID, new ServerData());
+            ConfiguratorData.AllServerData.Add(MinecraftServer, new ServerData());
         }
 
         CurrentServer.Messages.CollectionChanged += (a, b) => this.InvokeAsync(StateHasChanged);
