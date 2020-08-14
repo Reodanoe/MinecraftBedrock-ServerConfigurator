@@ -48,15 +48,10 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
 
-        /// <summary>
-        /// Logs all messages from Server
-        /// </summary>
-        public event Action<string> Log;
-
         public event Action<ServerPlayer> OnPlayerConnected;
         public event Action<ServerPlayer> OnPlayerDisconnected;
 
-        public event Action<ServerInstanceOutputMessage> OnServerOutput;
+        public event Action<ServerInstanceOutputMessage> OnServerInstanceOutput;
 
         /// <summary>
         /// All players that are/were connected to the server
@@ -106,13 +101,15 @@ namespace BedrockServerConfigurator.Library
                 {
                     while (!ServerInstance.StandardOutput.EndOfStream && Running)
                     {
-                        await NewMessageFromServerAsync(await ServerInstance.StandardOutput.ReadLineAsync());
+                        var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
+
+                        var msg = await ServerInstanceOutputMessage.Create(this, outputMessage);
+
+                        OnServerInstanceOutput?.Invoke(msg);
                     }
                 });
 
                 _serverInstanceOutputThread.Start();
-
-                CallLog("Server started");
             }
         }
 
@@ -135,8 +132,6 @@ namespace BedrockServerConfigurator.Library
                 ServerInstance.WaitForExit();
 
                 Running = false;
-                
-                CallLog("Server stopped");
             }
         }
 
@@ -150,19 +145,6 @@ namespace BedrockServerConfigurator.Library
                 await StopServerAsync();
                 StartServer();
             }
-        }
-
-        /// <summary>
-        /// When ServerInstance writes new line of message this method gets called which works with it
-        /// </summary>
-        /// <param name="message"></param>
-        private async Task NewMessageFromServerAsync(string message)
-        {
-            CallLog(message);
-
-            var msg = await ServerInstanceOutputMessage.Create(this, message);
-
-            OnServerOutput?.Invoke(msg);
         }
 
         /// <summary>
@@ -202,9 +184,7 @@ namespace BedrockServerConfigurator.Library
             }
             else
             {
-                CallLog($"Can't run command \"{command}\" because server isn't running.");
-
-                return null;
+                throw new Exception($"Can't run command \"{command}\" because server isn't running.");
             }
         }
 
@@ -216,6 +196,12 @@ namespace BedrockServerConfigurator.Library
         public async Task<Command> RunCommandAsync(string command) =>
             await RunCommandAsync(new Command(command));
 
+        /// <summary>
+        /// Creates a new ServerPlayer and calls an event that they connected
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="xuid"></param>
+        /// <param name="when"></param>
         private void CallPlayerConnected(string username, long xuid, DateTime when)
         {
             var player = new ServerPlayer
@@ -232,6 +218,11 @@ namespace BedrockServerConfigurator.Library
             OnPlayerConnected?.Invoke(player);
         }
 
+        /// <summary>
+        /// Announces that a ServerPlayer has joined the serevr
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="when"></param>
         private void CallPlayerConnected(ServerPlayer player, DateTime when)
         {
             player.IsOnline = true;
@@ -240,17 +231,17 @@ namespace BedrockServerConfigurator.Library
             OnPlayerConnected?.Invoke(player);
         }
 
+        /// <summary>
+        /// Announces that a ServerPlayer has disconnected from the server
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="when"></param>
         private void CallPlayerDisconnected(ServerPlayer player, DateTime when)
         {
             player.IsOnline = false;
             player.LastAction = when;
 
             OnPlayerDisconnected?.Invoke(player);
-        }
-
-        private void CallLog(string message)
-        {
-            Log?.Invoke(message);
         }
     }
 }

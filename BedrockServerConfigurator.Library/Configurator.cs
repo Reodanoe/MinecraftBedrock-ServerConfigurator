@@ -160,7 +160,6 @@ namespace BedrockServerConfigurator.Library
                                ubuntu: $"cd {serverFolder} && chmod +x bedrock_server && ./bedrock_server");
 
                 var server = new Server(instance, name, serverFolder, new Properties(Path.Combine(serverFolder, "server.properties")));
-                // server.Log += (a) => CallLog(a);
 
                 AllServers.Add(server.ID, server);
 

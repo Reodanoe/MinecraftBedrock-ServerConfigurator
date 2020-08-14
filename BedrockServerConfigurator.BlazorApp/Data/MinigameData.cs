@@ -7,12 +7,24 @@ namespace BedrockServerConfigurator.BlazorApp.Data
 {
     public class MinigameData
     {
+        /// <summary>
+        /// Players that are selected for a minigame
+        /// </summary>
         public List<ServerPlayer> SelectedPlayers { get; set; } = new List<ServerPlayer>();
 
+        /// <summary>
+        /// The minigame instance that runs microgames
+        /// </summary>
         public Minigame Minigame { get; set; }
 
+        /// <summary>
+        /// If minigame is running
+        /// </summary>
         public bool Running { get; set; }
 
+        /// <summary>
+        /// ServerApi that sends commands
+        /// </summary>
         public ServerApi Api { get; set; }
     }
 }
