@@ -93,6 +93,12 @@ Max mobs:
         {
             MinigameData.SelectedPlayers.Remove(left);
 
+            if (!MinigameData.SelectedPlayers.Any())
+            {
+                MinigameData.Minigame.Stop();
+                MinigameData.Running = false;
+            }
+
             InvokeAsync(StateHasChanged);
         }
     }

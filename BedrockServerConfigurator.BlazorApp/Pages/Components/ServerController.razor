@@ -65,12 +65,12 @@
             MinecraftServer.OnServerInstanceOutput += (msg) =>
             {
                 CurrentServer.ServerMessages.Insert(0, msg.Message);
-
-                InvokeAsync(StateHasChanged);
             };
 
             CurrentServer.LoggingNewMessages = true;
         }
+
+        MinecraftServer.OnServerInstanceOutput += (_) => InvokeAsync(StateHasChanged);
     }
 
     private void Input(ChangeEventArgs changeEventArgs)

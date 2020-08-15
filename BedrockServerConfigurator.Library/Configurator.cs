@@ -146,8 +146,8 @@ namespace BedrockServerConfigurator.Library
             CallLog("New = " + newServerPath);
 
             var copyFolder = Utilities.RunShellCommand(
-                             windows: $"xcopy /E /I \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"",
-                             ubuntu: $"cp -r \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"");
+                                windows: $"xcopy /E /I \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"",
+                                ubuntu: $"cp -r \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"");
 
             copyFolder.Start();
 
@@ -163,19 +163,13 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void LoadServers()
         {
-            foreach (var name in AllServerDirectories().Except(AllServers.Select(x => x.Value.Name)))
+            foreach (var serverFolder in AllServerDirectoriesPaths().Except(AllServers.Select(x => x.Value.FullPath)))
             {
-                var serverFolder = Path.Combine(ServersRootPath, name);
-
-                var instance = Utilities.RunShellCommand(
-                               windows: $"cd {serverFolder} && bedrock_server.exe",
-                               ubuntu: $"cd {serverFolder} && chmod +x bedrock_server && ./bedrock_server");
-
-                var server = new Server(instance, name, serverFolder);
+                var server = new Server(serverFolder);
 
                 AllServers.Add(server.ID, server);
 
-                CallLog($"Loaded {name}");
+                CallLog($"Loaded {server.Name}");
             }
 
             FixServerPorts();
@@ -257,16 +251,26 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Gets name of all created servers (except template server)
+        /// Gets paths of all created servers inside ServersRootPath
         /// </summary>
         /// <returns></returns>
-        public string[] AllServerDirectories()
+        public string[] AllServerDirectoriesPaths()
         {
             return Directory
-                   .GetDirectories(ServersRootPath)
-                   .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
-                   .Where(y => y.Contains("_"))
-                   .ToArray();
+                .GetDirectories(ServersRootPath)
+                .Where(y => y.Contains("_"))
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Gets names of all created servers inside ServersRootPath
+        /// </summary>
+        /// <returns></returns>
+        public string[] AllServerDirectoriesNames()
+        {
+            return AllServerDirectoriesPaths()
+                .Select(x => x.Split(Path.DirectorySeparatorChar)[^1])
+                .ToArray();
         }
 
         /// <summary>
@@ -294,7 +298,7 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         private string NewServerID()
         {
-            var nums = AllServerDirectories().Select(name => int.Parse(name.Split("_")[^1]));
+            var nums = AllServerDirectoriesNames().Select(name => int.Parse(name.Split("_")[^1]));
 
             return nums.Any() ? $"_{nums.Max() + 1}" : "_1";
         }

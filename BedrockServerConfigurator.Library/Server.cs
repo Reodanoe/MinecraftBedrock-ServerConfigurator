@@ -63,16 +63,23 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="serverInstance">Process that links to bedrock_server file</param>
-        /// <param name="name">Name of server directory</param>
-        /// <param name="fullPath">Path to server directory</param>
-        /// <param name="serverProperties">Properties loaded from server.properties file</param>
-        internal Server(Process serverInstance, string name, string fullPath)
+        /// <param name="fullPath">Path where server is located</param>
+        internal Server(string fullPath)
         {
-            ServerInstance = serverInstance;
-            Name = name;
             FullPath = fullPath;
+
+            ServerInstance = GetServerProcess();
+
+            Name = FullPath.Split(Path.DirectorySeparatorChar)[^1];
+
             ServerProperties = new Properties(GetFilePath("server.properties"));
+        }
+
+        private Process GetServerProcess()
+        {
+            return Utilities.RunShellCommand(
+                windows: $"cd {FullPath} && bedrock_server.exe", 
+                ubuntu: $"cd {FullPath} && chmod +x bedrock_server && ./bedrock_server");
         }
 
         /// <summary>

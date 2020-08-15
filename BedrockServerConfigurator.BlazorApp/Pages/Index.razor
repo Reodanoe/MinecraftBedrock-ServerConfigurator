@@ -7,7 +7,7 @@
 <div class="text-center">
     <button @onclick="LoadServers"
             class="btn btn-success"
-            disabled="@(!config.AllServerDirectories().Any())">
+            disabled="@(!config.AllServerDirectoriesPaths().Any())">
         Load all servers
     </button>
 
@@ -31,7 +31,7 @@
 
 <div class="row">
     <h4 class="col-md-12">Available servers</h4>
-    @foreach (var server in config.AllServerDirectories())
+    @foreach (var server in config.AllServerDirectoriesNames())
     {
         <div class="col-md-2">
             @server
