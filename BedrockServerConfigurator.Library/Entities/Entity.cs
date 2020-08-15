@@ -24,7 +24,7 @@ namespace BedrockServerConfigurator.Library.Entities
         {
             if (entity == MinecraftEntityType.Player)
             {
-                throw new Exception("To use EntityType.Player use other constructor for playerName");
+                throw new Exception("To use MinecraftEntityType.Player use other constructor for playerName");
             }
 
             EntityType = entity;

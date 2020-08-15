@@ -31,6 +31,9 @@ namespace BedrockServerConfigurator.Library.Minigame
                     game.OnMicrogameCreated += MicrogameCreated;
                     game.StartMicrogame(true);
                 }
+
+                // this will start all microgames
+                // meaning each player can have multiple microgames running for them
             }
             else
             {

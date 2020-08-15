@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BedrockServerConfigurator.Library
+﻿namespace BedrockServerConfigurator.Library
 {
     public enum MinecraftEntityType
     {
@@ -22,7 +20,6 @@ namespace BedrockServerConfigurator.Library
         Midnight
     }
 
-    [Flags]
     public enum MinecraftColor : int
     {
        Black = 0x0,
