@@ -7,8 +7,9 @@ namespace BedrockServerConfigurator.Library.Minigame
 {
     public class Minigame
     {
-        public List<Microgame> Microgames { get; }
-        public bool RunAllMicrogamesAtOnce { get; }
+        public List<Microgame> Microgames { get; private set; }
+
+        public bool Running { get; private set; }
 
         /// <summary>
         /// Groups property Microgames by a player
@@ -19,20 +20,9 @@ namespace BedrockServerConfigurator.Library.Minigame
 
         private readonly List<Microgame> runningMicrogames = new List<Microgame>();
 
-        /// <summary>
-        /// Class for running microgames
-        /// </summary>
-        /// <param name="microgames">If true all microgames are started for every player, if false, microgames take turns</param>
-        /// <param name="runAllMicrogamesAtOnce"></param>
-        public Minigame(List<Microgame> microgames, bool runAllMicrogamesAtOnce)
+        public void Start(bool runAllMicrogamesAtOnce)
         {
-            Microgames = microgames;
-            RunAllMicrogamesAtOnce = runAllMicrogamesAtOnce;
-        }
-
-        public void Start()
-        {
-            if (RunAllMicrogamesAtOnce)
+            if (runAllMicrogamesAtOnce)
             {
                 runningMicrogames.AddRange(Microgames);
 
@@ -50,7 +40,13 @@ namespace BedrockServerConfigurator.Library.Minigame
 
                     runningMicrogames.Add(game);
                 }
+
+                // for each player a microgame will start
+                // that microgame is selected randomly from the microgames that are assigned to a player
+                // when it ends it then selects a new random microgame and starts it again
             }
+
+            Running = true;
         }
 
         public void Stop()
@@ -58,6 +54,20 @@ namespace BedrockServerConfigurator.Library.Minigame
             runningMicrogames.ForEach(x => x.StopMicrogame());
 
             runningMicrogames.Clear();
+
+            Running = false;
+        }
+
+        public void SetMicrogames(List<Microgame> microgames)
+        {
+            if (!Running)
+            {
+                Microgames = microgames;
+            }
+            else
+            {
+                throw new Exception("Can't set microgames while they're running");
+            }
         }
 
         private void MicrogameCreated(object sender, MicrogameEventArgs e)

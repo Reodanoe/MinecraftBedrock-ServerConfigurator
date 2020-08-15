@@ -7,7 +7,7 @@
         <PlayerCard Player="player">
             @if (player.IsOnline)
             {
-                if (!MinigameData.Running)
+                if (!MinigameData.Minigame.Running)
                 {
                     <button class="btn btn-primary"
                             @onclick="() =>
@@ -25,7 +25,7 @@
     }
 </div>
 
-@if (MinigameData.Running)
+@if (MinigameData.Minigame.Running)
 {
     <h3>Minigame running for players</h3>
 
@@ -35,8 +35,8 @@
     }
 }
 
-<button class="btn btn-primary" @onclick="Start" disabled="@(MinigameData.Running || !MinigameData.SelectedPlayers.Any())">Start minigame</button>
-<button class="btn btn-primary" @onclick="Stop" disabled="@(!MinigameData.Running)">Stop minigame</button>
+<button class="btn btn-primary" @onclick="Start" disabled="@(MinigameData.Minigame.Running || !MinigameData.SelectedPlayers.Any())">Start minigame</button>
+<button class="btn btn-primary" @onclick="Stop" disabled="@(MinigameData.Minigame.Running == false)">Stop minigame</button>
 
 <h4>Delay</h4>
 Run microgames all at once:
@@ -96,7 +96,6 @@ Max mobs:
             if (!MinigameData.SelectedPlayers.Any())
             {
                 MinigameData.Minigame.Stop();
-                MinigameData.Running = false;
             }
 
             InvokeAsync(StateHasChanged);
@@ -124,10 +123,8 @@ Max mobs:
             listMicrogames.AddRange(BasicMicrogames(p));
         }
 
-        MinigameData.Minigame = new Minigame(listMicrogames, allAtOnce);
-        MinigameData.Minigame.Start();
-
-        MinigameData.Running = true;
+        MinigameData.Minigame.SetMicrogames(listMicrogames);
+        MinigameData.Minigame.Start(allAtOnce);
     }
 
     private void Stop()
@@ -136,8 +133,6 @@ Max mobs:
         {
             MinigameData.Minigame.Stop();
         }
-
-        MinigameData.Running = false;
     }
 
     private string HowLongAgoInMinutes(DateTime date)
