@@ -67,12 +67,12 @@ namespace BedrockServerConfigurator.Library
         /// <param name="name">Name of server directory</param>
         /// <param name="fullPath">Path to server directory</param>
         /// <param name="serverProperties">Properties loaded from server.properties file</param>
-        internal Server(Process serverInstance, string name, string fullPath, Properties serverProperties)
+        internal Server(Process serverInstance, string name, string fullPath)
         {
             ServerInstance = serverInstance;
             Name = name;
             FullPath = fullPath;
-            ServerProperties = serverProperties;
+            ServerProperties = new Properties(GetFilePath("server.properties"));
         }
 
         /// <summary>
@@ -103,9 +103,9 @@ namespace BedrockServerConfigurator.Library
                     {
                         var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
 
-                        var msg = await ServerInstanceOutputMessage.Create(this, outputMessage);
+                        var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
 
-                        OnServerInstanceOutput?.Invoke(msg);
+                        OnServerInstanceOutput?.Invoke(processedMessage);
                     }
                 });
 
@@ -124,8 +124,7 @@ namespace BedrockServerConfigurator.Library
 
                 foreach (var player in AllPlayers)
                 {
-                    player.IsOnline = false;
-                    player.LastAction = time;
+                    CallPlayerDisconnected(player, time);
                 }
 
                 await RunCommandAsync("stop");

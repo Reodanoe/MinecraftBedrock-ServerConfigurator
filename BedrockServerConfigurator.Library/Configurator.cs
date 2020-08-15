@@ -27,7 +27,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Returns a path to the template server
         /// </summary>
-        public string OriginalServerFolderPath => Path.Combine(ServersRootPath, ServerName);
+        public string TemplateServerDirectoryPath => Path.Combine(ServersRootPath, ServerName);
 
         /// <summary>
         /// Holds all servers (except template one) that are in ServersRootPath directory
@@ -58,12 +58,17 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Returns true if folder with template server (downloaded server) has any files
         /// </summary>
-        public bool TemplateServerExists => Directory.Exists(OriginalServerFolderPath);
+        public bool TemplateServerExists => Directory.Exists(TemplateServerDirectoryPath);
 
         /// <summary>
         /// When downloading template server this event will give information about the download, e.g. percentage
         /// </summary>
         public event DownloadProgressChangedEventHandler TemplateServerDownloadChanged;
+
+        /// <summary>
+        /// Prevents creating more than one instance
+        /// </summary>
+        private static bool created;
 
         /// <summary>
         /// 
@@ -72,15 +77,22 @@ namespace BedrockServerConfigurator.Library
         /// <param name="serverName">Name of individual servers.</param>
         public Configurator(string serversRootPath, string serverName)
         {
-            ServersRootPath = serversRootPath;
-            ServerName = serverName;
+            if (created)
+            {
+                throw new Exception("Configurator is already instantiated, please use 1 instance only.");
+            }
 
-            Directory.CreateDirectory(serversRootPath);
+            created = true;
 
             if (serverName.Contains("_"))
             {
-                throw new FormatException("Dont use _ in serverName");
+                throw new ArgumentException("Dont use \"_\" in serverName", "serverName");
             }
+
+            ServersRootPath = serversRootPath;
+            ServerName = serverName;
+
+            Directory.CreateDirectory(ServersRootPath);
         }
 
         /// <summary>
@@ -93,9 +105,9 @@ namespace BedrockServerConfigurator.Library
                 throw new Exception($"Template server already exists, delete folder \"{ServerName}\" in \"{ServersRootPath}\".");
             }
 
-            Directory.CreateDirectory(OriginalServerFolderPath);
+            Directory.CreateDirectory(TemplateServerDirectoryPath);
 
-            string zipFilePath = Path.Combine(OriginalServerFolderPath, ServerName + ".zip");
+            string zipFilePath = Path.Combine(TemplateServerDirectoryPath, ServerName + ".zip");
 
             using var client = new WebClient();
 
@@ -109,13 +121,13 @@ namespace BedrockServerConfigurator.Library
             await client.DownloadFileTaskAsync(new Uri(url), zipFilePath);
 
             CallLog("Unzipping...");
-            ZipFile.ExtractToDirectory(zipFilePath, OriginalServerFolderPath);
+            ZipFile.ExtractToDirectory(zipFilePath, TemplateServerDirectoryPath);
 
             CallLog("Deleting zip file...");
             File.Delete(zipFilePath);
 
             CallLog("Adding version file...");
-            File.WriteAllText(Path.Combine(OriginalServerFolderPath, "version.txt"), version);
+            File.WriteAllText(Path.Combine(TemplateServerDirectoryPath, "version.txt"), version);
 
             CallLog("Download finished");
         }
@@ -130,12 +142,12 @@ namespace BedrockServerConfigurator.Library
 
             var newServerPath = Path.Combine(ServersRootPath, ServerName + NewServerID());
 
-            CallLog("Original = " + OriginalServerFolderPath);
+            CallLog("Original = " + TemplateServerDirectoryPath);
             CallLog("New = " + newServerPath);
 
             var copyFolder = Utilities.RunShellCommand(
-                             windows: $"xcopy /E /I \"{OriginalServerFolderPath}\" \"{newServerPath}\"",
-                             ubuntu: $"cp -r \"{OriginalServerFolderPath}\" \"{newServerPath}\"");
+                             windows: $"xcopy /E /I \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"",
+                             ubuntu: $"cp -r \"{TemplateServerDirectoryPath}\" \"{newServerPath}\"");
 
             copyFolder.Start();
 
@@ -159,7 +171,7 @@ namespace BedrockServerConfigurator.Library
                                windows: $"cd {serverFolder} && bedrock_server.exe",
                                ubuntu: $"cd {serverFolder} && chmod +x bedrock_server && ./bedrock_server");
 
-                var server = new Server(instance, name, serverFolder, new Properties(Path.Combine(serverFolder, "server.properties")));
+                var server = new Server(instance, name, serverFolder);
 
                 AllServers.Add(server.ID, server);
 
@@ -175,7 +187,7 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         public string GeneratePropertiesClass()
         {
-            var props = new Properties(Path.Combine(OriginalServerFolderPath, "server.properties"), false);
+            var props = new Properties(Path.Combine(TemplateServerDirectoryPath, "server.properties"), false);
             var result = props.GenerateProperties();
 
             return result;
@@ -303,9 +315,12 @@ namespace BedrockServerConfigurator.Library
             serversWithSamePorts.RemoveAll(x => x.ID == 1);
 
             // gets all servers except those who have same ports
+            // so this will be a list of servers which ports are alright
             var alrightServers = AllServers.Values.Except(serversWithSamePorts).ToList();
 
-            // adds to list with alright servers new server that have changed ports
+            // goes through a list of serevrs that have the same ports
+            // increments ipv4 and ipv6 port by 2
+            // adds the server to alright servers and saves its proeprties
             foreach (var server in serversWithSamePorts)
             {
                 server.ServerProperties.ServerPort = alrightServers.Last().ServerProperties.ServerPort + 2;
@@ -317,6 +332,11 @@ namespace BedrockServerConfigurator.Library
             }
         }
 
+        /// <summary>
+        /// Creates an api for a server based on server id
+        /// </summary>
+        /// <param name="serverId"></param>
+        /// <returns></returns>
         public ServerApi GetServerApi(int serverId)
         {
             if (AllServers.TryGetValue(serverId, out Server server))
