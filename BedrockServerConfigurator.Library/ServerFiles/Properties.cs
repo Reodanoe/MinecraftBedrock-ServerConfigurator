@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace BedrockServerConfigurator.Library.ServerFiles
 {
@@ -64,7 +65,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
             return File.ReadAllText(propertiesFilePath)
                        .Split("\n")                                     // split to every line
                        .Select(a => a.Trim())                           // trim whitespace from every line
-                       .Where(b => !b.StartsWith("#") && b.Length > 0)  // every line that isn't a comment like or isn't empty
+                       .Where(b => !b.StartsWith("#") && b.Length > 0)  // every line that isn't a comment line or isn't empty
                        .Select(c => c.Split("="))                       // split them with =
                        .Select(d => Tuple.Create(d[0], d[1])            // on left side is property and on right is its value
                                          .ToValueTuple())               // let's turn them into a tuple
@@ -216,7 +217,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         {
             var properties = GetType().GetProperties();
 
-            var result = new List<string>(properties.Length);
+            var strBuilder = new StringBuilder();            
 
             foreach (var prop in properties)
             {
@@ -232,10 +233,10 @@ namespace BedrockServerConfigurator.Library.ServerFiles
                     value = value.ToString().ToLower();
                 }
 
-                result.Add($"{name}={value}");
+                strBuilder.AppendLine($"{name}={value}");
             }
 
-            return string.Join('\n', result);
+            return strBuilder.ToString();
         }
 
         /// <summary>

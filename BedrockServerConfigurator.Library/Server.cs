@@ -36,7 +36,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// If ServerInstance is started, server is running
         /// </summary>
-        public bool Running { get; private set; } = false;
+        public bool Running { get; private set; }
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)
@@ -48,9 +48,29 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
 
+        /// <summary>
+        /// When server started
+        /// </summary>
+        public DateTime ServerStartedAt { get; private set; }
+
+        /// <summary>
+        /// How long has been server running for
+        /// </summary>
+        public TimeSpan UpFor => DateTime.Now.Subtract(ServerStartedAt);
+
+        /// <summary>
+        /// When player connects to the server
+        /// </summary>
         public event Action<ServerPlayer> OnPlayerConnected;
+
+        /// <summary>
+        /// When player disconnects from the server
+        /// </summary>
         public event Action<ServerPlayer> OnPlayerDisconnected;
 
+        /// <summary>
+        /// ServerInstance outputs messages which are announced in this event
+        /// </summary>
         public event Action<ServerInstanceOutputMessage> OnServerInstanceOutput;
 
         /// <summary>
@@ -58,10 +78,13 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
 
+        /// <summary>
+        /// Thread that listens to new messages from server instance
+        /// </summary>
         private Thread _serverInstanceOutputThread;
 
         /// <summary>
-        /// 
+        /// Creates a server instance for MineCraft server based on where the directory of MineCraft server is located
         /// </summary>
         /// <param name="fullPath">Path where server is located</param>
         internal Server(string fullPath)
@@ -75,6 +98,10 @@ namespace BedrockServerConfigurator.Library
             ServerProperties = new Properties(GetFilePath("server.properties"));
         }
 
+        /// <summary>
+        /// Returns a shell command that starts the minecraft server
+        /// </summary>
+        /// <returns></returns>
         private Process GetServerProcess()
         {
             return Utilities.RunShellCommand(
@@ -99,25 +126,26 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void StartServer()
         {
-            if (!Running)
+            if (Running) return;
+            
+            ServerInstance.Start();
+            Running = true;
+
+            _serverInstanceOutputThread = new Thread(async () =>
             {
-                ServerInstance.Start();
-                Running = true;
-
-                _serverInstanceOutputThread = new Thread(async () =>
+                while (!ServerInstance.StandardOutput.EndOfStream && Running)
                 {
-                    while (!ServerInstance.StandardOutput.EndOfStream && Running)
-                    {
-                        var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
+                    var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
 
-                        var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
+                    var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
 
-                        OnServerInstanceOutput?.Invoke(processedMessage);
-                    }
-                });
+                    OnServerInstanceOutput?.Invoke(processedMessage);
+                }
+            });
 
-                _serverInstanceOutputThread.Start();
-            }
+            _serverInstanceOutputThread.Start();
+
+            ServerStartedAt = DateTime.Now;            
         }
 
         /// <summary>
@@ -125,20 +153,19 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public async Task StopServerAsync()
         {
-            if (Running)
+            if (!Running) return;
+
+            var time = DateTime.Now;
+
+            foreach (var player in AllPlayers)
             {
-                var time = DateTime.Now;
-
-                foreach (var player in AllPlayers)
-                {
-                    CallPlayerDisconnected(player, time);
-                }
-
-                await RunCommandAsync("stop");
-                ServerInstance.WaitForExit();
-
-                Running = false;
+                CallPlayerDisconnected(player, time);
             }
+
+            await RunCommandAsync("stop");
+            ServerInstance.WaitForExit();
+
+            Running = false;
         }
 
         /// <summary>

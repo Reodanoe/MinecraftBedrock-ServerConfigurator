@@ -84,7 +84,7 @@ namespace BedrockServerConfigurator.Library.Commands
         }
 
         /// <summary>
-        /// Gives operator to a player
+        /// Sets player as operator
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
@@ -94,7 +94,7 @@ namespace BedrockServerConfigurator.Library.Commands
         }
 
         /// <summary>
-        /// Removes operator from a player
+        /// Sets player as member
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
@@ -104,7 +104,7 @@ namespace BedrockServerConfigurator.Library.Commands
         }
 
         /// <summary>
-        /// Removes operator from a player
+        /// Sets player as visitor
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>

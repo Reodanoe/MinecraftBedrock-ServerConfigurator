@@ -1,5 +1,4 @@
 ﻿using System;
-using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame
 {
