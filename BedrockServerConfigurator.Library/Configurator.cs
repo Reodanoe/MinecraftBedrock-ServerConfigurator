@@ -308,6 +308,18 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         private void FixServerPorts()
         {
+            if (!AllServers.Any()) return;
+
+            // this fixes a bug
+            // when you would start server with id higher than 1 before running server with id 1 it'd run 2 extra ports on 19132 and 19133
+            // which won't allow server 1 to start
+            if(AllServers.TryGetValue(1, out Server firstServer))
+            {
+                firstServer.ServerProperties.ServerPort = 19134;
+                firstServer.ServerProperties.ServerPortv6 = 19135;
+                firstServer.ServerProperties.SavePropertiesToFile();
+            }
+
             // gets all servers that have the same ports
             var serversWithSamePorts = AllServers.Values
                 .Where(x =>

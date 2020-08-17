@@ -105,7 +105,7 @@ namespace BedrockServerConfigurator.Library
         private Process GetServerProcess()
         {
             return Utilities.RunShellCommand(
-                windows: $"cd {FullPath} && bedrock_server.exe", 
+                windows: $"cd {FullPath} && bedrock_server.exe",
                 ubuntu: $"cd {FullPath} && chmod +x bedrock_server && ./bedrock_server");
         }
 
@@ -119,7 +119,7 @@ namespace BedrockServerConfigurator.Library
             var path = Path.Combine(FullPath, fileName);
 
             return File.Exists(path) ? path : null;
-        }        
+        }
 
         /// <summary>
         /// Starts a server if it's not running
@@ -127,7 +127,7 @@ namespace BedrockServerConfigurator.Library
         public void StartServer()
         {
             if (Running) return;
-            
+
             ServerInstance.Start();
             Running = true;
 
@@ -137,15 +137,24 @@ namespace BedrockServerConfigurator.Library
                 {
                     var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
 
-                    var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
+                    try
+                    {
+                        var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
 
-                    OnServerInstanceOutput?.Invoke(processedMessage);
+                        OnServerInstanceOutput?.Invoke(processedMessage);
+                    }
+                    catch (Exception e)
+                    {
+                        OnServerInstanceOutput?.Invoke(await ServerInstanceOutputMessage.Create(this, $"ERROR: {e.Message}"));
+
+                        throw;
+                    }
                 }
             });
 
             _serverInstanceOutputThread.Start();
 
-            ServerStartedAt = DateTime.Now;            
+            ServerStartedAt = DateTime.Now;
         }
 
         /// <summary>
