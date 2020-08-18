@@ -28,5 +28,10 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// Minigame running on a server
         /// </summary>
         public MinigameData Minigame { get; set; } = new MinigameData();
+
+        /// <summary>
+        /// Used for if user is changing properties of server
+        /// </summary>
+        public bool PropertyChanged { get; set; }
     }
 }

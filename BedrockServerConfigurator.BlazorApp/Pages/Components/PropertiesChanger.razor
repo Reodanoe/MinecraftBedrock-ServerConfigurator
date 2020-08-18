@@ -1,31 +1,67 @@
-﻿<div class="row">
-    <label for="cheats">Allow cheats</label>
-    <input type="checkbox" @bind="@MinecraftServer.ServerProperties.AllowCheats" id="cheats" class="form-check" />
-</div>
+﻿@inject ConfiguratorData data
 
-<div class="row">
-    <label for="threads">Max threads</label>
-    <input type="number" @bind="@MinecraftServer.ServerProperties.MaxThreads" id="threads" class="form-control" />
-</div>
+<button class="btn btn-info" @onclick="PropertiesClicked">
+    @buttonText
+</button>
 
-<div class="row">
-    <label for="distance">View distance</label>
-    <input type="number" @bind="@MinecraftServer.ServerProperties.ViewDistance" id="distance" class="form-control" />
-</div>
+<div class="@propertiesCss">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Allow cheats</th>
+                <td>
+                    <input type="checkbox" @oninput="PropertyUpdated" @bind="@MinecraftServer.ServerProperties.AllowCheats" class="form-check" />
+                </td>
+            </tr>
+            <tr>
+                <th>Max threads</th>
+                <td>
+                    <input type="number" @oninput="PropertyUpdated" @bind="@MinecraftServer.ServerProperties.MaxThreads" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <th>View distance</th>
+                <td>
+                    <input type="number" @oninput="PropertyUpdated" @bind="@MinecraftServer.ServerProperties.ViewDistance" class="form-control" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-<div class="row">
-    <button @onclick="SaveProperties"
-            class="btn btn-primary">
-        Save properties
-    </button>
+    <div class="row">
+        <button @onclick="SaveProperties"
+                class="btn btn-primary"
+                disabled="@(!serverData.PropertyChanged)">
+            Save properties
+        </button>
+    </div>
 </div>
 
 @code {
     [Parameter]
     public Server MinecraftServer { get; set; }
 
+    ServerData serverData => data.AllServerData[MinecraftServer];
+
+    private bool showingProperties;
+
+    private string buttonText => showingProperties ? "Hide properties" : "Show properties";
+    private string propertiesCss => showingProperties ? null : "collapse";
+
     private void SaveProperties()
     {
         MinecraftServer.ServerProperties.SavePropertiesToFile();
+
+        serverData.PropertyChanged = false;
+    }
+
+    private void PropertyUpdated()
+    {
+        serverData.PropertyChanged = true;
+    }
+
+    private void PropertiesClicked()
+    {
+        showingProperties = !showingProperties;
     }
 }

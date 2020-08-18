@@ -55,11 +55,16 @@
 
     protected override void OnParametersSet()
     {
+        // blazor doesn't save data on page so we need to use a data class that will save our data
+
+        // add server to data if it hasn't been added yet
         if (!ConfiguratorData.AllServerData.ContainsKey(MinecraftServer))
         {
             ConfiguratorData.AllServerData.Add(MinecraftServer, new ServerData());
         }
 
+        // this is used to prevent a bug when page would be loaded twice for example going to some other page and going back
+        // it will only listen to output event once
         if (!CurrentServer.LoggingNewMessages)
         {
             MinecraftServer.OnServerInstanceOutput += (msg) =>
@@ -70,6 +75,7 @@
             CurrentServer.LoggingNewMessages = true;
         }
 
+        // when new output comes in reload the component so messages appear
         MinecraftServer.OnServerInstanceOutput += (_) => InvokeAsync(StateHasChanged);
     }
 

@@ -38,27 +38,72 @@
 <button class="btn btn-primary" @onclick="Start" disabled="@(MinigameData.Minigame.Running || !MinigameData.SelectedPlayers.Any())">Start minigame</button>
 <button class="btn btn-primary" @onclick="Stop" disabled="@(MinigameData.Minigame.Running == false)">Stop minigame</button>
 
-<h4>Delay</h4>
-Run microgames all at once:
-<input type="checkbox" @bind="allAtOnce" class="form-check" />
+<button class="btn btn-info" @onclick="TablesClicked">@buttonText</button>
+<div class="@tablesCss">
+    <table class="table table-bordered">
+        <tr>
+            <th>Run microgames all at once</th>
+            <th colspan="2" class="text-center">
+                Delay
+            </th>
+        </tr>
+        <tr>
+            <td rowspan="2">
+                <input type="checkbox" @bind="allAtOnce" class="form-check" />
+            </td>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input @bind="minDelay" />
+            </td>
+            <td>
+                <input @bind="maxDelay" />
+            </td>
+        </tr>
+    </table>
 
-<h4>Delay</h4>
-Min delay:
-<input @bind="minDelay" />
-Max delay:
-<input @bind="maxDelay" />
+    <table class="table table-bordered">
+        <tr>
+            <th>Teleport up</th>
+            <th colspan="2">Blocks</th>
+        </tr>
+        <tr>
+            <th rowspan="2"></th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" @bind="minBlocks" placeholder="Min blocks" />
+            </td>
+            <td>
+                <input type="number" @bind="maxBlocks" placeholder="Max blocks" />
+            </td>
+        </tr>
+    </table>
 
-<h4>Teleport up</h4>
-Min blocks:
-<input type="number" @bind="minBlocks" placeholder="Min blocks" />
-Max blocks:
-<input type="number" @bind="maxBlocks" placeholder="Max blocks" />
-
-<h4>Mob spawner</h4>
-Min mobs:
-<input type="number" @bind="minMobs" placeholder="Min mobs" />
-Max mobs:
-<input type="number" @bind="maxMobs" placeholder="Max mobs" />
+    <table class="table table-bordered">
+        <tr>
+            <th>Mob spawner</th>
+            <th colspan="2">Amount</th>
+        </tr>
+        <tr>
+            <th rowspan="2"></th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" @bind="minMobs" placeholder="Min mobs" />
+            </td>
+            <td>
+                <input type="number" @bind="maxMobs" placeholder="Max mobs" />
+            </td>
+        </tr>
+    </table>
+</div>
 
 @code {
     [Parameter]
@@ -66,6 +111,19 @@ Max mobs:
 
     private MinigameData MinigameData => data.AllServerData[MinecraftServer].Minigame;
 
+    // ---------------- CODE FOR SHOWING TABLES ----------------
+    bool showingTables = true;
+
+    string buttonText => showingTables ? "Hide minigame settings" : "Show minigame settings";
+    string tablesCss => showingTables ? null : "collapse";
+
+    private void TablesClicked()
+    {
+        showingTables = !showingTables;
+    }
+    // ---------------- CODE FOR SHOWING TABLES ----------------
+
+    // ---------------- SETTINGS FOR MICROGAMES ----------------
     private TimeSpan minDelay = TimeSpan.FromSeconds(30);
     private TimeSpan maxDelay = TimeSpan.FromMinutes(2);
 
@@ -76,6 +134,7 @@ Max mobs:
     private int maxMobs = 7;
 
     private bool allAtOnce;
+    // ---------------- SETTINGS FOR MICROGAMES ----------------
 
     protected override void OnParametersSet()
     {
@@ -93,6 +152,8 @@ Max mobs:
         {
             MinigameData.SelectedPlayers.Remove(left);
 
+            // if last player on server disconnects
+            // stop the minigame
             if (!MinigameData.SelectedPlayers.Any())
             {
                 MinigameData.Minigame.Stop();
@@ -105,7 +166,7 @@ Max mobs:
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
-        {
+{
             new TeleportUpMicrogame(minDelay, maxDelay, player, MinigameData.Api, minBlocks, maxBlocks),
             new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, MinigameData.Api, minMobs, maxMobs),
             new BadEffectMicrogame(minDelay, maxDelay, player, MinigameData.Api)

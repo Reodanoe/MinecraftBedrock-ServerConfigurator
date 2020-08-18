@@ -170,7 +170,7 @@ namespace BedrockServerConfigurator.Library
             {
                 CallPlayerDisconnected(player, time);
             }
-
+            
             await RunCommandAsync("stop");
             ServerInstance.WaitForExit();
 
