@@ -7,7 +7,7 @@
         <PlayerCard Player="player">
             @if (player.IsOnline)
             {
-                if (!MinigameData.Minigame.Running)
+                if (!MinigameData.Minigame.Running) 
                 {
                     <button class="btn btn-primary"
                             @onclick="() =>
@@ -35,8 +35,17 @@
     }
 }
 
-<button class="btn btn-primary" @onclick="Start" disabled="@(MinigameData.Minigame.Running || !MinigameData.SelectedPlayers.Any())">Start minigame</button>
-<button class="btn btn-primary" @onclick="Stop" disabled="@(MinigameData.Minigame.Running == false)">Stop minigame</button>
+<button class="btn btn-primary"
+        @onclick="Start"
+        disabled="@(MinigameData.Minigame.Running || !MinigameData.SelectedPlayers.Any())">
+    Start minigame
+</button>
+
+<button class="btn btn-primary"
+        @onclick="Stop"
+        disabled="@(MinigameData.Minigame.Running == false)">
+    Stop minigame
+</button>
 
 <button class="btn btn-info" @onclick="TablesClicked">@buttonText</button>
 <div class="@tablesCss">
@@ -124,15 +133,19 @@
     // ---------------- CODE FOR SHOWING TABLES ----------------
 
     // ---------------- SETTINGS FOR MICROGAMES ----------------
+    // time in between microgames will run
     private TimeSpan minDelay = TimeSpan.FromSeconds(30);
     private TimeSpan maxDelay = TimeSpan.FromMinutes(2);
-
+    
+    // teleport up
     private int minBlocks = 5;
     private int maxBlocks = 20;
 
+    // spawn random mobs
     private int minMobs = 2;
     private int maxMobs = 7;
 
+    // if microgames shold run all at once
     private bool allAtOnce;
     // ---------------- SETTINGS FOR MICROGAMES ----------------
 

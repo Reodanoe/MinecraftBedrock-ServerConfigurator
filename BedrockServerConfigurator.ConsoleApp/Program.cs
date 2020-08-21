@@ -23,10 +23,10 @@ namespace BedrockServerConfigurator.ConsoleApp
 
             // creates a new server in servers directory
             // this is then used as an actual server that runs
-            config.NewServer();
+            config.CreateNewServer();
 
             // let's make another one
-            config.NewServer();
+            config.CreateNewServer();
 
             /// NOTE: Once you created servers you're going to use and you're going to launch your program again
             ///       don't forget to not create any new servers anymore so your server folder doesn't become full

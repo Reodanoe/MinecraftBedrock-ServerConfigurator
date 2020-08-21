@@ -2,9 +2,7 @@
 @inject Configurator config
 @inject ConfiguratorData data
 
-<h2>Configuration Controller</h2>
-
-<div class="text-center">
+<div class="btn-toolbar">
     <button @onclick="LoadServers"
             class="btn btn-success"
             disabled="@(!config.AllServerDirectoriesPaths().Any())">
@@ -30,20 +28,20 @@
 </div>
 
 <div class="row">
-    <h4 class="col-md-12">Available servers</h4>
+    <h4 class="col-12">Available servers</h4>    
     @foreach (var server in config.AllServerDirectoriesNames())
     {
-        <div class="col-md-2">
+        <div class="col-1">
             @server
         </div>
     }
 </div>
 
 <div class="row">
-    <h3 class="col-md-12">Loaded servers</h3>
+    <h3 class="col-12">Loaded servers</h3>
     @foreach (var server in config.AllServers)
     {
-        <div class="col-md-4 card">
+        <div class="col-4 card">
             <ServerController MinecraftServer="server.Value"></ServerController>
         </div>
     }
@@ -85,7 +83,7 @@
     {
         data.CreatingNewServer = true;
 
-        await Task.Run(config.NewServer);
+        await Task.Run(config.CreateNewServer);
 
         data.CreatingNewServer = false;
     }

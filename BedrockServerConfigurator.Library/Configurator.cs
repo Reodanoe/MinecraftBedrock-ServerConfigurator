@@ -82,8 +82,6 @@ namespace BedrockServerConfigurator.Library
                 throw new Exception("Configurator is already instantiated, please use 1 instance only.");
             }
 
-            created = true;
-
             if (serverName.Contains("_"))
             {
                 throw new ArgumentException("Dont use \"_\" in serverName", "serverName");
@@ -93,6 +91,8 @@ namespace BedrockServerConfigurator.Library
             ServerName = serverName;
 
             Directory.CreateDirectory(ServersRootPath);
+
+            created = true;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace BedrockServerConfigurator.Library
         /// Copies server template into a new folder which makes it a new server
         /// </summary>
         /// <returns>Path to newly created server</returns>
-        public string NewServer()
+        public string CreateNewServer()
         {
             CallLog("Creating new server");
 
