@@ -38,7 +38,7 @@ namespace BedrockServerConfigurator.ConsoleApp
             config.LoadServers();
 
             // this now starts both created servers
-            // try connecting at port 19132 for server with ID 1 or 19134 for the second server with ID 2
+            // try connecting at port 19134 for server with ID 1 or 19136 for the second server with ID 2
             config.StartAllServers();
 
             // you need to handle stopping servers for example by using `config.StopAllServers()`
@@ -47,12 +47,10 @@ namespace BedrockServerConfigurator.ConsoleApp
             /// TIPS:
             /// * Check out servers using the property `config.AllServersList` or `config.AllServers` to access valuable information
             /// * Note that you cannot rename servers just by changing name in constructor of Configurator instance on next launch, once you go with one keep with it
-            /// * To see how server.properties file would look like as a class you can run `Console.WriteLine(config.GeneratePropertiesClass())`
-            ///   it's actually used in Properties class
             /// * To run a command on a server you can use `config.RunCommandOnSpecifiedServer(int serverId, string command)` 
             ///   or by accessing a server directly through one of mentioned collections and using `RunACommand(string command)`
             ///   But much easier way is to use GetServerApi(int serverId) to instantiate ServerApi and use its methods which are prepared for you to use
-            /// * Listen to event `config.Log` for valuable information
+            /// * Listen to event `config.Log` and `OnServerInstanceOutput` in Server class for valuable information
 
             // Stop this program from quitting instantly
             await Task.Delay(-1);
