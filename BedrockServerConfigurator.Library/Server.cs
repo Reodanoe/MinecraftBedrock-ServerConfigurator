@@ -1,20 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using BedrockServerConfigurator.Library.Entities;
+using BedrockServerConfigurator.Library.Commands;
+using BedrockServerConfigurator.Library.ServerFiles;
+using Newtonsoft.Json;
+using System.Threading;
 
 namespace BedrockServerConfigurator.Library
 {
-    public class Server
+    public partial class Server
     {
+        /// <summary>
+        /// The process of Minecraft server
+        /// </summary>
         public Process ServerInstance { get; }
+
+        /// <summary>
+        /// Name of server
+        /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// The path where server is installed
+        /// </summary>
         public string FullPath { get; }
+
+        /// <summary>
+        /// Manipulates with server.properties file
+        /// </summary>
         public Properties ServerProperties { get; }
 
-        public bool Running { get; private set; } = false;        
+        /// <summary>
+        /// If ServerInstance is started, server is running
+        /// </summary>
+        public bool Running { get; private set; }
 
         /// <summary>
         /// ID of a server (number at the end of the name of folder where server is located)
@@ -22,38 +44,81 @@ namespace BedrockServerConfigurator.Library
         public int ID => int.Parse(Name.Split("_")[^1]);
 
         /// <summary>
-        /// Gets version of minecraft server
+        /// Version of Minecraft server
         /// </summary>
-        public string Version => File.ReadAllLines(Path.Combine(FullPath, "version.txt"))[0];
+        public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
 
         /// <summary>
-        /// Logs all messages from Server
+        /// When server started
         /// </summary>
-        public event EventHandler<string> Log;
+        public DateTime ServerStartedAt { get; private set; }
 
         /// <summary>
-        /// 
+        /// How long has been server running for
         /// </summary>
-        /// <param name="serverInstance">Process that links to bedrock_server file</param>
-        /// <param name="name">Name of server directory</param>
-        /// <param name="fullPath">Path to server directory</param>
-        /// <param name="serverProperties">Properties loaded from server.properties file</param>
-        internal Server(Process serverInstance, string name, string fullPath, Properties serverProperties)
+        public TimeSpan UpFor => DateTime.Now.Subtract(ServerStartedAt);
+
+        /// <summary>
+        /// When player connects to the server
+        /// </summary>
+        public event Action<ServerPlayer> OnPlayerConnected;
+
+        /// <summary>
+        /// When player disconnects from the server
+        /// </summary>
+        public event Action<ServerPlayer> OnPlayerDisconnected;
+
+        /// <summary>
+        /// ServerInstance outputs messages which are announced in this event
+        /// </summary>
+        public event Action<ServerInstanceOutputMessage> OnServerInstanceOutput;
+
+        /// <summary>
+        /// All players that are/were connected to the server
+        /// </summary>
+        public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
+
+        /// <summary>
+        /// Thread that listens to new messages from server instance
+        /// </summary>
+        private Thread _serverInstanceOutputThread;
+
+        /// <summary>
+        /// Creates a server instance for MineCraft server based on where the directory of MineCraft server is located
+        /// </summary>
+        /// <param name="fullPath">Path where server is located</param>
+        internal Server(string fullPath)
         {
-            ServerInstance = serverInstance;
-            Name = name;
             FullPath = fullPath;
-            ServerProperties = serverProperties;
+
+            ServerInstance = GetServerProcess();
+
+            Name = FullPath.Split(Path.DirectorySeparatorChar)[^1];
+
+            ServerProperties = new Properties(GetFilePath("server.properties"));
         }
 
         /// <summary>
-        /// Overwrites server.properties with current version of ServerProperties.
-        /// If server is running it's recommended to call RestartServer.
-        /// Call this everytime ServerProperties are updated so they will be saved.
+        /// Returns a shell command that starts the minecraft server
         /// </summary>
-        public void UpdateProperties()
+        /// <returns></returns>
+        private Process GetServerProcess()
         {
-            File.WriteAllText(Path.Combine(FullPath, "server.properties"), ServerProperties.ToString());
+            return Utilities.RunShellCommand(
+                windows: $"cd {FullPath} && bedrock_server.exe",
+                ubuntu: $"cd {FullPath} && chmod +x bedrock_server && ./bedrock_server");
+        }
+
+        /// <summary>
+        /// Returns file path to file in server directory
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public string GetFilePath(string fileName)
+        {
+            var path = Path.Combine(FullPath, fileName);
+
+            return File.Exists(path) ? path : null;
         }
 
         /// <summary>
@@ -61,86 +126,164 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void StartServer()
         {
-            if (!Running)
+            if (Running) return;
+
+            ServerInstance.Start();
+            Running = true;
+
+            _serverInstanceOutputThread = new Thread(async () =>
             {
-                ServerInstance.Start();
-                Running = true;
+                while (!ServerInstance.StandardOutput.EndOfStream && Running)
+                {
+                    var outputMessage = await ServerInstance.StandardOutput.ReadLineAsync();
 
-                Task.Run(() => {
-                    while (!ServerInstance.StandardOutput.EndOfStream && Running)
+                    try
                     {
-                        NewMessageFromServer(ServerInstance.StandardOutput.ReadLine());
-                    }
-                });
+                        var processedMessage = await ServerInstanceOutputMessage.Create(this, outputMessage);
 
-                CallLog("Server started");
-            }
+                        OnServerInstanceOutput?.Invoke(processedMessage);
+                    }
+                    catch (Exception e)
+                    {
+                        OnServerInstanceOutput?.Invoke(await ServerInstanceOutputMessage.Create(this, $"ERROR: {e.Message}"));
+
+                        throw;
+                    }
+                }
+            });
+
+            _serverInstanceOutputThread.Start();
+
+            ServerStartedAt = DateTime.Now;
         }
 
         /// <summary>
         /// Stops a server if it's running
         /// </summary>
-        public void StopServer()
+        public async Task StopServerAsync()
         {
-            if (Running)
-            {
-                RunACommand("stop");
-                Running = false;
-                ServerInstance.WaitForExit();
+            if (!Running) return;
 
-                CallLog("Server stopped");
+            var time = DateTime.Now;
+
+            foreach (var player in AllPlayers)
+            {
+                CallPlayerDisconnected(player, time);
             }
+            
+            await RunCommandAsync("stop");
+            ServerInstance.WaitForExit();
+
+            Running = false;
         }
 
         /// <summary>
         /// If server is running, calls StopServer then StartServer
         /// </summary>
-        public void RestartServer()
+        public async Task RestartServerAsync()
         {
             if (Running)
             {
-                StopServer();
+                await StopServerAsync();
                 StartServer();
             }
         }
 
         /// <summary>
-        /// When ServerInstance writes new line of message this method gets called which works with it
+        /// All worlds in "worlds" directory in this server
         /// </summary>
-        /// <param name="message"></param>
-        private void NewMessageFromServer(string message)
+        /// <returns></returns>
+        public string[] AvailableWorlds()
         {
-            CallLog(message);
+            var worldsDirectory = Path.Combine(FullPath, "worlds");
+
+            return Directory.Exists(worldsDirectory) ? Directory.GetDirectories(worldsDirectory) : null;
+        }
+
+        /// <summary>
+        /// Gets permissions of players saved in permissions.json file
+        /// </summary>
+        public async Task<IReadOnlyCollection<Permissions>> GetPermissionsAsync()
+        {
+            var fileContent = await File.ReadAllTextAsync(GetFilePath("permissions.json"));
+            var json = JsonConvert.DeserializeObject<IReadOnlyCollection<Permissions>>(fileContent);
+
+            return json;
         }
 
         /// <summary>
         /// Runs a command on the running server.
         /// </summary>
         /// <param name="command"></param>
-        public void RunACommand(string command)
+        /// <returns>Returns back the command or null if command didn't run</returns>
+        public async Task<Command> RunCommandAsync(Command command)
         {
             if (Running)
             {
-                ServerInstance.StandardInput.WriteLine(command);
+                await ServerInstance.StandardInput.WriteLineAsync(command.MinecraftCommand);
+
+                return command;
             }
             else
             {
-                CallLog($"Can't run command \"{command}\" because ServerInstance isn't running.");
+                throw new Exception($"Can't run command \"{command}\" because server isn't running.");
             }
         }
 
         /// <summary>
-        /// ID - Name - ["server-name"] - ["server-port"]
+        /// Runs a command on the running server.
         /// </summary>
-        /// <returns></returns>
-        public override string ToString()
+        /// <param name="command"></param>
+        /// <returns>Returns back the command or null if command didn't run</returns>
+        public async Task<Command> RunCommandAsync(string command) =>
+            await RunCommandAsync(new Command(command));
+
+        /// <summary>
+        /// Creates a new ServerPlayer and calls an event that they connected
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="xuid"></param>
+        /// <param name="when"></param>
+        private void CallPlayerConnected(string username, long xuid, DateTime when)
         {
-            return $"{ID} - {Name} - {ServerProperties.ServerName} - {ServerProperties.ServerPort}";
+            var player = new ServerPlayer
+            {
+                Username = username,
+                Xuid = xuid,
+                LastAction = when,
+                IsOnline = true,
+                ServerId = ID
+            };
+
+            AllPlayers.Add(player);
+
+            OnPlayerConnected?.Invoke(player);
         }
 
-        private void CallLog(string message)
+        /// <summary>
+        /// Announces that a ServerPlayer has joined the serevr
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="when"></param>
+        private void CallPlayerConnected(ServerPlayer player, DateTime when)
         {
-            Log?.Invoke(null, message);
+            player.IsOnline = true;
+            player.LastAction = when;
+
+            OnPlayerConnected?.Invoke(player);
+        }
+
+        /// <summary>
+        /// Announces that a ServerPlayer has disconnected from the server
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="when"></param>
+        private void CallPlayerDisconnected(ServerPlayer player, DateTime when)
+        {
+            player.IsOnline = false;
+            player.LastAction = when;
+
+            OnPlayerDisconnected?.Invoke(player);
         }
     }
 }

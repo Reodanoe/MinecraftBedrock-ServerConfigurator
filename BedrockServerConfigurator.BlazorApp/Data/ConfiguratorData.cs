@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BedrockServerConfigurator.Library;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -8,6 +9,16 @@ namespace BedrockServerConfigurator.BlazorApp.Data
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// If template server is currently downloading
+        /// </summary>
+        public bool IsDownloading => NewDownloadStarted && !ServerDownloaded;
+
+        /// <summary>
+        /// int is ID of server, ServerData holds data on individual server components
+        /// </summary>
+        public Dictionary<Server, ServerData> AllServerData { get; set; } = new Dictionary<Server, ServerData>();
+
         private int percentDownloaded;
 
         /// <summary>
@@ -15,7 +26,7 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// </summary>
         public int PercentDownloaded
         {
-            get { return percentDownloaded; }
+            get => percentDownloaded;
             set
             {
                 percentDownloaded = value;
@@ -30,7 +41,7 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// </summary>
         public bool NewDownloadStarted
         {
-            get { return newDownloadStarted; }
+            get => newDownloadStarted;
             set
             {
                 newDownloadStarted = value;
@@ -45,18 +56,13 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// </summary>
         public bool ServerDownloaded
         {
-            get { return serverDownloaded; }
+            get => serverDownloaded;
             set
             {
                 serverDownloaded = value;
                 CallPropertyChanged();
             }
         }
-
-        /// <summary>
-        /// If template server is currently downloading
-        /// </summary>
-        public bool IsDownloading => NewDownloadStarted && !ServerDownloaded;
 
         private bool creatingNewServer;
 
@@ -65,18 +71,13 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// </summary>
         public bool CreatingNewServer
         {
-            get { return creatingNewServer; }
+            get => creatingNewServer;
             set
             {
                 creatingNewServer = value;
                 CallPropertyChanged();
             }
         }
-
-        /// <summary>
-        /// int is ID of server, ServerData holds data on individual server components
-        /// </summary>
-        public Dictionary<int, ServerData> AllServerData { get; set; } = new Dictionary<int, ServerData>();
 
         private void CallPropertyChanged([CallerMemberName] string name = "")
         {

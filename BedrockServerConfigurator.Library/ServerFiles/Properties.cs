@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
-namespace BedrockServerConfigurator.Library
+namespace BedrockServerConfigurator.Library.ServerFiles
 {
     public class Properties
     {
         public string ServerName { get; set; }
-        public string Gamemode { get; set; }
-        public string Difficulty { get; set; }
+        public MinecraftGamemode Gamemode { get; set; }
+        public MinecraftDifficulty Difficulty { get; set; }
         public bool AllowCheats { get; set; }
         public double MaxPlayers { get; set; }
         public bool OnlineMode { get; set; }
@@ -22,7 +23,7 @@ namespace BedrockServerConfigurator.Library
         public double MaxThreads { get; set; }
         public string LevelName { get; set; }
         public string LevelSeed { get; set; }
-        public string DefaultPlayerPermissionLevel { get; set; }
+        public MinecraftPermission DefaultPlayerPermissionLevel { get; set; }
         public bool TexturepackRequired { get; set; }
         public bool ContentLogFileEnabled { get; set; }
         public double CompressionThreshold { get; set; }
@@ -38,7 +39,7 @@ namespace BedrockServerConfigurator.Library
         /// Pass in the content of server.properties
         /// </summary>
         /// <param name="propertiesFile"></param>
-        public Properties(string propertiesFilePath, bool autoSetProperties = true)
+        internal Properties(string propertiesFilePath, bool autoSetProperties = true)
         {
             this.propertiesFilePath = propertiesFilePath;
 
@@ -46,19 +47,29 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Gets property name and its value from server.properties file
+        /// Overwrites server.properties with current version of ServerProperties.
+        /// If server is running it's recommended to call RestartServer.
+        /// Call this everytime ServerProperties are updated so they will be saved.
+        /// </summary>
+        public void SavePropertiesToFile()
+        {
+            File.WriteAllText(propertiesFilePath, ClassPropertiesToFileProperties());
+        }
+
+        /// <summary>
+        /// Gets all properties and their values from server.properties file
         /// </summary>
         /// <returns></returns>
         public List<(string propertyName, string propertyValue)> PropertyAndValueFromFile()
         {
             return File.ReadAllText(propertiesFilePath)
-                       .Split("\n")
-                       .Select(a => a.Trim())
-                       .Where(b => !b.StartsWith("#") && b.Length > 0)
-                       .Select(c => c.Split("="))
-                       .Select(d => Tuple.Create(d[0], d[1])
-                                         .ToValueTuple())
-                       .ToList();
+                       .Split("\n")                                     // split to every line
+                       .Select(a => a.Trim())                           // trim whitespace from every line
+                       .Where(b => !b.StartsWith("#") && b.Length > 0)  // every line that isn't a comment line or isn't empty
+                       .Select(c => c.Split("="))                       // split them with =
+                       .Select(d => Tuple.Create(d[0], d[1])            // on left side is property and on right is its value
+                                         .ToValueTuple())               // let's turn them into a tuple
+                       .ToList();                                       // and finally into a list
         }
 
         /// <summary>
@@ -68,31 +79,42 @@ namespace BedrockServerConfigurator.Library
         public void SetProperties()
         {
             var propsVals = PropertyAndValueFromFile();
-
-            var properties = this;
-            var type = properties.GetType();
+            var type = GetType();
 
             foreach (var (name, value) in propsVals)
             {
                 var prop = type.GetProperty(FilePropertyToProperty(name));
 
-                if (double.TryParse(value, out double valueDouble))
+                if (prop.PropertyType == typeof(bool))
                 {
-                    prop.SetValue(properties, valueDouble);
+                    prop.SetValue(this, bool.Parse(value));
                 }
-                else if (bool.TryParse(value, out bool valueBool))
+                else if (prop.PropertyType == typeof(double))
                 {
-                    prop.SetValue(properties, valueBool);
+                    prop.SetValue(this, double.Parse(Utilities.DecimalStringToCurrentCulture(value)));
                 }
-                else
+                else if (prop.PropertyType == typeof(string))
                 {
-                    prop.SetValue(properties, value);
+                    prop.SetValue(this, value);
+                }
+                else if (prop.PropertyType == typeof(MinecraftGamemode))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftGamemode>(value, true));
+                }
+                else if (prop.PropertyType == typeof(MinecraftDifficulty))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftDifficulty>(value, true));
+                }
+                else if (prop.PropertyType == typeof(MinecraftPermission))
+                {
+                    prop.SetValue(this, Enum.Parse<MinecraftPermission>(value, true));
                 }
             }
         }
 
         /// <summary>
-        /// Converts class property name to format of file property
+        /// Converts class property name to format of file property -
+        /// ServerName -> server-name
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>
@@ -120,7 +142,8 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
-        /// Converts name of a property in a server.properties file to a format of class property
+        /// Converts name of a property in a server.properties file to a format of class property -
+        /// server-name -> ServerName
         /// </summary>
         /// <param name="fileProperty"></param>
         /// <returns></returns>
@@ -151,11 +174,14 @@ namespace BedrockServerConfigurator.Library
         /// <returns></returns>
         public string GenerateProperties()
         {
-            string getType(string value)
+            return string.Join("\n", PropertyAndValueFromFile()
+                         .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
+
+            static string getType(string value)
             {
                 string result = "";
 
-                if (double.TryParse(value, out _))
+                if (double.TryParse(Utilities.DecimalStringToCurrentCulture(value), out _))
                 {
                     result += "double";
                 }
@@ -167,16 +193,14 @@ namespace BedrockServerConfigurator.Library
                 {
                     result += "string";
                 }
+                // not sure how I would generate for enums yet
 
                 return result;
             }
-
-            return string.Join("\n", PropertyAndValueFromFile()
-                .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
         }
 
         /// <summary>
-        /// Gets value from file based on class property
+        /// Gets value from file property with class property name
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>
@@ -186,15 +210,42 @@ namespace BedrockServerConfigurator.Library
         }
 
         /// <summary>
+        /// Converts all properties into a format which server.properties file uses
+        /// </summary>
+        /// <returns></returns>
+        public string ClassPropertiesToFileProperties()
+        {
+            var properties = GetType().GetProperties();
+
+            var strBuilder = new StringBuilder();            
+
+            foreach (var prop in properties)
+            {
+                var name = PropertyToFileProperty(prop.Name);
+                var value = prop.GetValue(this);
+
+                if (prop.PropertyType == typeof(double))
+                {
+                    value = Utilities.DecimalStringToDot(value.ToString());
+                }
+                else if (prop.PropertyType != typeof(string))
+                {
+                    value = value.ToString().ToLower();
+                }
+
+                strBuilder.AppendLine($"{name}={value}");
+            }
+
+            return strBuilder.ToString();
+        }
+
+        /// <summary>
         /// Returns all properties in a server.properties format
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Join("\n",
-                this.GetType()
-                .GetProperties()
-                .Select(x => $"{PropertyToFileProperty(x.Name)}={(x.GetValue(this).GetType() == typeof(bool) ? x.GetValue(this).ToString().ToLower() : x.GetValue(this))}"));
+            return ClassPropertiesToFileProperties();
         }
     }
 }

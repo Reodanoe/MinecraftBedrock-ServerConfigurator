@@ -1,0 +1,229 @@
+﻿@inject Configurator config
+@inject ConfiguratorData data
+
+<div class="row">
+    @foreach (var player in MinecraftServer.AllPlayers)
+    {
+        <PlayerCard Player="player">
+            @if (player.IsOnline)
+            {
+                if (!MinigameData.Minigame.Running) 
+                {
+                    <button class="btn btn-primary"
+                            @onclick="() =>
+                                      {
+                                          if (IsPlayerSelected(player)) RemovePlayerFromSelectedPlayers(player);
+                                          else MinigameData.SelectedPlayers.Add(player);
+                                      }">
+                        @(IsPlayerSelected(player) ? "Remove from minigame" : "Add to minigame")
+                    </button>
+                }
+
+                <PlayerPermissionButton Player="player"></PlayerPermissionButton>
+            }
+        </PlayerCard>
+    }
+</div>
+
+@if (MinigameData.Minigame.Running)
+{
+    <h3>Minigame running for players</h3>
+
+    foreach (var player in MinigameData.Minigame.GroupedMicrogamesByPlayer)
+    {
+        <p>@player.Key.Username</p>
+    }
+}
+
+<button class="btn btn-primary"
+        @onclick="Start"
+        disabled="@(MinigameData.Minigame.Running || !MinigameData.SelectedPlayers.Any())">
+    Start minigame
+</button>
+
+<button class="btn btn-primary"
+        @onclick="Stop"
+        disabled="@(MinigameData.Minigame.Running == false)">
+    Stop minigame
+</button>
+
+<button class="btn btn-info" @onclick="TablesClicked">@buttonText</button>
+<div class="@tablesCss">
+    <table class="table table-bordered">
+        <tr>
+            <th>Run microgames all at once</th>
+            <th colspan="2" class="text-center">
+                Delay
+            </th>
+        </tr>
+        <tr>
+            <td rowspan="2">
+                <input type="checkbox" @bind="allAtOnce" class="form-check" />
+            </td>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input @bind="minDelay" />
+            </td>
+            <td>
+                <input @bind="maxDelay" />
+            </td>
+        </tr>
+    </table>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>Teleport up</th>
+            <th colspan="2">Blocks</th>
+        </tr>
+        <tr>
+            <th rowspan="2"></th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" @bind="minBlocks" placeholder="Min blocks" />
+            </td>
+            <td>
+                <input type="number" @bind="maxBlocks" placeholder="Max blocks" />
+            </td>
+        </tr>
+    </table>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>Mob spawner</th>
+            <th colspan="2">Amount</th>
+        </tr>
+        <tr>
+            <th rowspan="2"></th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" @bind="minMobs" placeholder="Min mobs" />
+            </td>
+            <td>
+                <input type="number" @bind="maxMobs" placeholder="Max mobs" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+
+    private MinigameData MinigameData => data.AllServerData[MinecraftServer].Minigame;
+
+    // ---------------- CODE FOR SHOWING TABLES ----------------
+    bool showingTables = true;
+
+    string buttonText => showingTables ? "Hide minigame settings" : "Show minigame settings";
+    string tablesCss => showingTables ? null : "collapse";
+
+    private void TablesClicked()
+    {
+        showingTables = !showingTables;
+    }
+    // ---------------- CODE FOR SHOWING TABLES ----------------
+
+    // ---------------- SETTINGS FOR MICROGAMES ----------------
+    // time in between microgames will run
+    private TimeSpan minDelay = TimeSpan.FromSeconds(30);
+    private TimeSpan maxDelay = TimeSpan.FromMinutes(2);
+    
+    // teleport up
+    private int minBlocks = 5;
+    private int maxBlocks = 20;
+
+    // spawn random mobs
+    private int minMobs = 2;
+    private int maxMobs = 7;
+
+    // if microgames shold run all at once
+    private bool allAtOnce;
+    // ---------------- SETTINGS FOR MICROGAMES ----------------
+
+    protected override void OnParametersSet()
+    {
+        MinigameData.Api = new ServerApi(MinecraftServer);
+
+        MinecraftServer.OnPlayerConnected += PlayerConnected;
+        MinecraftServer.OnPlayerDisconnected += PlayerDisconnected;
+
+        void PlayerConnected(ServerPlayer joined)
+        {
+            InvokeAsync(StateHasChanged);
+        }
+
+        void PlayerDisconnected(ServerPlayer left)
+        {
+            MinigameData.SelectedPlayers.Remove(left);
+
+            // if last player on server disconnects
+            // stop the minigame
+            if (!MinigameData.SelectedPlayers.Any())
+            {
+                MinigameData.Minigame.Stop();
+            }
+
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private List<Microgame> BasicMicrogames(ServerPlayer player)
+    {
+        return new List<Microgame>
+{
+            new TeleportUpMicrogame(minDelay, maxDelay, player, MinigameData.Api, minBlocks, maxBlocks),
+            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, MinigameData.Api, minMobs, maxMobs),
+            new BadEffectMicrogame(minDelay, maxDelay, player, MinigameData.Api)
+        };
+    }
+
+    private void Start()
+    {
+        Stop();
+
+        var listMicrogames = new List<Microgame>();
+
+        foreach (var p in MinigameData.SelectedPlayers)
+        {
+            listMicrogames.AddRange(BasicMicrogames(p));
+        }
+
+        MinigameData.Minigame.SetMicrogames(listMicrogames);
+        MinigameData.Minigame.Start(allAtOnce);
+    }
+
+    private void Stop()
+    {
+        if (MinigameData.Minigame != null)
+        {
+            MinigameData.Minigame.Stop();
+        }
+    }
+
+    private string HowLongAgoInMinutes(DateTime date)
+    {
+        var time = DateTime.Now.Subtract(date);
+        var minutes = Math.Floor(time.TotalMinutes);
+
+        return $"{minutes} minutes";
+    }
+
+    private bool IsPlayerSelected(Player p)
+    {
+        return MinigameData.SelectedPlayers.FirstOrDefault(x => x.Xuid == p.Xuid) != null;
+    }
+
+    private void RemovePlayerFromSelectedPlayers(Player p)
+    {
+        MinigameData.SelectedPlayers.RemoveAll(x => x.Xuid == p.Xuid);
+    }
+}

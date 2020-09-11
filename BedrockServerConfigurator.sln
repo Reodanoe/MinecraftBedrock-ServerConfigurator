@@ -3,16 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.ConsoleApp", "BedrockServerConfigurator.ConsoleApp\BedrockServerConfigurator.ConsoleApp.csproj", "{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.Library", "BedrockServerConfigurator.Library\BedrockServerConfigurator.Library.csproj", "{C86DD237-3D1B-4A06-BE48-20E7220947FE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.BlazorApp", "BedrockServerConfigurator.BlazorApp\BedrockServerConfigurator.BlazorApp.csproj", "{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9BFD874D-3DB5-4F3D-9CE6-D30C0F2D0A24}"
 	ProjectSection(SolutionItems) = preProject
-		Notes.txt = Notes.txt
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BedrockServerConfigurator.ConsoleApp", "BedrockServerConfigurator.ConsoleApp\BedrockServerConfigurator.ConsoleApp.csproj", "{79136F7B-9872-4B96-B54F-3C99403810DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,10 +20,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A12DB82F-6CAA-4FD8-A42C-045BA1735D89}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C86DD237-3D1B-4A06-BE48-20E7220947FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -32,6 +28,10 @@ Global
 		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{212A95DA-BB36-4C94-A2C7-5B54C42E31FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79136F7B-9872-4B96-B54F-3C99403810DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79136F7B-9872-4B96-B54F-3C99403810DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79136F7B-9872-4B96-B54F-3C99403810DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79136F7B-9872-4B96-B54F-3C99403810DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

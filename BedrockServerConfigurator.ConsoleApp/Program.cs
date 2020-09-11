@@ -1,173 +1,59 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Threading.Tasks;
 using BedrockServerConfigurator.Library;
 
 namespace BedrockServerConfigurator.ConsoleApp
 {
     class Program
     {
-        private static Configurator config;
-
-        static void Main(string[] args)
+        static async Task Main()
         {
-            Console.CancelKeyPress += (a, b) =>
-            {
-                config.StopAllServers();
-                Environment.Exit(0);
-            };
-
-            try
-            {
-                BeginConfig();
-                Menu();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey();
+            await EasyStart();
         }
 
-        private static void BeginConfig()
+        private static async Task EasyStart()
         {
-            string defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            // creates a directory "servers" in Directory.GetCurrentDirectory()
+            // each server will be named bedrockServer and have an ID append to it
+            var config = new Configurator("servers", "bedrockServer");
 
-            config = new Configurator(
-                Path.Combine(defaultPath, "bedrockServers"),
-                "bedServer");
+            // downloads "template" server
+            // template server is used for creating other servers by copying it to a new directory and giving it an ID
+            /// TIP: Try handling event `config.TemplateServerDownloadChanged` to see download progress in action
+            await config.DownloadBedrockServer();
 
-            config.Log += Log;
-        }
+            // creates a new server in servers directory
+            // this is then used as an actual server that runs
+            config.CreateNewServer();
 
-        private static void Log(object sender, string message)
-        {
-            Console.WriteLine(message);
-        }
+            // let's make another one
+            config.CreateNewServer();
 
-        private static void Menu()
-        {
-            // Download server
-            while (true)
-            {
-                Console.Write("Dowload new server? [Y/N]: ");
-                var newServer = Console.ReadLine().ToUpper();
+            /// NOTE: Once you created servers you're going to use and you're going to launch your program again
+            ///       don't forget to not create any new servers anymore so your server folder doesn't become full
+            ///       and your ram won't be taken up by instances of servers you aren't using
+            ///       to see what servers you have created so far use `config.AllServerDirectories()`
 
-                if (newServer == "Y")
-                {
-                    config.DownloadBedrockServer();
-
-                    break;
-                }
-                else if (newServer == "N")
-                {
-                    break;
-                }
-            }
-
-            // Create new servers
-            while (true)
-            {
-                // there already has to be a template server for this to work
-                Console.Write("Create new servers? [Y/N]: ");
-                var servers = Console.ReadLine().ToUpper();
-
-                if (servers == "Y")
-                {
-                    Console.Write("How many?: ");
-                    var amount = Convert.ToInt32(Console.ReadLine());
-
-                    for (int i = 0; i < amount; i++)
-                    {
-                        config.NewServer();
-                    }
-
-                    break;
-                }
-                else if (servers == "N")
-                {
-                    break;
-                }
-            }
-
+            // this must be called so servers get instantiated
+            // this method also assigns each server their unique port so there are no conflicts
             config.LoadServers();
 
-            // Start servers
-            while (true)
-            {
-                Console.Write("Start all loaded servers? [Y/N]: ");
-                var start = Console.ReadLine().ToUpper();
+            // this now starts both created servers
+            // try connecting at port 19134 for server with ID 1 or 19136 for the second server with ID 2
+            config.StartAllServers();
 
-                if (start == "Y")
-                {
-                    config.StartAllServers();
-                    break;
-                }
-                else if (start == "N")
-                {
-                    break;
-                }
-            }
+            // you need to handle stopping servers for example by using `config.StopAllServers()`
+            // so they won't still be running once you turn off your program
 
-            // Quit or run commands
-            while (true)
-            {
-                string quitKeyword = "quit";
+            /// TIPS:
+            /// * Check out servers using the property `config.AllServersList` or `config.AllServers` to access valuable information
+            /// * Note that you cannot rename servers just by changing name in constructor of Configurator instance on next launch, once you go with one keep with it
+            /// * To run a command on a server you can use `config.RunCommandOnSpecifiedServer(int serverId, string command)` 
+            ///   or by accessing a server directly through one of mentioned collections and using `RunACommand(string command)`
+            ///   But much easier way is to use GetServerApi(int serverId) to instantiate ServerApi and use its methods which are prepared for you to use
+            /// * Listen to event `config.Log` and `OnServerInstanceOutput` in Server class for valuable information
 
-                Console.WriteLine($"To quit the program type \"{quitKeyword}\". Or run a command on a server using \"[server ID] - [command]\".");
-
-                var input = Console.ReadLine();
-
-                if (input == quitKeyword)
-                {
-                    config.StopAllServers();
-                    break;
-                }
-                else
-                {
-                    switch (input)
-                    {
-                        case "restart":
-                            config.RestartAllServers();
-                            break;
-                        case "new":
-                            config.NewServer();
-                            break;
-                        case "load":
-                            config.LoadServers();
-                            break;
-                        case "list":
-                            config.AllServersAction(x => Console.WriteLine(x.ToString()));
-                            break;
-                        case "start":
-                            config.StartAllServers();
-                            break;
-                        default:
-                            var serverCommand = input.Split("-");
-
-                            if (serverCommand.Length == 2)
-                            {
-                                var server = serverCommand[0].Trim();
-
-                                if (int.TryParse(server, out int serverNumber))
-                                {
-                                    config.RunCommandOnSpecifiedServer(serverNumber, serverCommand[1].Trim());
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"{server} is not a number");
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Invalid input.");
-                            }
-                            break;
-                    }
-                }
-            }
+            // Stop this program from quitting instantly
+            await Task.Delay(-1);
         }
     }
 }

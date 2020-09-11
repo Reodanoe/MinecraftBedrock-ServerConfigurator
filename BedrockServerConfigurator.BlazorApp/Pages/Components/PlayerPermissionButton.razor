@@ -1,0 +1,43 @@
+﻿@inject Configurator config
+
+@if (permission != MinecraftPermission.Operator)
+{
+    <button class="btn btn-primary"
+            @onclick="async () => { await api.SetOperator(Player); permission = MinecraftPermission.Operator; }">
+        Op
+    </button>
+}
+
+@if (permission != MinecraftPermission.Member)
+{
+    <button class="btn btn-primary"
+            @onclick="async () => { await api.SetMember(Player); permission = MinecraftPermission.Member; }">
+        De-op
+    </button>
+}
+
+@*
+@if (permission != MinecraftPermission.Visitor)
+{
+    <button class="btn btn-primary"
+            @onclick="async () => { await api.SetVisitor(Player); permission = MinecraftPermission.Visitor; }">
+        Visitor
+    </button>
+}
+*@
+
+@code {
+    [Parameter]
+    public ServerPlayer Player { get; set; }
+
+    private ServerApi api;
+
+    private MinecraftPermission permission;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        api = config.GetServerApi(Player.ServerId);
+
+        permission = await api.GetPlayerPermissionAsync(Player);
+    }
+}

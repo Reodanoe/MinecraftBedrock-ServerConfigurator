@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace BedrockServerConfigurator.BlazorApp.Data
 {
@@ -18,7 +17,7 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// <summary>
         /// Holds all messages server sent
         /// </summary>
-        public ObservableCollection<string> Messages { get; set; } = new ObservableCollection<string>();
+        public List<string> ServerMessages { get; set; } = new List<string>();
 
         /// <summary>
         /// Holds info if server is listening to new messages
@@ -26,8 +25,13 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         public bool LoggingNewMessages { get; set; }
 
         /// <summary>
-        /// If component should show window of changing properties
+        /// Minigame running on a server
         /// </summary>
-        public bool ShowProperties { get; set; }
+        public MinigameData Minigame { get; set; } = new MinigameData();
+
+        /// <summary>
+        /// Used for if user is changing properties of server
+        /// </summary>
+        public bool PropertyChanged { get; set; }
     }
 }

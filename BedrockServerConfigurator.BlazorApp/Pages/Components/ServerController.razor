@@ -1,0 +1,86 @@
+﻿@inject ConfiguratorData ConfiguratorData
+
+<h4 class="card-header">@MinecraftServer.ID - Port @MinecraftServer.ServerProperties.ServerPort = Version @MinecraftServer.Version</h4>
+
+<div class="btn-group">
+    @if (MinecraftServer.Running)
+    {
+        <button @onclick="async () => await MinecraftServer.StopServerAsync()"
+                class="btn btn-danger">
+            Stop server
+        </button>
+    }
+    else
+    {
+        <button @onclick="MinecraftServer.StartServer"
+                class="btn btn-success">
+            Start server
+        </button>
+    }
+
+    <a href="@($"ServerPage/{MinecraftServer.ID}")" class="btn btn-primary">Server page</a>
+</div>
+
+<input @bind="@CurrentServer.CurrentCommand"
+       @onkeypress="@(async (key) =>
+                      {
+                          switch (key.Key)
+                          {
+                              case "Enter":
+                                    await MinecraftServer.RunCommandAsync(CurrentServer.CurrentCommand);
+                                    CurrentServer.Commands.Add(CurrentServer.CurrentCommand);
+                                    CurrentServer.CurrentCommand = null;
+                                    break;
+                              default:
+                                  break;
+                          }
+                      })"
+       @oninput="Input"
+       type="text"
+       placeholder="Enter a command"
+       class="form-control" />
+
+<div class="card-body pre-scrollable h-25 card-text">
+    @foreach (var message in CurrentServer.ServerMessages)
+    {
+        <p>@message</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Server MinecraftServer { get; set; }
+
+    private ServerData CurrentServer => ConfiguratorData.AllServerData[MinecraftServer];
+
+    protected override void OnParametersSet()
+    {
+        // blazor doesn't save data on page so we need to use a data class that will save our data
+
+        // add server to data if it hasn't been added yet
+        if (!ConfiguratorData.AllServerData.ContainsKey(MinecraftServer))
+        {
+            ConfiguratorData.AllServerData.Add(MinecraftServer, new ServerData());
+        }
+
+        // this is used to prevent a bug when page would be loaded twice for example going to some other page and going back
+        // it will only listen to output event once
+        if (!CurrentServer.LoggingNewMessages)
+        {
+            MinecraftServer.OnServerInstanceOutput += (msg) =>
+            {
+                CurrentServer.ServerMessages.Insert(0, msg.Message);
+            };
+
+            CurrentServer.LoggingNewMessages = true;
+        }
+
+        // when new output comes in reload the component so messages appear
+        MinecraftServer.OnServerInstanceOutput += (_) => InvokeAsync(StateHasChanged);
+    }
+
+    private void Input(ChangeEventArgs changeEventArgs)
+    {
+        CurrentServer.CurrentCommand = (string)changeEventArgs.Value;
+    }
+}
