@@ -6,246 +6,148 @@ using System.Text;
 
 namespace BedrockServerConfigurator.Library.ServerFiles
 {
-    public class Properties
+    public partial class Properties
     {
+        /// <summary>
+        /// Used as the server name
+        /// Allowed values: Any string
+        /// </summary>
         public string ServerName { get; set; }
+
+        /// <summary>
+        /// Sets the game mode for new players.
+        /// Allowed values: "survival", "creative", or "adventure"
+        /// </summary>
         public MinecraftGamemode Gamemode { get; set; }
+
+        /// <summary>
+        /// Sets the difficulty of the world.
+        /// Allowed values: "peaceful", "easy", "normal", or "hard"
+        /// </summary>
         public MinecraftDifficulty Difficulty { get; set; }
+
+        /// <summary>
+        /// If true then cheats like commands can be used.
+        /// Allowed values: "true" or "false"
+        /// </summary>
         public bool AllowCheats { get; set; }
+
+        /// <summary>
+        /// The maximum number of players that can play on the server.
+        /// Allowed values: Any positive integer
+        /// </summary>
         public double MaxPlayers { get; set; }
+
+        /// <summary>
+        /// If true then all connected players must be authenticated to Xbox Live.
+        /// Clients connecting to remote (non-LAN) servers will always require Xbox Live authentication regardless of this setting.
+        /// If the server accepts connections from the Internet, then it's highly recommended to enable online-mode.
+        /// Allowed values: "true" or "false"
+        /// </summary>
         public bool OnlineMode { get; set; }
+
+        /// <summary>
+        /// If true then all connected players must be listed in the separate whitelist.json file.
+        /// Allowed values: "true" or "false"
+        /// </summary>
         public bool WhiteList { get; set; }
-        public double ServerPort { get; internal set; }
-        public double ServerPortv6 { get; internal set; }
+
+        /// <summary>
+        /// Which IPv4 port the server should listen to.
+        /// Allowed values: Integers in the range [1, 65535]
+        /// </summary>
+        public double ServerPort { get; set; }
+
+        /// <summary>
+        /// Which IPv6 port the server should listen to.
+        /// Allowed values: Integers in the range [1, 65535]
+        /// </summary>
+        public double ServerPortv6 { get; set; }
+
+        /// <summary>
+        /// The maximum allowed view distance in number of chunks.
+        /// Allowed values: Any positive integer.
+        /// </summary>
         public double ViewDistance { get; set; }
+
+        /// <summary>
+        /// The world will be ticked this many chunks away from any player.
+        /// Allowed values: Integers in the range [4, 12]
+        /// </summary>
         public double TickDistance { get; set; }
+
+        /// <summary>
+        /// After a player has idled for this many minutes they will be kicked. If set to 0 then players can idle indefinitely.
+        /// Allowed values: Any non-negative integer.
+        /// </summary>
         public double PlayerIdleTimeout { get; set; }
+
+        /// <summary>
+        /// Maximum number of threads the server will try to use. If set to 0 or removed then it will use as many as possible.
+        /// Allowed values: Any positive integer.
+        /// </summary>
         public double MaxThreads { get; set; }
+
+        /// <summary>
+        /// Allowed values: Any string
+        /// </summary>
         public string LevelName { get; set; }
+
+        /// <summary>
+        /// Use to randomize the world
+        /// Allowed values: Any string
+        /// </summary>
         public string LevelSeed { get; set; }
+
+        /// <summary>
+        /// Permission level for new players joining for the first time.
+        /// Allowed values: "visitor", "member", "operator"
+        /// </summary>
         public MinecraftPermission DefaultPlayerPermissionLevel { get; set; }
+
+        /// <summary>
+        /// Force clients to use texture packs in the current world
+        /// Allowed values: "true" or "false"
+        /// </summary>
         public bool TexturepackRequired { get; set; }
+
+        /// <summary>
+        /// Enables logging content errors to a file
+        /// Allowed values: "true" or "false"
+        /// </summary>
         public bool ContentLogFileEnabled { get; set; }
+
+        /// <summary>
+        /// Determines the smallest size of raw network payload to compress
+        /// Allowed values: 0-65535
+        /// </summary>
         public double CompressionThreshold { get; set; }
-        public bool ServerAuthoritativeMovement { get; set; }
+
+        /// <summary>
+        /// Allowed values: "client-auth", "server-auth"
+        /// Enables server authoritative movement. If "server-auth", the server will replay local user input on
+        /// the server and send down corrections when the client's position doesn't match the server's.
+        /// Corrections will only happen if correct-player-movement is set to true.
+        /// </summary>
+        public string ServerAuthoritativeMovement { get; set; }
+
+        /// <summary>
+        /// The number of incongruent time intervals needed before abnormal behavior is reported.
+        /// Disabled by server-authoritative-movement.
+        /// </summary>
         public double PlayerMovementScoreThreshold { get; set; }
+
+        /// <summary>
+        /// The difference between server and client positions that needs to be exceeded before abnormal behavior is detected.
+        /// Disabled by server-authoritative-movement.
+        /// </summary>
         public double PlayerMovementDistanceThreshold { get; set; }
+
+        /// <summary>
+        /// The duration of time the server and client positions can be out of sync (as defined by player-movement-distance-threshold)
+        /// before the abnormal movement score is incremented. This value is defined in milliseconds.
+        /// Disabled by server-authoritative-movement.
+        /// </summary>
         public double PlayerMovementDurationThresholdInMs { get; set; }
-        public bool CorrectPlayerMovement { get; set; }
-
-        private readonly string propertiesFilePath;
-
-        /// <summary>
-        /// Pass in the content of server.properties
-        /// </summary>
-        /// <param name="propertiesFile"></param>
-        internal Properties(string propertiesFilePath, bool autoSetProperties = true)
-        {
-            this.propertiesFilePath = propertiesFilePath;
-
-            if (autoSetProperties) SetProperties();
-        }
-
-        /// <summary>
-        /// Overwrites server.properties with current version of ServerProperties.
-        /// If server is running it's recommended to call RestartServer.
-        /// Call this everytime ServerProperties are updated so they will be saved.
-        /// </summary>
-        public void SavePropertiesToFile()
-        {
-            File.WriteAllText(propertiesFilePath, ClassPropertiesToFileProperties());
-        }
-
-        /// <summary>
-        /// Gets all properties and their values from server.properties file
-        /// </summary>
-        /// <returns></returns>
-        public List<(string propertyName, string propertyValue)> PropertyAndValueFromFile()
-        {
-            return File.ReadAllText(propertiesFilePath)
-                       .Split("\n")                                     // split to every line
-                       .Select(a => a.Trim())                           // trim whitespace from every line
-                       .Where(b => !b.StartsWith("#") && b.Length > 0)  // every line that isn't a comment line or isn't empty
-                       .Select(c => c.Split("="))                       // split them with =
-                       .Select(d => Tuple.Create(d[0], d[1])            // on left side is property and on right is its value
-                                         .ToValueTuple())               // let's turn them into a tuple
-                       .ToList();                                       // and finally into a list
-        }
-
-        /// <summary>
-        /// Sets properties of this instance
-        /// </summary>
-        /// <returns></returns>
-        public void SetProperties()
-        {
-            var propsVals = PropertyAndValueFromFile();
-            var type = GetType();
-
-            foreach (var (name, value) in propsVals)
-            {
-                var prop = type.GetProperty(FilePropertyToProperty(name));
-
-                if (prop.PropertyType == typeof(bool))
-                {
-                    prop.SetValue(this, bool.Parse(value));
-                }
-                else if (prop.PropertyType == typeof(double))
-                {
-                    prop.SetValue(this, double.Parse(Utilities.DecimalStringToCurrentCulture(value)));
-                }
-                else if (prop.PropertyType == typeof(string))
-                {
-                    prop.SetValue(this, value);
-                }
-                else if (prop.PropertyType == typeof(MinecraftGamemode))
-                {
-                    prop.SetValue(this, Enum.Parse<MinecraftGamemode>(value, true));
-                }
-                else if (prop.PropertyType == typeof(MinecraftDifficulty))
-                {
-                    prop.SetValue(this, Enum.Parse<MinecraftDifficulty>(value, true));
-                }
-                else if (prop.PropertyType == typeof(MinecraftPermission))
-                {
-                    prop.SetValue(this, Enum.Parse<MinecraftPermission>(value, true));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Converts class property name to format of file property -
-        /// ServerName -> server-name
-        /// </summary>
-        /// <param name="classProperty"></param>
-        /// <returns></returns>
-        public static string PropertyToFileProperty(string classProperty)
-        {
-            string result = "";
-
-            for (int i = 0; i < classProperty.Length; i++)
-            {
-                if (i == 0)
-                {
-                    result += char.ToLower(classProperty[i]);
-                }
-                else if (char.IsUpper(classProperty[i]))
-                {
-                    result += $"-{char.ToLower(classProperty[i])}";
-                }
-                else
-                {
-                    result += classProperty[i];
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Converts name of a property in a server.properties file to a format of class property -
-        /// server-name -> ServerName
-        /// </summary>
-        /// <param name="fileProperty"></param>
-        /// <returns></returns>
-        public static string FilePropertyToProperty(string fileProperty)
-        {
-            string result = "";
-
-            for (int i = 0; i < fileProperty.Length; i++)
-            {
-                if (fileProperty[i] == '-') continue;
-
-                if (i == 0 || fileProperty[i - 1] == '-')
-                {
-                    result += char.ToUpper(fileProperty[i]);
-                }
-                else
-                {
-                    result += fileProperty[i];
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Creates properties for a class created from server.properties file
-        /// </summary>
-        /// <returns></returns>
-        public string GenerateProperties()
-        {
-            return string.Join("\n", PropertyAndValueFromFile()
-                         .Select(x => $"public {getType(x.propertyValue)} {FilePropertyToProperty(x.propertyName)} {{ get; set; }}"));
-
-            static string getType(string value)
-            {
-                string result = "";
-
-                if (double.TryParse(Utilities.DecimalStringToCurrentCulture(value), out _))
-                {
-                    result += "double";
-                }
-                else if (bool.TryParse(value, out _))
-                {
-                    result += "bool";
-                }
-                else
-                {
-                    result += "string";
-                }
-                // not sure how I would generate for enums yet
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Gets value from file property with class property name
-        /// </summary>
-        /// <param name="classProperty"></param>
-        /// <returns></returns>
-        public string FilePropertyValue(string classProperty)
-        {
-            return PropertyAndValueFromFile().First(x => x.propertyName == PropertyToFileProperty(classProperty)).propertyValue;
-        }
-
-        /// <summary>
-        /// Converts all properties into a format which server.properties file uses
-        /// </summary>
-        /// <returns></returns>
-        public string ClassPropertiesToFileProperties()
-        {
-            var properties = GetType().GetProperties();
-
-            var strBuilder = new StringBuilder();            
-
-            foreach (var prop in properties)
-            {
-                var name = PropertyToFileProperty(prop.Name);
-                var value = prop.GetValue(this);
-
-                if (prop.PropertyType == typeof(double))
-                {
-                    value = Utilities.DecimalStringToDot(value.ToString());
-                }
-                else if (prop.PropertyType != typeof(string))
-                {
-                    value = value.ToString().ToLower();
-                }
-
-                strBuilder.AppendLine($"{name}={value}");
-            }
-
-            return strBuilder.ToString();
-        }
-
-        /// <summary>
-        /// Returns all properties in a server.properties format
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return ClassPropertiesToFileProperties();
-        }
     }
 }

@@ -4,7 +4,7 @@ using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Commands
 {
-    public class CommandBuilder
+    public static class CommandBuilder
     {
         /// <summary>
         /// Needs to be combined with other command, executes it on entity
@@ -12,7 +12,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="entity"></param>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        public Command ExecuteOnEntityBase(IEntity entity, Coordinate coordinate)
+        public static Command ExecuteOnEntityBase(IEntity entity, Coordinate coordinate)
         {
             return new Command($"execute {entity.Name} {coordinate} ");
         }
@@ -24,7 +24,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="coordinate"></param>
         /// <param name="command"></param>
         /// <returns></returns>
-        public Command ExecuteOnEntityWithCommand(IEntity entity, Coordinate coordinate, Command command)
+        public static Command ExecuteOnEntityWithCommand(IEntity entity, Coordinate coordinate, Command command)
         {
             return ExecuteOnEntityBase(entity, coordinate) + command;
         }
@@ -35,7 +35,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="entity"></param>
         /// <param name="mob"></param>
         /// <returns></returns>
-        public Command SummonMobOnEntity(IEntity entity, string mob)
+        public static Command SummonMobOnEntity(IEntity entity, string mob)
         {
             return ExecuteOnEntityWithCommand(entity, new LocalCoordinate(), new Command($"summon {mob}"));
         }
@@ -45,7 +45,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public Command TimeSet(MinecraftTime time)
+        public static Command TimeSet(MinecraftTime time)
         {
             return new Command($"time set {time}");
         }
@@ -56,7 +56,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public Command Teleport(IEntity from, IEntity to)
+        public static Command Teleport(IEntity from, IEntity to)
         {
             return new Command($"tp {from.Name} {to.Name}");
         }
@@ -67,7 +67,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="from"></param>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        public Command TeleportToCoordinate(IEntity from, Coordinate coordinate)
+        public static Command TeleportToCoordinate(IEntity from, Coordinate coordinate)
         {
             return new Command($"tp {from.Name} {coordinate}");
         }
@@ -78,7 +78,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="from"></param>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        public Command TeleportLocal(IEntity from, LocalCoordinate coordinate)
+        public static Command TeleportLocal(IEntity from, LocalCoordinate coordinate)
         {
             return ExecuteOnEntityWithCommand(from, new LocalCoordinate(), TeleportToCoordinate(from, coordinate));
         }
@@ -88,7 +88,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command SetOperator(Player player)
+        public static Command SetOperator(Player player)
         {
             return new Command($"op {player.Username}");
         }
@@ -98,7 +98,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command SetMember(Player player)
+        public static Command SetMember(Player player)
         {
             return new Command("de") + SetOperator(player);
         }
@@ -108,7 +108,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="player"></param>
         /// <returns></returns>
-        public Command SetVisitor(Player player)
+        public static Command SetVisitor(Player player)
         {
             throw new NotImplementedException("Can't set player as a visitor");
         }
@@ -118,7 +118,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public Command Say(string message)
+        public static Command Say(string message)
         {
             return new Command($"say {message}");
         }
@@ -129,7 +129,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="message"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public Command SayInColor(string message, MinecraftColor color)
+        public static Command SayInColor(string message, MinecraftColor color)
         {
             return Say(ColorMessage(message, color).MinecraftCommand);
         }
@@ -140,7 +140,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="message"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public Command ColorMessage(string message, MinecraftColor color)
+        public static Command ColorMessage(string message, MinecraftColor color)
         {
             return new Command($"§{(int)color:x}{message}");
         }
@@ -154,7 +154,7 @@ namespace BedrockServerConfigurator.Library.Commands
         /// <param name="amplifier"></param>
         /// <param name="hideParticles"></param>
         /// <returns></returns>
-        public Command AddEffect(IEntity entity, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
+        public static Command AddEffect(IEntity entity, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
         {
             return new Command($"effect {entity.Name} {effect} {seconds} {amplifier} {hideParticles}");
         }

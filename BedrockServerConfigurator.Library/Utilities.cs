@@ -10,7 +10,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Random number generator used in library
         /// </summary>
-        public static Random RandomGenerator = new Random();
+        public static Random RandomGenerator { get; } = new Random();
 
         /// <summary>
         /// Runs a command on the running machine.
@@ -57,7 +57,7 @@ namespace BedrockServerConfigurator.Library
         {
             if (max < min)
             {
-                throw new ArgumentException("maxDelay has to be bigger than minDelay", "maxDelay");
+                throw new ArgumentException("Max timespan has to be bigger than min timespan", nameof(max));
             }
 
             var timeBetween = max - min;

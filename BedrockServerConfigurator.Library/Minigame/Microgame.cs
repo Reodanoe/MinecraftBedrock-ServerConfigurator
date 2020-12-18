@@ -42,7 +42,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         {
             if (maxDelay < minDelay)
             {
-                throw new ArgumentException("maxDelay has to be bigger than minDelay", "maxDelay");
+                throw new ArgumentException("maxDelay has to be bigger than minDelay", nameof(maxDelay));
             }
 
             MinDelay = minDelay;

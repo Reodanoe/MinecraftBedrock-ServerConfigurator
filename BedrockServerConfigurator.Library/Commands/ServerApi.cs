@@ -10,7 +10,6 @@ namespace BedrockServerConfigurator.Library.Commands
     public class ServerApi
     {
         public Server Server { get; }
-        private readonly CommandBuilder _builder = new CommandBuilder();
 
         public ServerApi(Server server)
         {
@@ -26,7 +25,7 @@ namespace BedrockServerConfigurator.Library.Commands
 
             for (int i = 0; i < amount; i++)
             {
-                ranCommands.Add(await Server.RunCommandAsync(_builder.SummonMobOnEntity(target, mob)));
+                ranCommands.Add(await Server.RunCommandAsync(CommandBuilder.SummonMobOnEntity(target, mob)));
             }
 
             return ranCommands;
@@ -37,7 +36,7 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> TeleportEntityToEntity(IEntity from, IEntity to)
         {
-            return await Server.RunCommandAsync(_builder.Teleport(from, to));
+            return await Server.RunCommandAsync(CommandBuilder.Teleport(from, to));
         }
 
         public async Task<Command> TeleportEntityPublic(string from, float x, float y, float z) => 
@@ -45,7 +44,7 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> TeleportEntityPublic(IEntity from, float x, float y, float z)
         {
-            return await Server.RunCommandAsync(_builder.TeleportToCoordinate(from, new PublicCoordinate(x, y, z)));
+            return await Server.RunCommandAsync(CommandBuilder.TeleportToCoordinate(from, new PublicCoordinate(x, y, z)));
         }
 
         public async Task<Command> TeleportEntityLocal(string from, float x, float y, float z) => 
@@ -53,7 +52,7 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> TeleportEntityLocal(IEntity from, float x, float y, float z)
         {
-            return await Server.RunCommandAsync(_builder.TeleportLocal(from, new LocalCoordinate(x, y, z)));
+            return await Server.RunCommandAsync(CommandBuilder.TeleportLocal(from, new LocalCoordinate(x, y, z)));
         }
 
         public async Task<Command> TimeSet(string timeOfDay) => 
@@ -61,12 +60,12 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> TimeSet(MinecraftTime timeOfDay)
         {
-            return await Server.RunCommandAsync(_builder.TimeSet(timeOfDay));
+            return await Server.RunCommandAsync(CommandBuilder.TimeSet(timeOfDay));
         }
 
         public async Task<Command> Say(string message)
         {
-            return await Server.RunCommandAsync(_builder.Say(message));
+            return await Server.RunCommandAsync(CommandBuilder.Say(message));
         }
 
         public async Task<Command> SayInColor(string message, string color) => 
@@ -74,7 +73,7 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> SayInColor(string message, MinecraftColor color)
         {
-            return await Server.RunCommandAsync(_builder.SayInColor(message, color));
+            return await Server.RunCommandAsync(CommandBuilder.SayInColor(message, color));
         }
 
         public async Task<Command> AddEffect(string entityName, string effect, int seconds, byte amplifier, bool hideParticles = false) =>
@@ -82,22 +81,22 @@ namespace BedrockServerConfigurator.Library.Commands
 
         public async Task<Command> AddEffect(string entityName, MinecraftEffect effect, int seconds, byte amplifier, bool hideParticles = false)
         {
-            return await Server.RunCommandAsync(_builder.AddEffect(new Entity(entityName), effect, seconds, amplifier, hideParticles));
+            return await Server.RunCommandAsync(CommandBuilder.AddEffect(new Entity(entityName), effect, seconds, amplifier, hideParticles));
         }
 
         public async Task<Command> SetOperator(Player player)
         {
-            return await Server.RunCommandAsync(_builder.SetOperator(player));
+            return await Server.RunCommandAsync(CommandBuilder.SetOperator(player));
         }
 
         public async Task<Command> SetMember(Player player)
         {
-            return await Server.RunCommandAsync(_builder.SetMember(player));
+            return await Server.RunCommandAsync(CommandBuilder.SetMember(player));
         }
 
         public async Task<Command> SetVisitor(Player player)
         {
-            return await Server.RunCommandAsync(_builder.SetVisitor(player));
+            return await Server.RunCommandAsync(CommandBuilder.SetVisitor(player));
         }
 
         public async Task<MinecraftPermission> GetPlayerPermissionAsync(Player player)

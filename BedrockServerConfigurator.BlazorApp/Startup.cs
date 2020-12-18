@@ -12,7 +12,9 @@ namespace BedrockServerConfigurator.BlazorApp
 {
     public class Startup
     {
-        private readonly Configurator configurator;
+        public IConfiguration Configuration { get; }
+
+        private readonly Configurator _configurator;
 
         public Startup(IConfiguration configuration)
         {
@@ -20,20 +22,31 @@ namespace BedrockServerConfigurator.BlazorApp
 
             string defaultPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
-            // make this customizable
-            configurator = new Configurator(
-                Path.Combine(defaultPath, "bedrockServers"),
-                "bedServer");
-        }
+            var defaultServersPath = Path.Combine(defaultPath, "bedrockServers");
+            var defaultServerName = "bedServer";
 
-        public IConfiguration Configuration { get; }
+            var serversPath = Configuration.GetValue<string>("ServersPath");
+            var serverName = Configuration.GetValue<string>("ServerName");
+
+            if (serversPath == "")
+            {
+                serversPath = defaultServersPath;
+            }
+
+            if (serverName == "")
+            {
+                serverName = defaultServerName;
+            }
+
+            _configurator = new Configurator(serversPath, serverName);
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-            services.AddSingleton(configurator);
+            services.AddSingleton(_configurator);
             services.AddSingleton(new ConfiguratorData());
         }
 

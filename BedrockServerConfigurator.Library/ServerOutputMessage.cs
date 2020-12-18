@@ -66,17 +66,17 @@ namespace BedrockServerConfigurator.Library
                     // if server glitched and player never actually connected
                     if (player == null) return;
 
-                    Server.CallPlayerDisconnected(player, CreatedOn);
+                    Server.PlayerDisconnected(player, CreatedOn);
                 }
                 else
                 {
                     if (player == null)
                     {
-                        Server.CallPlayerConnected(username, xuid, CreatedOn);
+                        Server.PlayerConnected(username, xuid, CreatedOn);
                     }
                     else
                     {
-                        Server.CallPlayerConnected(player, CreatedOn);
+                        Server.PlayerConnected(player, CreatedOn);
                     }
                 }
             }

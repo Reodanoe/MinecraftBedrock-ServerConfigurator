@@ -76,7 +76,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// All players that are/were connected to the server
         /// </summary>
-        public List<ServerPlayer> AllPlayers { get; } = new List<ServerPlayer>();
+        public List<ServerPlayer> AllPlayers { get; } = new();
 
         /// <summary>
         /// Thread that listens to new messages from server instance
@@ -168,7 +168,7 @@ namespace BedrockServerConfigurator.Library
 
             foreach (var player in AllPlayers)
             {
-                CallPlayerDisconnected(player, time);
+                PlayerDisconnected(player, time);
             }
             
             await RunCommandAsync("stop");
@@ -244,7 +244,7 @@ namespace BedrockServerConfigurator.Library
         /// <param name="username"></param>
         /// <param name="xuid"></param>
         /// <param name="when"></param>
-        private void CallPlayerConnected(string username, long xuid, DateTime when)
+        private void PlayerConnected(string username, long xuid, DateTime when)
         {
             var player = new ServerPlayer
             {
@@ -265,7 +265,7 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="player"></param>
         /// <param name="when"></param>
-        private void CallPlayerConnected(ServerPlayer player, DateTime when)
+        private void PlayerConnected(ServerPlayer player, DateTime when)
         {
             player.IsOnline = true;
             player.LastAction = when;
@@ -278,7 +278,7 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         /// <param name="player"></param>
         /// <param name="when"></param>
-        private void CallPlayerDisconnected(ServerPlayer player, DateTime when)
+        private void PlayerDisconnected(ServerPlayer player, DateTime when)
         {
             player.IsOnline = false;
             player.LastAction = when;

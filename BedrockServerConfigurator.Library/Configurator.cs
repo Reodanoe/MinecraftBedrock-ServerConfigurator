@@ -84,7 +84,7 @@ namespace BedrockServerConfigurator.Library
 
             if (serverName.Contains("_"))
             {
-                throw new ArgumentException("Dont use \"_\" in serverName", "serverName");
+                throw new ArgumentException("Dont use \"_\" in serverName", nameof(serverName));
             }
 
             ServersRootPath = serversRootPath;
