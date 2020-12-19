@@ -173,7 +173,8 @@ namespace BedrockServerConfigurator.Library
             
             await RunCommandAsync("stop");
             ServerInstance.WaitForExit();
-
+            
+            // could wait for "Quit correctly"
             Running = false;
         }
 

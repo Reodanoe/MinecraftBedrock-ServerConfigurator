@@ -182,7 +182,7 @@ namespace BedrockServerConfigurator.Library
         public string GeneratePropertiesClass()
         {
             var props = new Properties(Path.Combine(TemplateServerDirectoryPath, "server.properties"), false);
-            var result = props.GenerateProperties();
+            var result = props.GeneratePropertiesClass();
 
             return result;
         }

@@ -28,33 +28,33 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             return game;
         }
 
-        private KeyValuePair<MinecraftEffect, string[]> BadEffectWithMessage(string name)
+        private static KeyValuePair<MinecraftEffect, string[]> BadEffectWithMessage(string playerName)
         {
             var badEffects = new Dictionary<MinecraftEffect, string[]>
             {
                 [MinecraftEffect.Blindness] = new[]
                 {
-                    $"Hey {name}, now you see, now you don't."
+                    $"Hey {playerName}, now you see, now you don't."
                 },
 
                 [MinecraftEffect.Hunger] = new[]
                 {
-                    $"Hmm... {name}, you look a bit hungry, should probably eat something."
+                    $"Hmm... {playerName}, you look a bit hungry, should probably eat something."
                 },
 
                 [MinecraftEffect.Nausea] = new[]
                 {
-                    $"It's nausea time {name}. You spin my head right round, right round."
+                    $"It's nausea time {playerName}. You spin my head right round, right round."
                 },
 
                 [MinecraftEffect.Slowness] = new[]
                 {
-                    $"Uh.. {name}, you know there's a sprint button, right?"
+                    $"Uh.. {playerName}, you know there's a sprint button, right?"
                 },
 
                 [MinecraftEffect.Poison] = new[]
                 {
-                    $"Oof ouchie {name}, oof ouch oof uf ouch. Don't worry it won't kill you, but something else probably will."
+                    $"Oof ouchie {playerName}, oof ouch oof uf ouch. Don't worry it won't kill you, but something else probably will."
                 }
             };
 

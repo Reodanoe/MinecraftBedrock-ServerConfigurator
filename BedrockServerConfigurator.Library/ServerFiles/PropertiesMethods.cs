@@ -18,7 +18,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         {
             this.propertiesFilePath = propertiesFilePath;
 
-            if (autoSetProperties) SetProperties();
+            if (autoSetProperties) SetMinecraftProperties();
         }
 
         /// <summary>
@@ -40,16 +40,17 @@ namespace BedrockServerConfigurator.Library.ServerFiles
             var lines = File.ReadAllLines(propertiesFilePath);
 
             var propertiesList = new List<Property>();
+            const string summaryLine = "# ";
 
             var name = "";
             var value = "";
             var summaries = new List<string>();
 
+            bool fileHasSummaries = lines.Any(x => x.StartsWith(summaryLine));
+
             foreach (var line in lines)
             {
                 var trimmedLine = line.Trim();
-
-                var summaryLine = "# ";
 
                 if (trimmedLine.StartsWith(summaryLine))
                 {
@@ -57,18 +58,23 @@ namespace BedrockServerConfigurator.Library.ServerFiles
 
                     summaries.Add(summary);
                 }
-                else if (trimmedLine.Length < 3)
+
+                if (line.Contains("=") && trimmedLine.StartsWith(summaryLine) == false)
+                {
+                    var split = trimmedLine.Split('=');
+
+                    name = split[0];
+                    value = split[1];
+                }
+                
+                if (line.Length < 3 || (line.Contains("=") && fileHasSummaries == false))
                 {
                     var newProperty = new Property(name, value, summaries);
                     propertiesList.Add(newProperty);
 
+                    name = "";
+                    value = "";
                     summaries = new List<string>();
-                }
-                else
-                {
-                    var split = trimmedLine.Split('=');
-                    name = split[0];
-                    value = split[1];
                 }
             }
 
@@ -79,14 +85,14 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// Sets properties of this instance
         /// </summary>
         /// <returns></returns>
-        public void SetProperties()
+        public void SetMinecraftProperties()
         {
             var propsVals = LoadPropertiesFromFile();
             var type = GetType();
 
             foreach (var (name, value, _) in propsVals)
             {
-                var prop = type.GetProperty(FilePropertyToProperty(name));
+                var prop = type.GetProperty(FormatFilePropertyToClassProperty(name));
 
                 if (prop.PropertyType == typeof(bool))
                 {
@@ -121,7 +127,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// </summary>
         /// <param name="classProperty"></param>
         /// <returns></returns>
-        public static string PropertyToFileProperty(string classProperty)
+        public static string FormatClassPropertyToFileProperty(string classProperty)
         {
             string result = "";
 
@@ -150,7 +156,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// </summary>
         /// <param name="fileProperty"></param>
         /// <returns></returns>
-        public static string FilePropertyToProperty(string fileProperty)
+        public static string FormatFilePropertyToClassProperty(string fileProperty)
         {
             string result = "";
 
@@ -175,10 +181,25 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// Creates properties for a class created from server.properties file
         /// </summary>
         /// <returns></returns>
-        public string GenerateProperties()
+        public string GeneratePropertiesClass()
         {
             return string.Join("\n", LoadPropertiesFromFile()
-                         .Select(x => $"{getSummary(x)}\npublic {getType(x)} {FilePropertyToProperty(x.Name)} {{ get; set; }}\n"));
+                         .Select(createClassProperty));
+
+            static string createClassProperty(Property property)
+            {
+                var builder = new StringBuilder();
+
+                var propertySummary = getSummary(property);
+                var propertyType = getType(property);
+                var propertyName = FormatFilePropertyToClassProperty(property.Name);
+
+                var classProperty = $"public {propertyType} {propertyName} {{ get; set; }}";
+
+                var fullClassProperty = $"{propertySummary}\n{classProperty}\n";
+
+                return fullClassProperty;
+            }
             
             static string getSummary(Property prop)
             {
@@ -251,7 +272,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// <returns></returns>
         public string FilePropertyValue(string classProperty)
         {
-            return LoadPropertiesFromFile().First(x => x.Name == PropertyToFileProperty(classProperty)).Value;
+            return LoadPropertiesFromFile().First(x => x.Name == FormatClassPropertyToFileProperty(classProperty)).Value;
         }
 
         /// <summary>
@@ -266,7 +287,7 @@ namespace BedrockServerConfigurator.Library.ServerFiles
 
             foreach (var prop in properties)
             {
-                var name = PropertyToFileProperty(prop.Name);
+                var name = FormatClassPropertyToFileProperty(prop.Name);
                 var value = prop.GetValue(this);
 
                 if (prop.PropertyType == typeof(double))

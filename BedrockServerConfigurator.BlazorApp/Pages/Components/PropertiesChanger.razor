@@ -25,6 +25,12 @@
                     <input type="number" @oninput="PropertyUpdated" @bind="@MinecraftServer.ServerProperties.ViewDistance" class="form-control" />
                 </td>
             </tr>
+            <tr>
+                <th>Max players</th>
+                <td>
+                    <input type="number" @oninput="PropertyUpdated" @bind="@MinecraftServer.ServerProperties.MaxPlayers" class="form-control" />
+                </td>
+            </tr>
         </tbody>
     </table>
 
