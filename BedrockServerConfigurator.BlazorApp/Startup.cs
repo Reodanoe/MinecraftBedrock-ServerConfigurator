@@ -38,7 +38,7 @@ namespace BedrockServerConfigurator.BlazorApp
                 serverName = defaultServerName;
             }
 
-            _configurator = new Configurator(serversPath, serverName);
+            _configurator = Configurator.CreateInstance(serversPath, serverName);
         }
 
         public void ConfigureServices(IServiceCollection services)

@@ -14,7 +14,8 @@ namespace BedrockServerConfigurator.ConsoleApp
         {
             // creates a directory "servers" in Directory.GetCurrentDirectory()
             // each server will be named bedrockServer and have an ID append to it
-            var config = new Configurator("servers", "bedrockServer");
+            // to later use this instance you can do Configurator.Instance
+            var config = Configurator.CreateInstance("servers", "bedrockServer");
 
             // downloads "template" server
             // template server is used for creating other servers by copying it to a new directory and giving it an ID

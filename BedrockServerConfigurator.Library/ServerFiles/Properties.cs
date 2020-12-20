@@ -50,13 +50,13 @@
         /// Which IPv4 port the server should listen to.
         /// Allowed values: Integers in the range [1, 65535]
         /// </summary>
-        public double ServerPort { get; set; }
+        public double ServerPort { get; internal set; }
 
         /// <summary>
         /// Which IPv6 port the server should listen to.
         /// Allowed values: Integers in the range [1, 65535]
         /// </summary>
-        public double ServerPortv6 { get; set; }
+        public double ServerPortv6 { get; internal set; }
 
         /// <summary>
         /// The maximum allowed view distance in number of chunks.

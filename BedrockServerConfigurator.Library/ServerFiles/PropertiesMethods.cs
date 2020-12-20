@@ -272,7 +272,9 @@ namespace BedrockServerConfigurator.Library.ServerFiles
         /// <returns></returns>
         public string FilePropertyValue(string classProperty)
         {
-            return LoadPropertiesFromFile().First(x => x.Name == FormatClassPropertyToFileProperty(classProperty)).Value;
+            var fileProperty = FormatClassPropertyToFileProperty(classProperty);
+
+            return LoadPropertiesFromFile().FirstOrDefault(x => x.Name == fileProperty).Value;
         }
 
         /// <summary>

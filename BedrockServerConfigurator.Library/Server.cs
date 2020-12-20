@@ -46,7 +46,7 @@ namespace BedrockServerConfigurator.Library
         /// <summary>
         /// Version of Minecraft server
         /// </summary>
-        public string Version => File.ReadAllLines(GetFilePath("version.txt"))[0];
+        public string Version => JsonConvert.DeserializeObject<Information>(File.ReadAllText(GetFilePath("information.json"))).Version;
 
         /// <summary>
         /// When server started

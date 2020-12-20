@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BedrockServerConfigurator.Library.ServerFiles;
 using BedrockServerConfigurator.Library.Commands;
+using Newtonsoft.Json;
 
 namespace BedrockServerConfigurator.Library
 {
@@ -65,34 +66,49 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public event DownloadProgressChangedEventHandler TemplateServerDownloadChanged;
 
-        /// <summary>
-        /// Prevents creating more than one instance
-        /// </summary>
-        private static bool created;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="serversRootPath">Path to a folder where all servers will reside. If it doesn't exist it will create it.</param>
-        /// <param name="serverName">Name of individual servers.</param>
-        public Configurator(string serversRootPath, string serverName)
+        private static Configurator _instance;
+        
+        public static Configurator Instance 
         {
-            if (created)
+            get
             {
-                throw new Exception("Configurator is already instantiated, please use 1 instance only.");
-            }
+                if (_instance == null)
+                {
+                    throw new Exception("Object not created");
+                }
 
-            if (serverName.Contains("_"))
+                return _instance;
+            }
+        }
+
+        private Configurator(string serversRootPath, string serverName)
+        {
+            if (serverName.Contains("_") || serverName.Contains(Path.DirectorySeparatorChar))
             {
-                throw new ArgumentException("Dont use \"_\" in serverName", nameof(serverName));
+                throw new ArgumentException($"Dont use \"_\" in the name of a server or {Path.DirectorySeparatorChar}", nameof(serverName));
             }
 
             ServersRootPath = serversRootPath;
             ServerName = serverName;
 
             Directory.CreateDirectory(ServersRootPath);
+        }
 
-            created = true;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serversRootPath">Path to a folder where all servers will reside. If it doesn't exist it will create it.</param>
+        /// <param name="serverName">Name of individual servers.</param>
+        public static Configurator CreateInstance(string serversRootPath, string serverName)
+        {
+            if (_instance != null)
+            {
+                throw new Exception("Instance already exsists");
+            }
+
+            _instance = new Configurator(serversRootPath, serverName);
+
+            return Instance;
         }
 
         /// <summary>
@@ -127,9 +143,81 @@ namespace BedrockServerConfigurator.Library
             File.Delete(zipFilePath);
 
             CallLog("Adding version file...");
-            File.WriteAllText(Path.Combine(TemplateServerDirectoryPath, "version.txt"), version);
+            AddInformationFileToTemplateServer(version);
 
-            CallLog("Download finished");
+            CallLog("Fixing template server ports...");
+            FixServerPorts();
+
+            CallLog("Download and template server setup finished");
+        }
+
+        /// <summary>
+        /// Adds which minecraft version template server is
+        /// </summary>
+        /// <param name="version"></param>
+        private void AddInformationFileToTemplateServer(string version)
+        {
+            var information = new Information
+            {
+                Version = version
+            };
+
+            var jsonInformation = JsonConvert.SerializeObject(information, Formatting.Indented);
+
+            File.WriteAllText(Path.Combine(TemplateServerDirectoryPath, "information.json"), jsonInformation);
+        }
+
+        /// <summary>
+        /// Makes it so template server will have ports 19134 and 19136 because of a bug when starting multiple servers
+        /// </summary>
+        private void FixTemplateServerPorts()
+        {
+            var serverPropertiesPath = Path.Combine(TemplateServerDirectoryPath, "server.properties");
+            var serverPropertiesContent = File.ReadAllText(serverPropertiesPath);
+
+            var newProperties = GetNewServerPropertiesFileContent(serverPropertiesContent);
+            File.WriteAllText(serverPropertiesPath, newProperties);
+        }
+
+        /// <summary>
+        /// Changes ports in server.properties file content
+        /// </summary>
+        /// <param name="oldContent"></param>
+        /// <returns></returns>
+        private static string GetNewServerPropertiesFileContent(string oldContent)
+        {
+            var lines = oldContent.Split("\n");
+
+            const string ipv4Port = "server-port";
+            const string ipv6Port = ipv4Port + "v6";
+
+            for (int i = 0; i < lines.Length; i++)
+            { 
+                var currentLine = lines[i];
+
+                if (currentLine.StartsWith(ipv4Port))
+                {
+                    if (currentLine.StartsWith(ipv6Port))
+                    {
+                        lines[i] = getNewProp(currentLine, 19135.ToString());
+                    }
+                    else
+                    {
+                        lines[i] = getNewProp(currentLine, 19134.ToString());
+                    }
+                }
+            }
+
+            static string getNewProp(string prop, string value)
+            {
+                var split = prop.Split("=");
+
+                var newProp = $"{split[0]}={value}";
+
+                return newProp;
+            }
+
+            return string.Join("\n", lines);
         }
 
         /// <summary>
@@ -163,7 +251,10 @@ namespace BedrockServerConfigurator.Library
         /// </summary>
         public void LoadServers()
         {
-            foreach (var serverFolder in AllServerDirectoriesPaths().Except(AllServers.Select(x => x.Value.FullPath)))
+            var unloadedServersDirectories = AllServerDirectoriesPaths().
+                Except(AllServers.Select(x => x.Value.FullPath));
+
+            foreach (var serverFolder in unloadedServersDirectories)
             {
                 var server = new Server(serverFolder);
 
@@ -316,16 +407,6 @@ namespace BedrockServerConfigurator.Library
                 AllServers.Values.Any(y => (x.ServerProperties.ServerPort == y.ServerProperties.ServerPort ||
                                             x.ServerProperties.ServerPortv6 == y.ServerProperties.ServerPortv6) &&
                                             x.Name != y.Name)).ToList();
-
-            // this fixes a bug
-            // when you would start server with id higher than 1 before running server with id 1 it'd run 2 extra ports on 19132 and 19133
-            // which won't allow server 1 to start
-            if (AllServers.TryGetValue(1, out Server firstServer))
-            {
-                firstServer.ServerProperties.ServerPort = 19134;
-                firstServer.ServerProperties.ServerPortv6 = 19135;
-                firstServer.ServerProperties.SavePropertiesToFile();
-            }
 
             // removes first server (ID 1) from servers with same ports
             serversWithSamePorts.RemoveAll(x => x.ID == 1);
