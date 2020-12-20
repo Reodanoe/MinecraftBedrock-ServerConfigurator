@@ -16,10 +16,5 @@ namespace BedrockServerConfigurator.BlazorApp.Data
         /// The minigame instance that runs microgames
         /// </summary>
         public Minigame Minigame { get; set; } = new Minigame();
-
-        /// <summary>
-        /// ServerApi that sends commands
-        /// </summary>
-        public ServerApi Api { get; set; }
     }
 }

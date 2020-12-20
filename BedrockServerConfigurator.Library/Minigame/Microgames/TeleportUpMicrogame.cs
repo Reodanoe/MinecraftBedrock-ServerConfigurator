@@ -10,8 +10,8 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
         public int MinBlocks { get; }
         public int MaxBlocks { get; }
 
-        public TeleportUpMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api, int minBlocks, int maxBlocks) :
-            base(minDelay, maxDelay, player, api)
+        public TeleportUpMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, int minBlocks, int maxBlocks) :
+            base(minDelay, maxDelay, player)
         {
             MinBlocks = minBlocks;
             MaxBlocks = maxBlocks;

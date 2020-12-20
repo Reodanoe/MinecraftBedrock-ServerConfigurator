@@ -19,8 +19,8 @@ namespace BedrockServerConfigurator.Library.Minigame.Microgames
             "blaze"
         };
 
-        public SpawnRandomMobsMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api, int minMobs, int maxMobs) :
-            base(minDelay, maxDelay, player, api)
+        public SpawnRandomMobsMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, int minMobs, int maxMobs) :
+            base(minDelay, maxDelay, player)
         {
             MinMobs = minMobs;
             MaxMobs = maxMobs;

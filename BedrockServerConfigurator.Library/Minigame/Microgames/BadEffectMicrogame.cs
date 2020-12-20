@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BedrockServerConfigurator.Library.Commands;
 using BedrockServerConfigurator.Library.Entities;
 
 namespace BedrockServerConfigurator.Library.Minigame.Microgames
 {
     public class BadEffectMicrogame : Microgame
     {
-        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api) :
-            base(minDelay, maxDelay, player, api)
+        public BadEffectMicrogame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player) :
+            base(minDelay, maxDelay, player)
         {
         }
 

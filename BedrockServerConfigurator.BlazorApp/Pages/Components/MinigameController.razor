@@ -121,7 +121,7 @@
     private MinigameData MinigameData => data.AllServerData[MinecraftServer].Minigame;
 
     // ---------------- CODE FOR SHOWING TABLES ----------------
-    bool showingTables = true;
+    bool showingTables = false;
 
     string buttonText => showingTables ? "Hide minigame settings" : "Show minigame settings";
     string tablesCss => showingTables ? null : "collapse";
@@ -151,8 +151,6 @@
 
     protected override void OnParametersSet()
     {
-        MinigameData.Api = new ServerApi(MinecraftServer);
-
         MinecraftServer.OnPlayerConnected += PlayerConnected;
         MinecraftServer.OnPlayerDisconnected += PlayerDisconnected;
 
@@ -179,10 +177,10 @@
     private List<Microgame> BasicMicrogames(ServerPlayer player)
     {
         return new List<Microgame>
-{
-            new TeleportUpMicrogame(minDelay, maxDelay, player, MinigameData.Api, minBlocks, maxBlocks),
-            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, MinigameData.Api, minMobs, maxMobs),
-            new BadEffectMicrogame(minDelay, maxDelay, player, MinigameData.Api)
+        {
+            new TeleportUpMicrogame(minDelay, maxDelay, player, minBlocks, maxBlocks),
+            new SpawnRandomMobsMicrogame(minDelay, maxDelay, player, minMobs, maxMobs),
+            new BadEffectMicrogame(minDelay, maxDelay, player)
         };
     }
 

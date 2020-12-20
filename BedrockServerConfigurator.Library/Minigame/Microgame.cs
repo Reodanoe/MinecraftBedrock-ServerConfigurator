@@ -24,6 +24,11 @@ namespace BedrockServerConfigurator.Library.Minigame
         public DateTime RunsIn { get; private set; }
 
         /// <summary>
+        /// If microgame is currently waiting to run, if false microgame already ran
+        /// </summary>
+        public bool WaitingToRun => RunsIn > DateTime.Now;
+
+        /// <summary>
         /// Runs inside GetGame(), use MicrogameCreated() to call it in derived types
         /// </summary>
         public event EventHandler<MicrogameEventArgs> OnMicrogameCreated;
@@ -38,7 +43,7 @@ namespace BedrockServerConfigurator.Library.Minigame
         private bool microgameRepeats;
         private MicrogameEventArgs microgameEventArgs;
 
-        public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player, ServerApi api)
+        public Microgame(TimeSpan minDelay, TimeSpan maxDelay, ServerPlayer player)
         {
             if (maxDelay < minDelay)
             {
@@ -48,11 +53,16 @@ namespace BedrockServerConfigurator.Library.Minigame
             MinDelay = minDelay;
             MaxDelay = maxDelay;
             Player = player;
-            Api = api;
+            Api = Configurator.Instance.GetServerApi(Player.ServerId);
         }
 
         public void StartMicrogame(bool repeats)
         {
+            if (WaitingToRun)
+            {
+                throw new Exception("This microgame is started");
+            }
+
             if (timer == null)
             {
                 microgameRepeats = repeats;
@@ -76,6 +86,8 @@ namespace BedrockServerConfigurator.Library.Minigame
                 timer.Elapsed -= RunMicrogame;
                 timer.Close();
                 timer = null;
+
+                microgameRepeats = false;
             }
         }
 
