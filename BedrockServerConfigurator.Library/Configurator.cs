@@ -146,7 +146,7 @@ namespace BedrockServerConfigurator.Library
             AddInformationFileToTemplateServer(version);
 
             CallLog("Fixing template server ports...");
-            FixServerPorts();
+            FixTemplateServerPorts();
 
             CallLog("Download and template server setup finished");
         }
